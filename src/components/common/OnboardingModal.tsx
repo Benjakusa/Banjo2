@@ -1,0 +1,146 @@
+import React, { useState } from 'react';
+import { useBanjo } from '../../context/BanjoContext';
+import { Compass, Book, Archive, People, ArrowRight, CheckLg } from 'react-bootstrap-icons';
+
+export const OnboardingModal: React.FC = () => {
+  const { isOnboardingOpen, setIsOnboardingOpen, activeRole, setActiveRole } = useBanjo();
+  const [step, setStep] = useState(0);
+
+  if (!isOnboardingOpen) return null;
+
+  const screens = [
+    {
+      icon: Compass,
+      title: 'Discover African Music',
+      subtitle: 'The Wikipedia of African Music Heritage',
+      description:
+        'Explore decades of recorded sound from the 1950s onward across Kenya, Congo, Tanzania, Nigeria, Ghana, Zimbabwe, and beyond. Every track is connected to its historical cultural origins.',
+    },
+    {
+      icon: Book,
+      title: 'Discover the Story',
+      subtitle: 'Every Song is a Recording AND a Historical Story',
+      description:
+        'Learn about the studio sessions, the political climates, the migrations of musicians, the master sound engineers, and the instruments that gave birth to Benga, Rhumba, Afrobeat, and Highlife.',
+    },
+    {
+      icon: Archive,
+      title: 'Anyone Can Add Details',
+      subtitle: 'Community-Curated · Version-Controlled',
+      description:
+        'Just like Wikipedia, you can add missing musicians, add documentary citations, suggest revisions, and upload verified master recordings. Every edit is version-controlled and traceable.',
+    },
+    {
+      icon: People,
+      title: 'Join Banjo & Choose Your Role',
+      subtitle: 'Contribute Knowledge, Verify Evidence, & Safeguard Heritage',
+      description:
+        'You can browse as a Reader, submit details as a Contributor, or review evidence as an Archivist. Switch your role anytime from the header menu.',
+    },
+  ];
+
+  const current = screens[step];
+  const IconComp = current.icon;
+
+  const handleNext = () => {
+    if (step < screens.length - 1) {
+      setStep(step + 1);
+    } else {
+      setIsOnboardingOpen(false);
+    }
+  };
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/60 p-4"
+    >
+      <div className="relative w-full max-w-md rounded-2xl border border-stone-200 bg-white p-6 sm:p-7 shadow-xl space-y-5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            {screens.map((_, i) => (
+              <div
+                key={i}
+                className={`h-1.5 rounded-full transition-all ${
+                  i === step ? 'w-6 bg-orange-600' : 'w-2 bg-stone-200'
+                }`}
+              />
+            ))}
+          </div>
+          <button
+            onClick={() => setIsOnboardingOpen(false)}
+            className="text-xs text-stone-500 hover:text-stone-900 cursor-pointer"
+          >
+            Skip
+          </button>
+        </div>
+
+        <div className="space-y-3 pt-1">
+          <div className="inline-flex p-3 rounded-xl bg-orange-50 text-orange-600 border border-orange-200">
+            <IconComp className="w-6 h-6" />
+          </div>
+
+          <div>
+            <span className="text-[11px] uppercase tracking-widest font-mono text-orange-700 font-bold">
+              {current.subtitle}
+            </span>
+            <h2 className="text-xl sm:text-2xl font-serif font-medium text-stone-900 mt-0.5">
+              {current.title}
+            </h2>
+          </div>
+
+          <p className="text-xs text-stone-600 leading-relaxed">
+            {current.description}
+          </p>
+
+          {step === 3 && (
+            <div className="pt-2 border-t border-stone-100 space-y-2">
+              <span className="text-[11px] font-mono text-stone-500 block">Select Initial Role:</span>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setActiveRole('contributor')}
+                  className={`p-2 rounded-lg border text-left cursor-pointer transition-colors ${
+                    activeRole === 'contributor'
+                      ? 'border-orange-600 bg-orange-50 text-orange-950 font-semibold'
+                      : 'border-stone-200 bg-white text-stone-600'
+                  }`}
+                >
+                  <p className="font-semibold text-stone-900">Contributor</p>
+                  <p className="text-[10px] text-stone-500">Edit & add details</p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveRole('senior_archivist')}
+                  className={`p-2 rounded-lg border text-left cursor-pointer transition-colors ${
+                    activeRole === 'senior_archivist'
+                      ? 'border-orange-600 bg-orange-50 text-orange-950 font-semibold'
+                      : 'border-stone-200 bg-white text-stone-600'
+                  }`}
+                >
+                  <p className="font-semibold text-stone-900">Archivist</p>
+                  <p className="text-[10px] text-stone-500">Verify & approve</p>
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between pt-3 border-t border-stone-100">
+          <span className="text-xs text-stone-400 font-mono">
+            {step + 1} / {screens.length}
+          </span>
+          <button
+            onClick={handleNext}
+            className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-orange-600 hover:bg-orange-700 rounded-lg transition-colors cursor-pointer shadow-xs"
+          >
+            <span>{step === screens.length - 1 ? 'Start Browsing' : 'Continue'}</span>
+            {step === screens.length - 1 ? <CheckLg className="w-3.5 h-3.5" /> : <ArrowRight className="w-3.5 h-3.5" />}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+

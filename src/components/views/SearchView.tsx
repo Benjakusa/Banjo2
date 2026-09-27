@@ -1,0 +1,390 @@
+import React, { useState, useMemo } from 'react';
+import { useBanjo } from '../../context/BanjoContext';
+import {
+  Search as SearchIcon,
+  Filter,
+  Play,
+  Disc,
+  Users,
+  User,
+  BookOpen,
+  Calendar,
+  MapPin,
+  Music,
+  X,
+  PlusCircle,
+} from 'lucide-react';
+
+export const SearchView: React.FC = () => {
+  const {
+    searchQuery,
+    setSearchQuery,
+    recordings,
+    musicians,
+    bands,
+    songs,
+    albums,
+    oralHistories,
+    playSong,
+    navigateTo,
+    openQuickEdit,
+  } = useBanjo();
+
+  const [activeCategory, setActiveCategory] = useState<
+    'all' | 'songs' | 'artists' | 'bands' | 'musicians' | 'albums' | 'history'
+  >('all');
+
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [countryFilter, setCountryFilter] = useState('');
+  const [genreFilter, setGenreFilter] = useState('');
+  const [languageFilter, setLanguageFilter] = useState('');
+  const [instrumentFilter, setInstrumentFilter] = useState('');
+  const [startYear, setStartYear] = useState<string>('');
+  const [endYear, setEndYear] = useState<string>('');
+
+  const queryClean = searchQuery.toLowerCase().trim();
+
+  const filteredRecordings = useMemo(() => {
+    return recordings.filter((r) => {
+      const matchBasic =
+        !queryClean ||
+        r.title.toLowerCase().includes(queryClean) ||
+        r.artistOrBand.toLowerCase().includes(queryClean) ||
+        r.composer.toLowerCase().includes(queryClean) ||
+        r.studio.toLowerCase().includes(queryClean) ||
+        r.country.toLowerCase().includes(queryClean) ||
+        r.genre.toLowerCase().includes(queryClean) ||
+        r.language.toLowerCase().includes(queryClean) ||
+        r.recordingLocation.toLowerCase().includes(queryClean) ||
+        r.story.toLowerCase().includes(queryClean) ||
+        r.musicians.some((m) => m.musicianName.toLowerCase().includes(queryClean)) ||
+        r.instruments.some((inst) => inst.toLowerCase().includes(queryClean));
+
+      const matchCountry = !countryFilter || r.country.toLowerCase().includes(countryFilter.toLowerCase());
+      const matchGenre = !genreFilter || r.genre.toLowerCase().includes(genreFilter.toLowerCase());
+      const matchLang = !languageFilter || r.language.toLowerCase().includes(languageFilter.toLowerCase());
+      const matchInst = !instrumentFilter || r.instruments.some((i) => i.toLowerCase().includes(instrumentFilter.toLowerCase()));
+      const matchStartYear = !startYear || r.releaseYear >= parseInt(startYear, 10);
+      const matchEndYear = !endYear || r.releaseYear <= parseInt(endYear, 10);
+
+      return matchBasic && matchCountry && matchGenre && matchLang && matchInst && matchStartYear && matchEndYear;
+    });
+  }, [recordings, queryClean, countryFilter, genreFilter, languageFilter, instrumentFilter, startYear, endYear]);
+
+  const filteredMusicians = useMemo(() => {
+    return musicians.filter((m) => {
+      const matchBasic =
+        !queryClean ||
+        m.name.toLowerCase().includes(queryClean) ||
+        m.aliases.some((alias) => alias.toLowerCase().includes(queryClean)) ||
+        m.instruments.some((inst) => inst.toLowerCase().includes(queryClean)) ||
+        m.role.toLowerCase().includes(queryClean) ||
+        m.country.toLowerCase().includes(queryClean) ||
+        m.biography.toLowerCase().includes(queryClean);
+
+      const matchCountry = !countryFilter || m.country.toLowerCase().includes(countryFilter.toLowerCase());
+      const matchInst = !instrumentFilter || m.instruments.some((i) => i.toLowerCase().includes(instrumentFilter.toLowerCase()));
+
+      return matchBasic && matchCountry && matchInst;
+    });
+  }, [musicians, queryClean, countryFilter, instrumentFilter]);
+
+  const filteredBands = useMemo(() => {
+    return bands.filter((b) => {
+      const matchBasic =
+        !queryClean ||
+        b.name.toLowerCase().includes(queryClean) ||
+        b.overview.toLowerCase().includes(queryClean) ||
+        b.history.toLowerCase().includes(queryClean) ||
+        b.country.toLowerCase().includes(queryClean) ||
+        b.membersTimeline.some((mem) => mem.musicianName.toLowerCase().includes(queryClean));
+
+      const matchCountry = !countryFilter || b.country.toLowerCase().includes(countryFilter.toLowerCase());
+      const matchGenre = !genreFilter || b.genre.toLowerCase().includes(genreFilter.toLowerCase());
+
+      return matchBasic && matchCountry && matchGenre;
+    });
+  }, [bands, queryClean, countryFilter, genreFilter]);
+
+  const filteredOralHistories = useMemo(() => {
+    return oralHistories.filter((h) => {
+      return (
+        !queryClean ||
+        h.title.toLowerCase().includes(queryClean) ||
+        h.interviewee.toLowerCase().includes(queryClean) ||
+        h.summary.toLowerCase().includes(queryClean) ||
+        h.transcriptEn.toLowerCase().includes(queryClean) ||
+        h.transcriptSw.toLowerCase().includes(queryClean)
+      );
+    });
+  }, [oralHistories, queryClean]);
+
+  const totalResultsCount =
+    filteredRecordings.length +
+    filteredMusicians.length +
+    filteredBands.length +
+    filteredOralHistories.length;
+
+  return (
+    <div className="mx-auto max-w-4xl px-4 sm:px-6 py-6 space-y-6 pb-36">
+      {/* Search Header */}
+      <div className="space-y-3">
+        <span className="text-xs uppercase tracking-widest font-mono text-amber-800 font-semibold">
+          Wikipedia Search
+        </span>
+        <h1 className="text-2xl sm:text-3xl font-serif font-medium text-stone-900">
+          Search the African Music Knowledge Base
+        </h1>
+
+        {/* Input Bar */}
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <SearchIcon className="absolute left-3.5 top-3.5 w-4 h-4 text-stone-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search (e.g. Ochieng, Franco, Benga, Nyatiti, Polygram, 1978)..."
+              className="w-full rounded-xl border border-stone-300 bg-white pl-10 pr-10 py-2.5 text-sm text-stone-900 placeholder-stone-400 focus:border-amber-600 focus:outline-none focus:ring-1 focus:ring-amber-600 shadow-xs"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-3 text-stone-400 hover:text-stone-700 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+
+          <button
+            onClick={() => setShowAdvanced(!showAdvanced)}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-medium cursor-pointer ${
+              showAdvanced || countryFilter || genreFilter || languageFilter
+                ? 'border-amber-600 bg-amber-50 text-amber-900'
+                : 'border-stone-300 bg-white text-stone-700 hover:bg-stone-50'
+            }`}
+          >
+            <Filter className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Filters</span>
+          </button>
+        </div>
+
+        {/* Advanced Filters */}
+        {showAdvanced && (
+          <div className="p-4 rounded-xl border border-stone-200 bg-stone-50 space-y-3 text-xs">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div>
+                <label className="block text-stone-600 font-medium mb-1">Country</label>
+                <select
+                  value={countryFilter}
+                  onChange={(e) => setCountryFilter(e.target.value)}
+                  className="w-full rounded-lg border border-stone-300 bg-white p-2 text-xs text-stone-900 focus:border-amber-600 focus:outline-none"
+                >
+                  <option value="">All Countries</option>
+                  <option value="Kenya">Kenya</option>
+                  <option value="DR Congo">DR Congo</option>
+                  <option value="Nigeria">Nigeria</option>
+                  <option value="Tanzania">Tanzania</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-stone-600 font-medium mb-1">Genre</label>
+                <select
+                  value={genreFilter}
+                  onChange={(e) => setGenreFilter(e.target.value)}
+                  className="w-full rounded-lg border border-stone-300 bg-white p-2 text-xs text-stone-900 focus:border-amber-600 focus:outline-none"
+                >
+                  <option value="">All Genres</option>
+                  <option value="Benga">Benga</option>
+                  <option value="Rhumba">Congolese Rhumba</option>
+                  <option value="Afrobeat">Afrobeat</option>
+                  <option value="Twist">Kenyan Twist</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-stone-600 font-medium mb-1">From Year</label>
+                <input
+                  type="number"
+                  placeholder="e.g. 1970"
+                  value={startYear}
+                  onChange={(e) => setStartYear(e.target.value)}
+                  className="w-full rounded-lg border border-stone-300 bg-white p-2 text-xs text-stone-900 focus:border-amber-600 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-stone-600 font-medium mb-1">To Year</label>
+                <input
+                  type="number"
+                  placeholder="e.g. 1985"
+                  value={endYear}
+                  onChange={(e) => setEndYear(e.target.value)}
+                  className="w-full rounded-lg border border-stone-300 bg-white p-2 text-xs text-stone-900 focus:border-amber-600 focus:outline-none"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Wikipedia Categorized Tabs */}
+        <div className="flex flex-wrap items-center gap-1 border-b border-stone-200 pb-2 text-xs font-mono">
+          {[
+            { key: 'all', label: `All (${totalResultsCount})` },
+            { key: 'songs', label: `Songs (${filteredRecordings.length})` },
+            { key: 'musicians', label: `Musicians (${filteredMusicians.length})` },
+            { key: 'bands', label: `Bands (${filteredBands.length})` },
+            { key: 'history', label: `Oral Histories (${filteredOralHistories.length})` },
+          ].map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveCategory(tab.key as any)}
+              className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
+                activeCategory === tab.key
+                  ? 'bg-amber-700 text-white font-bold shadow-xs'
+                  : 'text-stone-600 hover:text-stone-950 hover:bg-stone-100'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Results */}
+      <div className="space-y-6">
+        {totalResultsCount === 0 && (
+          <div className="p-8 text-center border border-dashed border-stone-300 rounded-2xl bg-white space-y-3">
+            <h3 className="font-serif text-lg text-stone-800">
+              The page "{searchQuery}" does not exist in the encyclopedia yet.
+            </h3>
+            <p className="text-xs text-stone-500 max-w-sm mx-auto">
+              You can create this article now and add verifiable details about this recording, artist, or music tradition.
+            </p>
+            <button
+              onClick={() => navigateTo('upload')}
+              className="px-4 py-2 rounded-lg bg-amber-700 text-white text-xs font-semibold hover:bg-amber-800 cursor-pointer"
+            >
+              Create New Article
+            </button>
+          </div>
+        )}
+
+        {/* Songs */}
+        {(activeCategory === 'all' || activeCategory === 'songs') && filteredRecordings.length > 0 && (
+          <div className="space-y-3">
+            <span className="text-xs uppercase tracking-widest font-mono text-stone-500 font-bold block">
+              Song Articles ({filteredRecordings.length})
+            </span>
+            <div className="space-y-2">
+              {filteredRecordings.map((rec) => (
+                <div
+                  key={rec.id}
+                  className="p-3.5 rounded-xl border border-stone-200 bg-white hover:border-amber-600 hover:shadow-xs transition-all flex items-start justify-between gap-3 text-xs"
+                >
+                  <div className="flex items-start gap-3 min-w-0">
+                    <img
+                      src={rec.coverImage}
+                      alt={rec.title}
+                      referrerPolicy="no-referrer"
+                      className="w-12 h-12 rounded object-cover border border-stone-200 shrink-0"
+                    />
+                    <div className="min-w-0">
+                      <h3
+                        onClick={() => navigateTo('song_detail', { songId: rec.id })}
+                        className="font-serif text-sm font-semibold text-blue-700 hover:underline cursor-pointer truncate"
+                      >
+                        {rec.title}
+                      </h3>
+                      <p className="text-stone-600">
+                        {rec.artistOrBand} · {rec.releaseYear} · {rec.country} ({rec.genre})
+                      </p>
+                      <p className="text-stone-500 text-[11px] line-clamp-1 mt-0.5">
+                        {rec.story}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      onClick={() => openQuickEdit(rec.id, 'musicians')}
+                      className="text-stone-500 hover:text-amber-800 text-[11px] px-2 py-1 hover:bg-stone-100 rounded cursor-pointer"
+                    >
+                      [edit]
+                    </button>
+                    <button
+                      onClick={() => playSong(rec)}
+                      className="p-1.5 rounded-full bg-amber-700 text-white hover:bg-amber-800 cursor-pointer"
+                    >
+                      <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Musicians */}
+        {(activeCategory === 'all' || activeCategory === 'musicians') && filteredMusicians.length > 0 && (
+          <div className="space-y-3">
+            <span className="text-xs uppercase tracking-widest font-mono text-stone-500 font-bold block">
+              Musician Biographies ({filteredMusicians.length})
+            </span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {filteredMusicians.map((m) => (
+                <div
+                  key={m.id}
+                  onClick={() => navigateTo('musician_detail', { musicianId: m.id })}
+                  className="p-3 rounded-xl border border-stone-200 bg-white hover:border-amber-600 hover:shadow-xs transition-all cursor-pointer flex items-center gap-3 text-xs"
+                >
+                  <img
+                    src={m.photoUrl}
+                    alt={m.name}
+                    referrerPolicy="no-referrer"
+                    className="w-12 h-12 rounded-lg object-cover border border-stone-200 shrink-0"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <h4 className="font-serif text-sm font-semibold text-blue-700 hover:underline">
+                      {m.name}
+                    </h4>
+                    <p className="text-amber-800 font-medium">{m.role}</p>
+                    <span className="text-[10px] text-stone-500">{m.country} · {m.activeYears}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Bands */}
+        {(activeCategory === 'all' || activeCategory === 'bands') && filteredBands.length > 0 && (
+          <div className="space-y-3">
+            <span className="text-xs uppercase tracking-widest font-mono text-stone-500 font-bold block">
+              Bands & Orchestras ({filteredBands.length})
+            </span>
+            <div className="space-y-2">
+              {filteredBands.map((b) => (
+                <div
+                  key={b.id}
+                  onClick={() => navigateTo('band_detail', { bandId: b.id })}
+                  className="p-3.5 rounded-xl border border-stone-200 bg-white hover:border-amber-600 hover:shadow-xs transition-all cursor-pointer text-xs space-y-1"
+                >
+                  <div className="flex justify-between">
+                    <h3 className="font-serif text-sm font-semibold text-blue-700 hover:underline">
+                      {b.name}
+                    </h3>
+                    <span className="font-mono text-stone-500">{b.country} · Formed {b.formationYear}</span>
+                  </div>
+                  <p className="text-stone-600 line-clamp-2">{b.overview}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};

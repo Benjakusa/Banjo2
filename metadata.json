@@ -1,0 +1,6 @@
+{
+  "name": "Banjo - African Music Heritage Archive",
+  "description": "A crowdsourced African music encyclopedia and version-controlled digital archive documenting songs, recordings, musicians, instruments, oral histories, and historical provenance.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
