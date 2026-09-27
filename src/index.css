@@ -19,19 +19,20 @@
   }
 }
 
-/* Custom scrollbar for bright archival paper feel */
+/* Custom scrollbar - black / white / orange only */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #F1EFEA;
+  background: #FFFFFF;
 }
 ::-webkit-scrollbar-thumb {
-  background: #D4CEBE;
+  background: #000000;
   border-radius: 3px;
+  opacity: 0.2;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #B8B09D;
+  background: #EA580C;
 }
 

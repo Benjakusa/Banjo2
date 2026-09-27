@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import { useBanjo } from '../../context/BanjoContext';
+import {
+  useBanjo } from '../../context/BanjoContext';
 import {
   FileText,
-  Calendar,
-  MapPin,
+  CalendarEvent,
+  GeoAlt,
   Tag,
   ArrowRight,
   ZoomIn,
-  X,
-} from 'lucide-react';
+  XLg
+} from 'react-bootstrap-icons';
 
 export const DocumentsView: React.FC = () => {
   const { documents, selectedDocumentId, navigateTo } = useBanjo();
@@ -29,19 +30,19 @@ export const DocumentsView: React.FC = () => {
   return (
     <div className="mx-auto max-w-4xl px-4 sm:px-6 py-6 space-y-6 pb-36">
       <div>
-        <span className="text-xs uppercase tracking-widest font-mono text-amber-800 font-semibold">
+        <span className="text-xs uppercase tracking-widest font-mono text-orange-700 font-semibold">
           Archival Evidence
         </span>
-        <h1 className="text-2xl sm:text-3xl font-serif font-medium text-stone-900 mt-0.5">
+        <h1 className="text-2xl sm:text-3xl font-serif font-medium text-black mt-0.5">
           Historical Documents, Record Sleeves & Posters
         </h1>
-        <p className="text-xs text-stone-600 mt-1">
+        <p className="text-xs text-black/60 mt-1">
           Scanned primary documentary evidence supporting encyclopedia entries and studio histories.
         </p>
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex flex-wrap gap-1 border-b border-stone-200 pb-2 text-xs font-mono">
+      <div className="flex flex-wrap gap-1 border-b border-black/10 pb-2 text-xs font-mono">
         {[
           { key: 'all', label: 'All Artifacts' },
           { key: 'record_sleeve', label: 'Record Sleeves' },
@@ -54,8 +55,8 @@ export const DocumentsView: React.FC = () => {
             onClick={() => setFilterType(tab.key)}
             className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
               filterType === tab.key
-                ? 'bg-amber-700 text-white font-bold shadow-xs'
-                : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
+                ? 'bg-orange-600 text-white font-bold shadow-xs'
+                : 'text-black/60 hover:text-black hover:bg-black/5'
             }`}
           >
             {tab.label}
@@ -72,9 +73,9 @@ export const DocumentsView: React.FC = () => {
               setActiveDocId(doc.id);
               setLightboxOpen(true);
             }}
-            className="rounded-2xl border border-stone-200 bg-white p-4 space-y-3 shadow-xs hover:border-amber-600 transition-all cursor-pointer group"
+            className="rounded-2xl border border-black/10 bg-white p-4 space-y-3 shadow-xs hover:border-orange-600 transition-all cursor-pointer group"
           >
-            <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-stone-100 border border-stone-200">
+            <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-black/5 border border-black/10">
               <img
                 src={doc.imageUrl}
                 alt={doc.title}
@@ -82,27 +83,27 @@ export const DocumentsView: React.FC = () => {
                 className="h-full w-full object-cover group-hover:scale-102 transition-transform duration-300"
               />
               <div className="absolute top-2 right-2">
-                <span className="p-1 rounded-md bg-stone-900/60 text-white">
+                <span className="p-1 rounded-md bg-black/60 text-white">
                   <ZoomIn className="w-3.5 h-3.5" />
                 </span>
               </div>
             </div>
 
             <div>
-              <span className="font-mono text-[10px] text-amber-800 uppercase font-bold block">
+              <span className="font-mono text-[10px] text-orange-700 uppercase font-bold block">
                 {doc.type.replace('_', ' ')} · {doc.year}
               </span>
-              <h3 className="font-serif text-sm font-semibold text-stone-900 group-hover:text-amber-800 transition-colors mt-0.5 line-clamp-1">
+              <h3 className="font-serif text-sm font-semibold text-black group-hover:text-orange-700 transition-colors mt-0.5 line-clamp-1">
                 {doc.title}
               </h3>
-              <p className="text-xs text-stone-600 line-clamp-2 mt-1 leading-relaxed">
+              <p className="text-xs text-black/60 line-clamp-2 mt-1 leading-relaxed">
                 {doc.description}
               </p>
             </div>
 
-            <div className="pt-2 border-t border-stone-100 flex items-center justify-between text-[11px] text-stone-500">
+            <div className="pt-2 border-t border-black/10 flex items-center justify-between text-[11px] text-black/50">
               <span>{doc.location}</span>
-              <span className="text-blue-700 font-medium">Inspect Document →</span>
+              <span className="text-blue-700 font-medium inline-flex items-center gap-1">Inspect Document <ArrowRight className="w-3 h-3" /></span>
             </div>
           </div>
         ))}
@@ -113,27 +114,27 @@ export const DocumentsView: React.FC = () => {
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/70 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
         >
           <div className="relative max-w-2xl w-full rounded-2xl bg-white p-5 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-stone-100 pb-2">
+            <div className="flex items-center justify-between border-b border-black/10 pb-2">
               <div>
-                <span className="font-mono text-xs text-amber-800 uppercase font-semibold">
+                <span className="font-mono text-xs text-orange-700 uppercase font-semibold">
                   Accession #{activeDoc.archivalCode}
                 </span>
-                <h3 className="font-serif text-base font-semibold text-stone-900">
+                <h3 className="font-serif text-base font-semibold text-black">
                   {activeDoc.title}
                 </h3>
               </div>
               <button
                 onClick={() => setLightboxOpen(false)}
-                className="p-1 text-stone-400 hover:text-stone-700 cursor-pointer"
+                className="p-1 text-black/40 hover:text-black/70 cursor-pointer"
               >
-                <X className="w-5 h-5" />
+                <XLg className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="aspect-video rounded-xl overflow-hidden bg-stone-100 border border-stone-200">
+            <div className="aspect-video rounded-xl overflow-hidden bg-black/5 border border-black/10">
               <img
                 src={activeDoc.imageUrl}
                 alt={activeDoc.title}
@@ -142,11 +143,11 @@ export const DocumentsView: React.FC = () => {
               />
             </div>
 
-            <p className="text-xs text-stone-700 leading-relaxed">
+            <p className="text-xs text-black/70 leading-relaxed">
               {activeDoc.description}
             </p>
 
-            <div className="pt-2 border-t border-stone-100 flex items-center justify-between text-xs text-stone-500">
+            <div className="pt-2 border-t border-black/10 flex items-center justify-between text-xs text-black/50">
               <span>Holding: {activeDoc.sourceAttribution}</span>
               {activeDoc.relatedSongIds && activeDoc.relatedSongIds[0] && (
                 <button
@@ -154,9 +155,9 @@ export const DocumentsView: React.FC = () => {
                     setLightboxOpen(false);
                     navigateTo('song_detail', { songId: activeDoc.relatedSongIds[0] });
                   }}
-                  className="text-amber-800 font-semibold hover:underline cursor-pointer"
+                  className="text-orange-700 font-semibold hover:underline cursor-pointer"
                 >
-                  View Related Song Article →
+                  View Related Song Article <ArrowRight className="w-3 h-3 inline" />
                 </button>
               )}
             </div>

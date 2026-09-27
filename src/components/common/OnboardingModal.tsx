@@ -54,23 +54,23 @@ export const OnboardingModal: React.FC = () => {
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/60 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
     >
-      <div className="relative w-full max-w-md rounded-2xl border border-stone-200 bg-white p-6 sm:p-7 shadow-xl space-y-5">
+      <div className="relative w-full max-w-md rounded-2xl border border-black/10 bg-white p-6 sm:p-7 shadow-xl space-y-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             {screens.map((_, i) => (
               <div
                 key={i}
                 className={`h-1.5 rounded-full transition-all ${
-                  i === step ? 'w-6 bg-orange-600' : 'w-2 bg-stone-200'
+                  i === step ? 'w-6 bg-orange-600' : 'w-2 bg-black/10'
                 }`}
               />
             ))}
           </div>
           <button
             onClick={() => setIsOnboardingOpen(false)}
-            className="text-xs text-stone-500 hover:text-stone-900 cursor-pointer"
+            className="text-xs text-black/50 hover:text-black cursor-pointer"
           >
             Skip
           </button>
@@ -85,18 +85,18 @@ export const OnboardingModal: React.FC = () => {
             <span className="text-[11px] uppercase tracking-widest font-mono text-orange-700 font-bold">
               {current.subtitle}
             </span>
-            <h2 className="text-xl sm:text-2xl font-serif font-medium text-stone-900 mt-0.5">
+            <h2 className="text-xl sm:text-2xl font-serif font-medium text-black mt-0.5">
               {current.title}
             </h2>
           </div>
 
-          <p className="text-xs text-stone-600 leading-relaxed">
+          <p className="text-xs text-black/60 leading-relaxed">
             {current.description}
           </p>
 
           {step === 3 && (
-            <div className="pt-2 border-t border-stone-100 space-y-2">
-              <span className="text-[11px] font-mono text-stone-500 block">Select Initial Role:</span>
+            <div className="pt-2 border-t border-black/10 space-y-2">
+              <span className="text-[11px] font-mono text-black/50 block">Select Initial Role:</span>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <button
                   type="button"
@@ -104,11 +104,11 @@ export const OnboardingModal: React.FC = () => {
                   className={`p-2 rounded-lg border text-left cursor-pointer transition-colors ${
                     activeRole === 'contributor'
                       ? 'border-orange-600 bg-orange-50 text-orange-950 font-semibold'
-                      : 'border-stone-200 bg-white text-stone-600'
+                      : 'border-black/10 bg-white text-black/60'
                   }`}
                 >
-                  <p className="font-semibold text-stone-900">Contributor</p>
-                  <p className="text-[10px] text-stone-500">Edit & add details</p>
+                  <p className="font-semibold text-black">Contributor</p>
+                  <p className="text-[10px] text-black/50">Edit & add details</p>
                 </button>
                 <button
                   type="button"
@@ -116,19 +116,19 @@ export const OnboardingModal: React.FC = () => {
                   className={`p-2 rounded-lg border text-left cursor-pointer transition-colors ${
                     activeRole === 'senior_archivist'
                       ? 'border-orange-600 bg-orange-50 text-orange-950 font-semibold'
-                      : 'border-stone-200 bg-white text-stone-600'
+                      : 'border-black/10 bg-white text-black/60'
                   }`}
                 >
-                  <p className="font-semibold text-stone-900">Archivist</p>
-                  <p className="text-[10px] text-stone-500">Verify & approve</p>
+                  <p className="font-semibold text-black">Archivist</p>
+                  <p className="text-[10px] text-black/50">Verify & approve</p>
                 </button>
               </div>
             </div>
           )}
         </div>
 
-        <div className="flex items-center justify-between pt-3 border-t border-stone-100">
-          <span className="text-xs text-stone-400 font-mono">
+        <div className="flex items-center justify-between pt-3 border-t border-black/10">
+          <span className="text-xs text-black/40 font-mono">
             {step + 1} / {screens.length}
           </span>
           <button

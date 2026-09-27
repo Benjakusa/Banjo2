@@ -276,6 +276,9 @@ export interface Submission {
   proposedData: Record<string, string>;
   sourcesProvided: string;
   reviewNotes?: string;
+  targetId?: string;
+  targetTitle?: string;
+  targetType?: string;
 }
 
 export interface CopyrightCase {
@@ -290,6 +293,7 @@ export interface CopyrightCase {
   evidenceSummary: string;
   filedDate: string;
   status: 'open' | 'investigating' | 'restricted' | 'resolved' | 'dismissed';
+  assignedTo?: string;
 }
 
 export interface AuditLogEntry {
@@ -298,8 +302,8 @@ export interface AuditLogEntry {
   what: string;
   when: string;
   where: string;
-  before: string;
-  after: string;
+  before?: string;
+  after?: string;
   reason: string;
 }
 

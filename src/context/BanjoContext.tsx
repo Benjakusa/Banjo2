@@ -28,6 +28,7 @@ import {
   CURRENT_USER_PROFILE,
 } from '../data/mockArchiveData';
 import { audioEngine } from '../utils/audioEngine';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 export type MainNavTab =
   | 'home'
@@ -125,6 +126,7 @@ interface BanjoContextType {
   userProfile: UserProfile;
   activeRole: UserRole;
   setActiveRole: (role: UserRole) => void;
+  isBackendConnected: boolean;
 
   // Actions
   toggleSaveRecording: (recordingId: string) => void;
@@ -211,6 +213,89 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>(INITIAL_AUDIT_LOGS);
   const [userProfile, setUserProfile] = useState<UserProfile>(CURRENT_USER_PROFILE);
   const [activeRole, setActiveRole] = useState<UserRole>('senior_archivist');
+  const [isBackendConnected, setIsBackendConnected] = useState<boolean>(false);
+
+  // Sync with Supabase on mount
+  useEffect(() => {
+    if (!isSupabaseConfigured) return;
+
+    let isMounted = true;
+
+    async function fetchSupabaseData() {
+      try {
+        const [subRes, auditRes, copyrightRes] = await Promise.all([
+          supabase.from('app_submissions').select('*').order('created_at', { ascending: false }),
+          supabase.from('app_audit_logs').select('*').order('created_at', { ascending: false }),
+          supabase.from('app_copyright_cases').select('*').order('created_at', { ascending: false }),
+        ]);
+
+        if (!isMounted) return;
+
+        if (subRes.data && subRes.data.length > 0) {
+          const remoteSubs: Submission[] = subRes.data.map((row: any) => ({
+            id: row.id,
+            type: row.type,
+            title: row.title,
+            contributorName: row.contributor_name || 'Archivist Contributor',
+            contributorEmail: row.contributor_email || '',
+            targetId: row.target_id || undefined,
+            targetTitle: row.target_title || undefined,
+            targetType: row.target_type || undefined,
+            category: 'Supabase Import',
+            priority: (row.priority as any) || 'normal',
+            status: (row.status as any) || 'pending',
+            rightsDeclaration: '',
+            submittedAt: row.created_at || new Date().toISOString(),
+            currentData: row.current_data || {},
+            proposedData: row.proposed_data || {},
+            sourcesProvided: row.sources_provided || '',
+            reviewNotes: row.review_notes || '',
+          }));
+          setSubmissions(remoteSubs);
+        }
+
+        if (auditRes.data && auditRes.data.length > 0) {
+          const remoteAudit: AuditLogEntry[] = auditRes.data.map((row: any) => ({
+            id: row.id,
+            who: row.who,
+            what: row.action,
+            where: row.target,
+            when: row.timestamp || row.created_at,
+            reason: row.notes || undefined,
+          }));
+          setAuditLogs(remoteAudit);
+        }
+
+        if (copyrightRes.data && copyrightRes.data.length > 0) {
+          const remoteCopyright: CopyrightCase[] = copyrightRes.data.map((row: any) => ({
+            id: row.id,
+            caseNumber: `BANJO-CR-${row.id.slice(0, 8)}`,
+            recordingId: row.recording_id || 'rec-001',
+            recordingTitle: row.recording_title || 'Disputed Recording',
+            artistOrBand: row.artist_or_band || 'Disputed Artist',
+            claimantName: row.claimant_name || 'Claimant',
+            claimantEmail: row.claimant_email || '',
+            claimType: (row.claim_type as any) || 'ownership',
+            status: (row.status as any) || 'open',
+            filedDate: row.filed_date || new Date().toISOString().split('T')[0],
+            evidenceSummary: row.evidence || row.summary || '',
+            assignedTo: row.assigned_to || undefined,
+          }));
+          setCopyrightCases(remoteCopyright);
+        }
+
+        setIsBackendConnected(true);
+      } catch (err) {
+        console.warn('Supabase fetch failed, continuing with local state:', err);
+      }
+    }
+
+    fetchSupabaseData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Toast feedback
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -421,6 +506,26 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       };
 
       setSubmissions((prev) => [newSubmission, ...prev]);
+      if (isSupabaseConfigured) {
+        supabase.from('app_submissions').insert({
+          id: newSubmission.id,
+          type: newSubmission.type,
+          title: newSubmission.title,
+          contributor_name: newSubmission.contributorName,
+          contributor_email: newSubmission.contributorEmail,
+          target_id: newSubmission.targetId,
+          target_title: newSubmission.targetTitle,
+          target_type: newSubmission.targetType,
+          priority: newSubmission.priority,
+          status: newSubmission.status,
+          current_data: newSubmission.currentData,
+          proposed_data: newSubmission.proposedData,
+          sources_provided: newSubmission.sourcesProvided,
+          review_notes: newSubmission.reviewNotes,
+        }).then(({ error }) => {
+          if (error) console.error('Error inserting edit submission to Supabase:', error);
+        });
+      }
       setUserProfile((prev) => ({
         ...prev,
         editsSubmitted: prev.editsSubmitted + 1,
@@ -1045,6 +1150,21 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       };
 
       setSubmissions((prev) => [newSubmission, ...prev]);
+      if (isSupabaseConfigured) {
+        supabase.from('app_submissions').insert({
+          id: newSubmission.id,
+          type: newSubmission.type,
+          title: newSubmission.title,
+          contributor_name: newSubmission.contributorName,
+          contributor_email: newSubmission.contributorEmail,
+          priority: newSubmission.priority,
+          status: newSubmission.status,
+          proposed_data: newSubmission.proposedData,
+          sources_provided: newSubmission.sourcesProvided,
+        }).then(({ error }) => {
+          if (error) console.error('Error inserting new recording submission to Supabase:', error);
+        });
+      }
       setUserProfile((prev) => ({
         ...prev,
         songsSubmitted: prev.songsSubmitted + 1,
@@ -1076,6 +1196,22 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           status: 'open',
         };
         setCopyrightCases((prev) => [newCase, ...prev]);
+        if (isSupabaseConfigured) {
+          supabase.from('app_copyright_cases').insert({
+            id: newCase.id,
+            recording_id: newCase.recordingId,
+            recording_title: newCase.recordingTitle,
+            artist_or_band: newCase.artistOrBand,
+            claimant_name: newCase.claimantName,
+            claimant_email: newCase.claimantEmail,
+            claim_type: newCase.claimType,
+            status: newCase.status,
+            filed_date: newCase.filedDate,
+            summary: newCase.evidenceSummary,
+          }).then(({ error }) => {
+            if (error) console.error('Error inserting copyright case to Supabase:', error);
+          });
+        }
       }
 
       showToast(`Report filed successfully. Reference Case created for Rights & Moderation review.`);
@@ -1100,6 +1236,14 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           : s
       );
       setSubmissions(updatedSubmissions as Submission[]);
+      if (isSupabaseConfigured) {
+        supabase.from('app_submissions').update({
+          status: decision === 'approve' ? 'approved' : decision === 'reject' ? 'rejected' : 'evidence_requested',
+          review_notes: note || sub.reviewNotes,
+        }).eq('id', submissionId).then(({ error }) => {
+          if (error) console.error('Error updating submission in Supabase:', error);
+        });
+      }
 
       // Append immutable audit log
       const newAuditLog: AuditLogEntry = {
@@ -1113,6 +1257,18 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         reason: note || 'Archivist verified documentary evidence and provenance.',
       };
       setAuditLogs((prev) => [newAuditLog, ...prev]);
+      if (isSupabaseConfigured) {
+        supabase.from('app_audit_logs').insert({
+          id: newAuditLog.id,
+          who: newAuditLog.who,
+          action: newAuditLog.what,
+          target: newAuditLog.where,
+          timestamp: newAuditLog.when,
+          notes: newAuditLog.reason,
+        }).then(({ error }) => {
+          if (error) console.error('Error inserting audit log to Supabase:', error);
+        });
+      }
 
       // If approved edit on recording, update live recording state
       if (decision === 'approve' && sub.type === 'edit') {
@@ -1159,6 +1315,13 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setCopyrightCases((prev) =>
         prev.map((c) => (c.id === caseId ? { ...c, status: action } : c))
       );
+      if (isSupabaseConfigured) {
+        supabase.from('app_copyright_cases').update({
+          status: action,
+        }).eq('id', caseId).then(({ error }) => {
+          if (error) console.error('Error updating copyright case in Supabase:', error);
+        });
+      }
       const caseItem = copyrightCases.find((c) => c.id === caseId);
 
       const newAuditLog: AuditLogEntry = {
@@ -1172,6 +1335,18 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         reason: `Legal determination made by Banjo Rights Desk. Recording stream permissions set to ${action}.`,
       };
       setAuditLogs((prev) => [newAuditLog, ...prev]);
+      if (isSupabaseConfigured) {
+        supabase.from('app_audit_logs').insert({
+          id: newAuditLog.id,
+          who: newAuditLog.who,
+          action: newAuditLog.what,
+          target: newAuditLog.where,
+          timestamp: newAuditLog.when,
+          notes: newAuditLog.reason,
+        }).then(({ error }) => {
+          if (error) console.error('Error inserting copyright audit log to Supabase:', error);
+        });
+      }
 
       showToast(`Copyright Case #${caseItem?.caseNumber} updated to ${action.toUpperCase()}`);
     },
@@ -1265,6 +1440,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         reviewSubmission,
         resolveCopyrightCase,
 
+        isBackendConnected,
         toastMessage,
         showToast,
       }}

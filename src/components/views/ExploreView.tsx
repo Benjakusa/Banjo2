@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import { useBanjo } from '../../context/BanjoContext';
+import {
+  useBanjo } from '../../context/BanjoContext';
 import {
   Globe,
-  MapPin,
-  Calendar,
-  Music,
+  GeoAlt,
+  CalendarEvent,
+  MusicNoteBeamed,
   ArrowRight,
-  Disc,
-  Play,
-} from 'lucide-react';
+  Vinyl,
+  PlayFill
+} from 'react-bootstrap-icons';
 
 export const ExploreView: React.FC = () => {
   const { recordings, bands, musicians, playSong, navigateTo } = useBanjo();
@@ -22,46 +23,39 @@ export const ExploreView: React.FC = () => {
       history: string;
       regions: string[];
       keyGenres: string[];
-      flagEmoji: string;
-    }
+      }
   > = {
     Kenya: {
-      flagEmoji: '🇰🇪',
       history:
         'Kenya served as the vinyl pressing and recording hub of East Africa throughout the 1960s and 1970s. From the traditional Luo nyatiti-inspired electric rhythms of Benga in the Lake Victoria basin to the Luhya-influenced fingerpicking of Kenyan Twist in Nairobi and Coastal Taarab in Mombasa, the country attracted musicians from across the continent to record at Equator, Chandarana, and Polygram facilities.',
       regions: ['Nyanza (Lake Victoria)', 'Western (Kakamega/Bungoma)', 'Central (Highlands)', 'Coast (Mombasa)', 'Rift Valley (Kericho)', 'Nairobi'],
       keyGenres: ['Benga', 'Kenyan Twist', 'Taarab', 'Ohangla', 'Mugithi', 'Chakacha'],
     },
     'DR Congo': {
-      flagEmoji: '🇨🇩',
       history:
         'The Democratic Republic of Congo gave birth to Congolese Rhumba, one of the most influential sonic languages of modern Africa. Originating in Leopoldville with pioneers like Wendo Kolosoy and codified by Franco’s OK Jazz, the sound evolved into the high-velocity, dancing seben of Soukous and Ndombolo.',
       regions: ['Kinshasa', 'Lubumbashi (Katanga)', 'Bas-Congo', 'Kisangani', 'Brazzaville Corridor'],
       keyGenres: ['Congolese Rhumba', 'Soukous', 'Cavacha', 'Ndombolo'],
     },
     Nigeria: {
-      flagEmoji: '🇳🇬',
       history:
         'From Palm-wine guitar music and Highlife orchestras in Ibadan and Lagos to the insurgent socio-political fury of Fela Kuti’s Afrobeat, Nigeria produced landmark musical expressions. In Yoruba traditions, Jùjú guitar maestros like King Sunny Ade created polyphonic conversations between talking drums and Hawaiian pedal steel guitars.',
       regions: ['Lagos (Kalakuta / Island)', 'Ibadan / Osun (Yorubaland)', 'Enugu / Onitsha (Igboland)', 'Kano / Kaduna (North)'],
       keyGenres: ['Afrobeat', 'Highlife', 'Jùjú', 'Fuji', 'Apala'],
     },
     Tanzania: {
-      flagEmoji: '🇹🇿',
       history:
         'Tanzania fostered state-sponsored jazz bands (Muziki wa Dansi) after independence under Julius Nyerere, alongside the poetic Swahili classical traditions of Coastal Taarab centered in Zanzibar. Bands like DDC Mlimani Park combined intricate horn arrangements with reflective social lyrics.',
       regions: ['Dar es Salaam', 'Zanzibar (Unguja & Pemba)', 'Morogoro', 'Tanga', 'Arusha'],
       keyGenres: ['Muziki wa Dansi (Zilipendwa)', 'Taraab', 'Bongo Flava Origins'],
     },
     Ghana: {
-      flagEmoji: '🇬🇭',
       history:
         'The cradle of Highlife music, Ghana blended indigenous Akan rhythms with European brass instruments and acoustic guitars in coastal ports. Pioneers like E.T. Mensah and Ramblers Dance Band established an elegant dance orchestra model that swept across West Africa during the 1957 independence era.',
       regions: ['Accra', 'Kumasi (Ashanti)', 'Cape Coast', 'Sekondi-Takoradi'],
       keyGenres: ['Classic Highlife', 'Guitar-band Highlife', 'Palm-wine'],
     },
     Zimbabwe: {
-      flagEmoji: '🇿🇼',
       history:
         'During the liberation struggle of the 1970s, Thomas Mapfumo and contemporaries transposed the sacred, complex polyrhythms of the Shona mbira (thumb piano) onto electric guitars and drum kits, creating Chimurenga ("struggle music"), which became the soundtrack to national sovereignty.',
       regions: ['Harare', 'Bulawayo', 'Mutare', 'Masvingo'],
@@ -81,19 +75,19 @@ export const ExploreView: React.FC = () => {
   return (
     <div className="mx-auto max-w-4xl px-4 sm:px-6 py-6 space-y-6 pb-36">
       <div>
-        <span className="text-xs uppercase tracking-widest font-mono text-amber-800 font-semibold">
+        <span className="text-xs uppercase tracking-widest font-mono text-orange-700 font-semibold">
           Wikipedia Atlas
         </span>
-        <h1 className="text-2xl sm:text-3xl font-serif font-medium text-stone-900 mt-0.5">
+        <h1 className="text-2xl sm:text-3xl font-serif font-medium text-black mt-0.5">
           Geographic & Genre Exploration
         </h1>
-        <p className="text-xs text-stone-600 mt-1">
+        <p className="text-xs text-black/60 mt-1">
           Explore regional music traditions, hubs, and historical movements across Africa.
         </p>
       </div>
 
       {/* Tabs */}
-      <div className="flex flex-wrap gap-1 border-b border-stone-200 pb-2 text-xs font-mono">
+      <div className="flex flex-wrap gap-1 border-b border-black/10 pb-2 text-xs font-mono">
         {(
           [
             { key: 'country', label: 'BY COUNTRY' },
@@ -107,8 +101,8 @@ export const ExploreView: React.FC = () => {
             onClick={() => setActiveTab(t.key)}
             className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
               activeTab === t.key
-                ? 'bg-amber-700 text-white font-bold shadow-xs'
-                : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
+                ? 'bg-orange-600 text-white font-bold shadow-xs'
+                : 'text-black/60 hover:text-black hover:bg-black/5'
             }`}
           >
             {t.label}
@@ -126,34 +120,32 @@ export const ExploreView: React.FC = () => {
                 onClick={() => setSelectedCountry(c)}
                 className={`px-3 py-1.5 text-xs rounded-lg border transition-all cursor-pointer ${
                   selectedCountry === c
-                    ? 'border-amber-700 bg-amber-50 text-amber-900 font-bold'
-                    : 'border-stone-300 bg-white text-stone-700 hover:bg-stone-50'
+                    ? 'border-orange-600 bg-orange-50 text-orange-800 font-bold'
+                    : 'border-black/20 bg-white text-black/70 hover:bg-black/5'
                 }`}
               >
-                <span className="mr-1">{countryOverviews[c].flagEmoji}</span>
                 {c}
               </button>
             ))}
           </div>
 
-          <div className="rounded-2xl border border-stone-200 bg-white p-5 sm:p-6 space-y-4 shadow-sm">
-            <div className="border-b border-stone-100 pb-3">
-              <h2 className="text-2xl font-serif font-medium text-stone-900 flex items-center gap-2">
-                <span>{currentCountryData.flagEmoji}</span>
+          <div className="rounded-2xl border border-black/10 bg-white p-5 sm:p-6 space-y-4 shadow-sm">
+            <div className="border-b border-black/10 pb-3">
+              <h2 className="text-2xl font-serif font-medium text-black flex items-center gap-2">
                 <span>{selectedCountry}</span>
               </h2>
             </div>
 
-            <p className="text-xs sm:text-sm text-stone-700 leading-relaxed">
+            <p className="text-xs sm:text-sm text-black/70 leading-relaxed">
               {currentCountryData.history}
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-stone-100 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-black/10 text-xs">
               <div className="space-y-1.5">
-                <span className="font-mono text-stone-500 uppercase text-[10px] font-bold">Regional Hubs</span>
+                <span className="font-mono text-black/50 uppercase text-[10px] font-bold">Regional Hubs</span>
                 <div className="flex flex-wrap gap-1">
                   {currentCountryData.regions.map((r) => (
-                    <span key={r} className="px-2 py-0.5 rounded bg-stone-100 border border-stone-200 text-stone-700 text-[11px]">
+                    <span key={r} className="px-2 py-0.5 rounded bg-black/5 border border-black/10 text-black/70 text-[11px]">
                       {r}
                     </span>
                   ))}
@@ -161,10 +153,10 @@ export const ExploreView: React.FC = () => {
               </div>
 
               <div className="space-y-1.5">
-                <span className="font-mono text-stone-500 uppercase text-[10px] font-bold">Signature Styles</span>
+                <span className="font-mono text-black/50 uppercase text-[10px] font-bold">Signature Styles</span>
                 <div className="flex flex-wrap gap-1">
                   {currentCountryData.keyGenres.map((g) => (
-                    <span key={g} className="px-2 py-0.5 rounded bg-amber-50 border border-amber-200 text-amber-900 font-medium text-[11px]">
+                    <span key={g} className="px-2 py-0.5 rounded bg-orange-50 border border-orange-200 text-orange-800 font-medium text-[11px]">
                       {g}
                     </span>
                   ))}
@@ -173,15 +165,15 @@ export const ExploreView: React.FC = () => {
             </div>
 
             {/* Recordings from this Country */}
-            <div className="pt-3 border-t border-stone-100 space-y-2">
-              <span className="font-mono text-stone-500 uppercase text-[10px] font-bold block">
+            <div className="pt-3 border-t border-black/10 space-y-2">
+              <span className="font-mono text-black/50 uppercase text-[10px] font-bold block">
                 Cataloged Recordings ({countryRecordings.length})
               </span>
               <div className="space-y-2">
                 {countryRecordings.map((rec) => (
                   <div
                     key={rec.id}
-                    className="p-3 rounded-xl border border-stone-200 bg-stone-50 hover:bg-white hover:border-amber-600 transition-all flex items-center justify-between gap-3 text-xs"
+                    className="p-3 rounded-xl border border-black/10 bg-black/5 hover:bg-white hover:border-orange-600 transition-all flex items-center justify-between gap-3 text-xs"
                   >
                     <div>
                       <h4
@@ -190,13 +182,13 @@ export const ExploreView: React.FC = () => {
                       >
                         {rec.title}
                       </h4>
-                      <p className="text-stone-500 text-[11px]">{rec.artistOrBand} · {rec.releaseYear}</p>
+                      <p className="text-black/50 text-[11px]">{rec.artistOrBand} · {rec.releaseYear}</p>
                     </div>
                     <button
                       onClick={() => playSong(rec)}
-                      className="p-1.5 rounded-full bg-amber-700 text-white hover:bg-amber-800 cursor-pointer"
+                      className="p-1.5 rounded-full bg-orange-600 text-white hover:bg-orange-700 cursor-pointer"
                     >
-                      <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
+                      <PlayFill className="w-3.5 h-3.5 fill-current ml-0.5" />
                     </button>
                   </div>
                 ))}
@@ -215,10 +207,10 @@ export const ExploreView: React.FC = () => {
             { decade: '1970s', title: 'The Golden Age of Benga & Afrobeat', text: 'Twin electric guitars adapting nyatiti lyres in Western Kenya; Fela Kuti revolutionizing Lagos.' },
             { decade: '1980s', title: 'Synthesizers & Soukous Diaspora', text: 'Paris and London migrations; Mario by Franco; continental high-speed guitar dance tracks.' },
           ].map((d) => (
-            <div key={d.decade} className="p-4 rounded-xl border border-stone-200 bg-white space-y-1.5 text-xs">
-              <span className="font-mono text-amber-800 font-bold text-sm">{d.decade}</span>
-              <h3 className="font-serif text-base font-semibold text-stone-900">{d.title}</h3>
-              <p className="text-stone-600 leading-relaxed">{d.text}</p>
+            <div key={d.decade} className="p-4 rounded-xl border border-black/10 bg-white space-y-1.5 text-xs">
+              <span className="font-mono text-orange-700 font-bold text-sm">{d.decade}</span>
+              <h3 className="font-serif text-base font-semibold text-black">{d.title}</h3>
+              <p className="text-black/60 leading-relaxed">{d.text}</p>
             </div>
           ))}
         </div>
@@ -233,10 +225,10 @@ export const ExploreView: React.FC = () => {
             { name: 'Afrobeat', origin: 'Nigeria', desc: 'Complex jazz improvisation with Yoruba percussion and liberation lyrics.' },
             { name: 'Highlife', origin: 'Ghana', desc: 'Acoustic guitar and brass dance band music of the coastal ports.' },
           ].map((g) => (
-            <div key={g.name} className="p-4 rounded-xl border border-stone-200 bg-white space-y-1 shadow-xs">
-              <span className="font-serif text-base font-bold text-stone-900">{g.name}</span>
-              <span className="text-[11px] font-mono text-amber-800 block">Origin: {g.origin}</span>
-              <p className="text-stone-600 pt-1 leading-relaxed">{g.desc}</p>
+            <div key={g.name} className="p-4 rounded-xl border border-black/10 bg-white space-y-1 shadow-xs">
+              <span className="font-serif text-base font-bold text-black">{g.name}</span>
+              <span className="text-[11px] font-mono text-orange-700 block">Origin: {g.origin}</span>
+              <p className="text-black/60 pt-1 leading-relaxed">{g.desc}</p>
             </div>
           ))}
         </div>
@@ -251,9 +243,9 @@ export const ExploreView: React.FC = () => {
             { name: 'Talking Drum (Gangan)', desc: 'Hourglass pressure drum capable of mimicking tonal African speech.' },
             { name: 'Kanun & Accordion', desc: 'Zither and reed aerophone supplying microtonal flourishes in Coastal Taarab.' },
           ].map((i) => (
-            <div key={i.name} className="p-4 rounded-xl border border-stone-200 bg-white space-y-1 shadow-xs">
-              <span className="font-serif text-base font-bold text-stone-900">{i.name}</span>
-              <p className="text-stone-600 pt-1 leading-relaxed">{i.desc}</p>
+            <div key={i.name} className="p-4 rounded-xl border border-black/10 bg-white space-y-1 shadow-xs">
+              <span className="font-serif text-base font-bold text-black">{i.name}</span>
+              <p className="text-black/60 pt-1 leading-relaxed">{i.desc}</p>
             </div>
           ))}
         </div>

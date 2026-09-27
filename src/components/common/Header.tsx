@@ -39,7 +39,7 @@ export const Header: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-30 w-full border-b border-stone-200 bg-white">
+    <header className="sticky top-0 z-30 w-full border-b border-black/10 bg-white">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-3 sm:px-6 lg:px-8">
         {/* Zone 1: Single text element wordmark (Bright editorial logo) */}
         <div className="flex items-center gap-3">
@@ -50,11 +50,11 @@ export const Header: React.FC = () => {
             <span className="flex items-center justify-center w-7 h-7 rounded-md bg-orange-600 text-white font-serif font-bold text-sm">
               W
             </span>
-            <span className="font-display text-xl tracking-[0.18em] font-bold text-stone-900 group-hover:text-orange-600 transition-colors">
+            <span className="font-display text-xl tracking-[0.18em] font-bold text-black group-hover:text-orange-600 transition-colors">
               BANJO
             </span>
           </button>
-          <span className="hidden sm:inline-block text-[11px] font-serif text-stone-500 italic">
+          <span className="hidden sm:inline-block text-[11px] font-serif text-black/50 italic">
             The African Music Encyclopedia
           </span>
         </div>
@@ -66,7 +66,7 @@ export const Header: React.FC = () => {
             className={`transition-colors py-1 cursor-pointer ${
               activeTab === 'home'
                 ? 'text-orange-600 border-b-2 border-orange-600 font-semibold'
-                : 'text-stone-600 hover:text-stone-950'
+                : 'text-black/60 hover:text-black'
             }`}
           >
             Encyclopedia
@@ -76,7 +76,7 @@ export const Header: React.FC = () => {
             className={`transition-colors py-1 cursor-pointer ${
               activeTab === 'explore'
                 ? 'text-orange-600 border-b-2 border-orange-600 font-semibold'
-                : 'text-stone-600 hover:text-stone-950'
+                : 'text-black/60 hover:text-black'
             }`}
           >
             Countries & Genres
@@ -86,7 +86,7 @@ export const Header: React.FC = () => {
             className={`transition-colors py-1 cursor-pointer ${
               activeTab === 'timeline'
                 ? 'text-orange-600 border-b-2 border-orange-600 font-semibold'
-                : 'text-stone-600 hover:text-stone-950'
+                : 'text-black/60 hover:text-black'
             }`}
           >
             Timeline
@@ -96,7 +96,7 @@ export const Header: React.FC = () => {
             className={`transition-colors py-1 cursor-pointer ${
               activeTab === 'oral_histories'
                 ? 'text-orange-600 border-b-2 border-orange-600 font-semibold'
-                : 'text-stone-600 hover:text-stone-950'
+                : 'text-black/60 hover:text-black'
             }`}
           >
             Oral Histories
@@ -106,7 +106,7 @@ export const Header: React.FC = () => {
             className={`transition-colors py-1 cursor-pointer ${
               activeTab === 'documents'
                 ? 'text-orange-600 border-b-2 border-orange-600 font-semibold'
-                : 'text-stone-600 hover:text-stone-950'
+                : 'text-black/60 hover:text-black'
             }`}
           >
             Documents
@@ -119,9 +119,9 @@ export const Header: React.FC = () => {
           <button
             onClick={() => navigateTo('search')}
             title="Search encyclopedia"
-            className="flex items-center gap-1.5 px-2.5 py-1 text-xs text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 rounded-md border border-stone-200 transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-2.5 py-1 text-xs text-black/60 hover:text-black bg-black/5 hover:bg-black/10 rounded-md border border-black/10 transition-colors cursor-pointer"
           >
-            <Search className="w-3.5 h-3.5 text-stone-600" />
+            <Search className="w-3.5 h-3.5 text-black/60" />
             <span className="hidden sm:inline">Search</span>
           </button>
 
@@ -129,7 +129,7 @@ export const Header: React.FC = () => {
           <button
             onClick={() => setIsMobileDeviceFrame(!isMobileDeviceFrame)}
             title={isMobileDeviceFrame ? 'Switch to Full Screen' : 'Toggle Smartphone App Shell'}
-            className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 text-xs font-mono rounded-md border border-stone-200 bg-stone-50 hover:bg-stone-100 text-stone-700 transition-colors cursor-pointer"
+            className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 text-xs font-mono rounded-md border border-black/10 bg-black/5 hover:bg-black/5 text-black/70 transition-colors cursor-pointer"
           >
             {isMobileDeviceFrame ? <Display className="w-3.5 h-3.5 text-orange-600" /> : <Phone className="w-3.5 h-3.5 text-orange-600" />}
             <span className="text-[11px]">{isMobileDeviceFrame ? 'Wide View' : 'Mobile App'}</span>
@@ -142,10 +142,10 @@ export const Header: React.FC = () => {
             className={`hidden sm:flex items-center gap-1 px-2 py-1 text-xs font-mono rounded-md border transition-colors cursor-pointer ${
               isDataSaver
                 ? 'bg-orange-50 border-orange-300 text-orange-900 font-medium'
-                : 'bg-stone-50 border-stone-200 text-stone-600 hover:text-stone-900'
+                : 'bg-black/5 border-black/10 text-black/60 hover:text-black'
             }`}
           >
-            {isDataSaver ? <WifiOff className="w-3 h-3 text-orange-600" /> : <Wifi className="w-3 h-3 text-stone-500" />}
+            {isDataSaver ? <WifiOff className="w-3 h-3 text-orange-600" /> : <Wifi className="w-3 h-3 text-black/50" />}
             <span className="text-[10px]">{isDataSaver ? 'Saver' : 'Hi-Fi'}</span>
           </button>
 
@@ -166,7 +166,7 @@ export const Header: React.FC = () => {
             className={`hidden md:flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-md border transition-colors cursor-pointer ${
               activeTab === 'admin'
                 ? 'bg-orange-50 border-orange-400 text-orange-900 font-semibold'
-                : 'bg-stone-50 border-stone-200 text-stone-600 hover:text-stone-900'
+                : 'bg-black/5 border-black/10 text-black/60 hover:text-black'
             }`}
           >
             <ShieldCheck className="w-3.5 h-3.5 text-orange-600" />

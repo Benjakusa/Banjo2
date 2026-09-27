@@ -1,0 +1,23 @@
+-- 0023 — Let the API roles reach the read-only helpers in `private`.
+--
+-- Doc 03 §3 revokes `private` from `anon`/`authenticated` so the schema stays off the PostgREST
+-- surface — which it still is: PostgREST routes the `public` schema only, so this grant creates no
+-- endpoint. What it does fix: read paths that are evaluated as the *requesting* role while running
+-- under RLS cannot reach the helper functions without schema `usage`:
+--   * `public.search_catalogue()` (doc 06 §5, `GET /search`) calls `private.normalize_name()` and
+--     `private.fuzzy_name_match()` in its scoring and fuzzy-fallback predicates;
+--   * views flagged `security_invoker` (PostgreSQL 15+, our production target) inline the same two
+--     helpers as `anon`/`authenticated`.
+-- Before this grant both fail with "permission denied for schema private" for every API role —
+-- RLS policy expressions are unaffected (they already worked; see supabase/tests/phase1_slice.sql).
+--
+-- Scope: schema `usage` only — no `create`, no function grants beyond the EXECUTE-to-PUBLIC
+-- default every function already gets at creation. That default was harmless precisely because the
+-- schema itself was unreachable; every directly callable function in `private` is a pure predicate
+-- or reads only the caller's own `auth.uid()` rows (`is_public`, `entity_is_public`, `has_permission`,
+-- `is_staff`, `is_archivist`, `is_moderator`, `is_rights_manager`, `owns`, `uid`, `normalize_name`,
+-- `fuzzy_name_match`). Every state-changing helper (`set_updated_at`, `log_*`, `recalc_*`,
+-- `enforce_*`, `handle_new_user`, `prevent_hard_delete_archive_rows`, `assert_no_citations`,
+-- `maintain_band_member_interval`) returns `trigger` and cannot be called as a function at all.
+
+grant usage on schema private to anon, authenticated, service_role;

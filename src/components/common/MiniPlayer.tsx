@@ -33,10 +33,10 @@ export const MiniPlayer: React.FC = () => {
   return (
     <aside
       aria-label="Audio Playback Bar"
-      className="fixed bottom-16 md:bottom-0 left-0 right-0 z-40 border-t border-stone-200 bg-white shadow-md transition-all"
+      className="fixed bottom-16 md:bottom-0 left-0 right-0 z-40 border-t border-black/10 bg-white shadow-md transition-all"
     >
       {/* Top progress seek line */}
-      <div className="w-full bg-stone-100 h-1 relative overflow-hidden">
+      <div className="w-full bg-black/5 h-1 relative overflow-hidden">
         <div
           className="h-full bg-orange-600 transition-all duration-150 ease-linear"
           style={{ width: `${progressPercent}%` }}
@@ -52,7 +52,7 @@ export const MiniPlayer: React.FC = () => {
                 navigateTo('song_detail', { songId: currentRecording.id });
               }
             }}
-            className="group relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-md border border-stone-200 cursor-pointer bg-stone-100"
+            className="group relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-md border border-black/10 cursor-pointer bg-black/5"
           >
             <img
               src={currentRecording.coverImage}
@@ -61,7 +61,7 @@ export const MiniPlayer: React.FC = () => {
               className="h-full w-full object-cover transition-transform group-hover:scale-105"
             />
             {isPlaying && (
-              <div className="absolute inset-0 bg-stone-900/40 flex items-center justify-center">
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                 <BroadcastPin className="w-4 h-4 text-orange-400" />
               </div>
             )}
@@ -74,15 +74,15 @@ export const MiniPlayer: React.FC = () => {
                   navigateTo('song_detail', { songId: currentRecording.id });
                 }
               }}
-              className="truncate text-xs sm:text-sm font-serif font-medium text-stone-900 hover:text-orange-700 cursor-pointer"
+              className="truncate text-xs sm:text-sm font-serif font-medium text-black hover:text-orange-700 cursor-pointer"
             >
               {currentRecording.title}
             </p>
-            <p className="truncate text-[11px] text-stone-500">
+            <p className="truncate text-[11px] text-black/50">
               {currentRecording.artistOrBand}
-              <span className="mx-1.5 text-stone-300">·</span>
+              <span className="mx-1.5 text-black/30">·</span>
               <span className="font-mono text-[10px]">{currentRecording.releaseYear}</span>
-              <span className="mx-1.5 text-stone-300">·</span>
+              <span className="mx-1.5 text-black/30">·</span>
               <span>{currentRecording.genre}</span>
             </p>
           </div>
@@ -90,7 +90,7 @@ export const MiniPlayer: React.FC = () => {
 
         {/* Center / Controls */}
         <div className="flex items-center gap-2 sm:gap-4">
-          <span className="hidden sm:inline-block font-mono text-[11px] text-stone-500 tabular-nums">
+          <span className="hidden sm:inline-block font-mono text-[11px] text-black/50 tabular-nums">
             {formatSeconds(currentTime)} / {formatSeconds(duration)}
           </span>
 
@@ -106,7 +106,7 @@ export const MiniPlayer: React.FC = () => {
             onClick={nextTrack}
             aria-label="Next track"
             title="Next in archive queue"
-            className="text-stone-500 hover:text-stone-900 transition-colors p-1 cursor-pointer"
+            className="text-black/50 hover:text-black transition-colors p-1 cursor-pointer"
           >
             <SkipForwardFill className="h-4 w-4" />
           </button>
@@ -116,7 +116,7 @@ export const MiniPlayer: React.FC = () => {
             onClick={() => setIsFullPlayerOpen(true)}
             aria-label="Open full player view"
             title="Open Audio Sheet"
-            className="flex items-center gap-1 px-2 py-1 text-[11px] font-mono text-stone-700 hover:text-stone-950 bg-stone-100 border border-stone-200 rounded transition-colors cursor-pointer"
+            className="flex items-center gap-1 px-2 py-1 text-[11px] font-mono text-black/70 hover:text-black bg-black/5 border border-black/10 rounded transition-colors cursor-pointer"
           >
             <span className="hidden sm:inline">Player</span>
             <ChevronUp className="h-3 w-3 text-orange-600" />

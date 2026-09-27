@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import { useBanjo } from '../../context/BanjoContext';
+import {
+  useBanjo } from '../../context/BanjoContext';
 import {
   Mic,
-  Play,
-  Pause,
-  MapPin,
-  Calendar,
-  Clock,
-  Share2,
-} from 'lucide-react';
+  PlayFill,
+  PauseFill,
+  GeoAlt,
+  CalendarEvent,
+  ClockHistory,
+  Share
+} from 'react-bootstrap-icons';
 
 export const OralHistoryView: React.FC = () => {
   const {
@@ -44,13 +45,13 @@ export const OralHistoryView: React.FC = () => {
   return (
     <div className="mx-auto max-w-4xl px-4 sm:px-6 py-6 space-y-6 pb-36">
       <div>
-        <span className="text-xs uppercase tracking-widest font-mono text-amber-800 font-semibold">
+        <span className="text-xs uppercase tracking-widest font-mono text-orange-700 font-semibold">
           Wikipedia Audio Archives
         </span>
-        <h1 className="text-2xl sm:text-3xl font-serif font-medium text-stone-900 mt-0.5">
+        <h1 className="text-2xl sm:text-3xl font-serif font-medium text-black mt-0.5">
           Master Musician Oral Histories & Transcripts
         </h1>
-        <p className="text-xs text-stone-600 mt-1">
+        <p className="text-xs text-black/60 mt-1">
           First-hand spoken accounts from studio musicians and recording engineers safeguarding unwritten histories.
         </p>
       </div>
@@ -65,44 +66,44 @@ export const OralHistoryView: React.FC = () => {
               onClick={() => setActiveInterviewId(h.id)}
               className={`px-3 py-1.5 rounded-xl border text-xs text-left transition-all cursor-pointer ${
                 isSelected
-                  ? 'border-amber-700 bg-amber-50 text-amber-900 font-semibold'
-                  : 'border-stone-200 bg-white text-stone-700 hover:bg-stone-50'
+                  ? 'border-orange-600 bg-orange-50 text-orange-800 font-semibold'
+                  : 'border-black/10 bg-white text-black/70 hover:bg-black/5'
               }`}
             >
               <span>{h.interviewee}</span>
-              <span className="font-mono text-[10px] text-stone-400 ml-1.5">({h.duration})</span>
+              <span className="font-mono text-[10px] text-black/40 ml-1.5">({h.duration})</span>
             </button>
           );
         })}
       </div>
 
       {/* Main Interview Box */}
-      <div className="rounded-2xl border border-stone-200 bg-white p-5 sm:p-6 space-y-5 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-stone-100 pb-3">
+      <div className="rounded-2xl border border-black/10 bg-white p-5 sm:p-6 space-y-5 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-black/10 pb-3">
           <div>
-            <div className="text-xs font-mono text-stone-500 mb-0.5">
+            <div className="text-xs font-mono text-black/50 mb-0.5">
               Recorded in {interview.location} ({interview.date})
             </div>
-            <h2 className="text-xl sm:text-2xl font-serif font-medium text-stone-900">
+            <h2 className="text-xl sm:text-2xl font-serif font-medium text-black">
               {interview.title}
             </h2>
-            <p className="text-xs text-amber-800 font-medium">
+            <p className="text-xs text-orange-700 font-medium">
               Witness: {interview.interviewee} · Interviewer: {interview.interviewer}
             </p>
           </div>
 
           <button
             onClick={handlePlay}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-700 text-white text-xs font-semibold hover:bg-amber-800 transition-colors cursor-pointer self-start sm:self-auto shadow-xs"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-orange-600 text-white text-xs font-semibold hover:bg-orange-700 transition-colors cursor-pointer self-start sm:self-auto shadow-xs"
           >
             {isCurrentActive ? (
               <>
-                <Pause className="w-3.5 h-3.5 fill-current" />
+                <PauseFill className="w-3.5 h-3.5 fill-current" />
                 <span>Pause Interview</span>
               </>
             ) : (
               <>
-                <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
+                <PlayFill className="w-3.5 h-3.5 fill-current ml-0.5" />
                 <span>Listen ({interview.duration})</span>
               </>
             )}
@@ -110,23 +111,23 @@ export const OralHistoryView: React.FC = () => {
         </div>
 
         {/* Entity tags */}
-        <div className="p-3 rounded-xl bg-stone-50 border border-stone-200 text-xs space-y-1">
-          <span className="font-mono text-stone-500 text-[10px] uppercase font-bold block">
+        <div className="p-3 rounded-xl bg-black/5 border border-black/10 text-xs space-y-1">
+          <span className="font-mono text-black/50 text-[10px] uppercase font-bold block">
             Indexed Entities & References
           </span>
           <div className="flex flex-wrap gap-1.5">
             {interview.keyEntities.musicians.map((m) => (
-              <span key={m} className="px-2 py-0.5 rounded bg-white border border-stone-200 text-blue-700 text-[11px]">
+              <span key={m} className="px-2 py-0.5 rounded bg-white border border-black/10 text-blue-700 text-[11px]">
                 {m}
               </span>
             ))}
             {interview.keyEntities.bands.map((b) => (
-              <span key={b} className="px-2 py-0.5 rounded bg-white border border-stone-200 text-amber-900 text-[11px]">
+              <span key={b} className="px-2 py-0.5 rounded bg-white border border-black/10 text-orange-800 text-[11px]">
                 {b}
               </span>
             ))}
             {interview.keyEntities.places.map((p) => (
-              <span key={p} className="px-2 py-0.5 rounded bg-white border border-stone-200 text-stone-700 text-[11px]">
+              <span key={p} className="px-2 py-0.5 rounded bg-white border border-black/10 text-black/70 text-[11px]">
                 {p}
               </span>
             ))}
@@ -135,13 +136,13 @@ export const OralHistoryView: React.FC = () => {
 
         {/* Transcript */}
         <div className="space-y-3">
-          <div className="flex items-center justify-between border-b border-stone-100 pb-2">
-            <span className="font-serif font-bold text-stone-900 text-sm">Verbatim Transcript</span>
-            <div className="flex items-center gap-1 p-0.5 rounded-lg bg-stone-100 text-xs font-mono">
+          <div className="flex items-center justify-between border-b border-black/10 pb-2">
+            <span className="font-serif font-bold text-black text-sm">Verbatim Transcript</span>
+            <div className="flex items-center gap-1 p-0.5 rounded-lg bg-black/5 text-xs font-mono">
               <button
                 onClick={() => setLangTab('en')}
                 className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
-                  langTab === 'en' ? 'bg-white text-stone-900 font-bold shadow-xs' : 'text-stone-500'
+                  langTab === 'en' ? 'bg-white text-black font-bold shadow-xs' : 'text-black/50'
                 }`}
               >
                 English
@@ -149,7 +150,7 @@ export const OralHistoryView: React.FC = () => {
               <button
                 onClick={() => setLangTab('sw')}
                 className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
-                  langTab === 'sw' ? 'bg-white text-stone-900 font-bold shadow-xs' : 'text-stone-500'
+                  langTab === 'sw' ? 'bg-white text-black font-bold shadow-xs' : 'text-black/50'
                 }`}
               >
                 Kiswahili
@@ -157,7 +158,7 @@ export const OralHistoryView: React.FC = () => {
             </div>
           </div>
 
-          <div className="p-4 rounded-xl border border-stone-200 bg-stone-50/50 font-serif text-sm leading-relaxed text-stone-800 whitespace-pre-line space-y-3">
+          <div className="p-4 rounded-xl border border-black/10 bg-black/5 font-serif text-sm leading-relaxed text-black/80 whitespace-pre-line space-y-3">
             {langTab === 'en' ? interview.transcriptEn : interview.transcriptSw}
           </div>
         </div>

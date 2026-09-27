@@ -68,10 +68,10 @@ const AppContent: React.FC = () => {
   // If mobile simulator frame is enabled on desktop
   if (isMobileDeviceFrame) {
     return (
-      <div className="min-h-screen bg-stone-200 text-stone-900 flex flex-col items-center justify-center p-2 sm:p-6 font-sans selection:bg-orange-100 selection:text-orange-950">
+      <div className="min-h-screen bg-black/10 text-black flex flex-col items-center justify-center p-2 sm:p-6 font-sans selection:bg-orange-100 selection:text-orange-950">
         {/* Simulator controls bar */}
-        <div className="w-full max-w-sm mb-3 flex items-center justify-between px-3 py-1.5 rounded-xl bg-white border border-stone-300 shadow-xs text-xs">
-          <div className="flex items-center gap-1.5 font-medium text-stone-700">
+        <div className="w-full max-w-sm mb-3 flex items-center justify-between px-3 py-1.5 rounded-xl bg-white border border-black/20 shadow-xs text-xs">
+          <div className="flex items-center gap-1.5 font-medium text-black/70">
             <Phone className="w-4 h-4 text-orange-600" />
             <span>Mobile App View</span>
           </div>
@@ -85,15 +85,15 @@ const AppContent: React.FC = () => {
         </div>
 
         {/* Smartphone Hardware Frame Mockup (Clean flat borders) */}
-        <div className="relative w-full max-w-[420px] h-[860px] rounded-[44px] border-[10px] border-stone-900 shadow-xl bg-[#FDFBF7] flex flex-col overflow-hidden">
+        <div className="relative w-full max-w-[420px] h-[860px] rounded-[44px] border-[10px] border-black shadow-xl bg-white flex flex-col overflow-hidden">
           {/* Top Status Bar preview */}
-          <div className="h-10 bg-white border-b border-stone-100 flex items-center justify-between px-7 text-[11px] font-mono text-stone-700 shrink-0 select-none z-30">
+          <div className="h-10 bg-white border-b border-black/10 flex items-center justify-between px-7 text-[11px] font-mono text-black/70 shrink-0 select-none z-30">
             <span>9:41</span>
-            <div className="w-20 h-4 bg-stone-900 rounded-full" />
+            <div className="w-20 h-4 bg-black rounded-full" />
             <div className="flex items-center gap-1 text-[10px]">
               <span>5G</span>
-              <div className="w-4 h-2.5 border border-stone-600 rounded-xs p-0.5 flex items-center">
-                <div className="w-full h-full bg-stone-700 rounded-2xs" />
+              <div className="w-4 h-2.5 border border-black/60 rounded-xs p-0.5 flex items-center">
+                <div className="w-full h-full bg-black/70 rounded-2xs" />
               </div>
             </div>
           </div>
@@ -113,7 +113,7 @@ const AppContent: React.FC = () => {
           <MiniPlayer />
 
           {/* Home indicator bar */}
-          <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-32 h-1 bg-stone-400 rounded-full pointer-events-none z-50" />
+          <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-32 h-1 bg-black/40 rounded-full pointer-events-none z-50" />
         </div>
 
         {/* Modals & Dialogs */}
@@ -130,7 +130,7 @@ const AppContent: React.FC = () => {
           <div
             role="status"
             aria-live="polite"
-            className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 rounded-xl bg-stone-900 border border-stone-800 px-4 py-2.5 text-xs text-orange-400 shadow-xl flex items-center gap-2 font-mono"
+            className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 rounded-xl bg-black border border-black/80 px-4 py-2.5 text-xs text-orange-400 shadow-xl flex items-center gap-2 font-mono"
           >
             <div className="w-2 h-2 rounded-full bg-orange-500" />
             <span>{toastMessage}</span>
@@ -142,7 +142,7 @@ const AppContent: React.FC = () => {
 
   // Full Screen Responsive Web App Layout (Mobile-first with sticky bottom nav on small screens, wide editorial layout on desktop)
   return (
-    <div className="min-h-screen bg-[#FDFBF7] text-stone-900 flex flex-col font-sans selection:bg-orange-100 selection:text-orange-950">
+    <div className="min-h-screen bg-white text-black flex flex-col font-sans selection:bg-orange-100 selection:text-orange-950">
       {/* Top Header */}
       <Header />
 
@@ -171,7 +171,7 @@ const AppContent: React.FC = () => {
         <div
           role="status"
           aria-live="polite"
-          className="fixed bottom-20 md:bottom-8 left-1/2 -translate-x-1/2 z-50 rounded-xl bg-stone-900 border border-stone-800 px-4 py-2.5 text-xs text-orange-400 shadow-xl flex items-center gap-2 font-mono"
+          className="fixed bottom-20 md:bottom-8 left-1/2 -translate-x-1/2 z-50 rounded-xl bg-black border border-black/80 px-4 py-2.5 text-xs text-orange-400 shadow-xl flex items-center gap-2 font-mono"
         >
           <div className="w-2 h-2 rounded-full bg-orange-500" />
           <span>{toastMessage}</span>
@@ -179,19 +179,19 @@ const AppContent: React.FC = () => {
       )}
 
       {/* Institutional Archival Footer (Desktop) */}
-      <footer className="border-t border-stone-200 bg-stone-100 py-10 text-xs text-stone-600 hidden md:block">
+      <footer className="border-t border-black/10 bg-black/5 py-10 text-xs text-black/60 hidden md:block">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <span className="flex items-center justify-center w-6 h-6 rounded bg-stone-900 text-white font-serif font-bold text-xs">
+                <span className="flex items-center justify-center w-6 h-6 rounded bg-black text-white font-serif font-bold text-xs">
                   W
                 </span>
-                <span className="font-display text-lg tracking-widest text-stone-900 font-bold">
+                <span className="font-display text-lg tracking-widest text-black font-bold">
                   BANJO
                 </span>
               </div>
-              <p className="text-stone-500 max-w-md text-xs leading-relaxed">
+              <p className="text-black/50 max-w-md text-xs leading-relaxed">
                 African Music Heritage Encyclopedia · A collaborative digital repository documenting sound recordings, master musicians, traditions, and oral histories.
               </p>
             </div>
@@ -215,7 +215,7 @@ const AppContent: React.FC = () => {
             </div>
           </div>
 
-          <div className="pt-4 border-t border-stone-200 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] font-mono text-stone-500">
+          <div className="pt-4 border-t border-black/10 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] font-mono text-black/50">
             <span>
               Preserving African Musical Lineage · Open Cultural Encyclopedia
             </span>

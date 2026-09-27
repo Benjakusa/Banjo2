@@ -64,29 +64,29 @@ export const FullPlayerModal: React.FC = () => {
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/60 p-3 sm:p-6 transition-all"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 sm:p-6 transition-all"
     >
-      <div className="relative flex flex-col w-full max-w-2xl max-h-[92vh] overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-xl">
+      <div className="relative flex flex-col w-full max-w-2xl max-h-[92vh] overflow-hidden rounded-2xl border border-black/10 bg-white shadow-xl">
         {/* Top Header */}
-        <div className="flex items-center justify-between border-b border-stone-100 px-5 py-3.5 bg-stone-50">
+        <div className="flex items-center justify-between border-b border-black/10 px-5 py-3.5 bg-black/5">
           <div className="flex items-center gap-2">
             <button
               onClick={() => setIsFullPlayerOpen(false)}
-              className="p-1 rounded-md text-stone-500 hover:text-stone-900 hover:bg-stone-200 cursor-pointer"
+              className="p-1 rounded-md text-black/50 hover:text-black hover:bg-black/10 cursor-pointer"
               aria-label="Collapse player"
             >
               <ChevronDown className="w-5 h-5" />
             </button>
-            <span className="text-[11px] uppercase tracking-widest font-mono text-stone-600 font-semibold">
+            <span className="text-[11px] uppercase tracking-widest font-mono text-black/60 font-semibold">
               Archive Audio Player
             </span>
           </div>
 
-          <div className="flex items-center gap-1 p-0.5 rounded-lg bg-stone-200">
+          <div className="flex items-center gap-1 p-0.5 rounded-lg bg-black/10">
             <button
               onClick={() => setActiveTab('player')}
               className={`px-3 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer ${
-                activeTab === 'player' ? 'bg-white text-stone-900 shadow-xs' : 'text-stone-600 hover:text-stone-900'
+                activeTab === 'player' ? 'bg-white text-black shadow-xs' : 'text-black/60 hover:text-black'
               }`}
             >
               Player
@@ -94,7 +94,7 @@ export const FullPlayerModal: React.FC = () => {
             <button
               onClick={() => setActiveTab('queue')}
               className={`px-3 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer ${
-                activeTab === 'queue' ? 'bg-white text-stone-900 shadow-xs' : 'text-stone-600 hover:text-stone-900'
+                activeTab === 'queue' ? 'bg-white text-black shadow-xs' : 'text-black/60 hover:text-black'
               }`}
             >
               Queue ({recordings.length})
@@ -102,7 +102,7 @@ export const FullPlayerModal: React.FC = () => {
             <button
               onClick={() => setActiveTab('provenance')}
               className={`px-3 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer ${
-                activeTab === 'provenance' ? 'bg-white text-stone-900 shadow-xs' : 'text-stone-600 hover:text-stone-900'
+                activeTab === 'provenance' ? 'bg-white text-black shadow-xs' : 'text-black/60 hover:text-black'
               }`}
             >
               Provenance
@@ -116,7 +116,7 @@ export const FullPlayerModal: React.FC = () => {
             <div className="space-y-6">
               {/* Album Art Showcase */}
               <div className="flex flex-col items-center">
-                <div className="relative aspect-square w-52 sm:w-60 overflow-hidden rounded-xl border border-stone-200 shadow-sm bg-stone-100">
+                <div className="relative aspect-square w-52 sm:w-60 overflow-hidden rounded-xl border border-black/10 shadow-sm bg-black/5">
                   <img
                     src={currentRecording.coverImage}
                     alt={currentRecording.title}
@@ -124,21 +124,21 @@ export const FullPlayerModal: React.FC = () => {
                     className="h-full w-full object-cover"
                   />
                   <div className="absolute bottom-2.5 left-2.5 right-2.5 text-center">
-                    <span className="text-[10px] font-mono text-white bg-stone-900/90 px-2 py-0.5 rounded">
+                    <span className="text-[10px] font-mono text-white bg-black/90 px-2 py-0.5 rounded">
                       {currentRecording.audioQuality} · {currentRecording.recordingLocation}
                     </span>
                   </div>
                 </div>
 
                 <div className="text-center mt-4 space-y-1">
-                  <div className="flex items-center justify-center gap-1.5 text-xs text-stone-500">
+                  <div className="flex items-center justify-center gap-1.5 text-xs text-black/50">
                     <span>{currentRecording.country}</span>
                     <span>·</span>
                     <span>{currentRecording.releaseYear}</span>
                     <span>·</span>
                     <span>{currentRecording.genre}</span>
                   </div>
-                  <h2 className="text-xl sm:text-2xl font-serif font-medium text-stone-900 leading-tight">
+                  <h2 className="text-xl sm:text-2xl font-serif font-medium text-black leading-tight">
                     {currentRecording.title}
                   </h2>
                   <p className="text-sm text-orange-700 font-medium">
@@ -148,8 +148,8 @@ export const FullPlayerModal: React.FC = () => {
               </div>
 
               {/* Waveform Display (flat, crisp) */}
-              <div className="rounded-xl border border-stone-200 bg-stone-50 p-4">
-                <div className="flex items-center justify-between text-[11px] font-mono text-stone-500 mb-2">
+              <div className="rounded-xl border border-black/10 bg-black/5 p-4">
+                <div className="flex items-center justify-between text-[11px] font-mono text-black/50 mb-2">
                   <span>Archival Sound Waveform</span>
                   <span>15 ips Studio Master</span>
                 </div>
@@ -180,9 +180,9 @@ export const FullPlayerModal: React.FC = () => {
                   step={0.5}
                   value={currentTime}
                   onChange={handleSeekChange}
-                  className="w-full h-1.5 bg-stone-200 rounded-lg appearance-none cursor-pointer accent-orange-600"
+                  className="w-full h-1.5 bg-black/10 rounded-lg appearance-none cursor-pointer accent-orange-600"
                 />
-                <div className="flex justify-between text-xs font-mono text-stone-500 tabular-nums">
+                <div className="flex justify-between text-xs font-mono text-black/50 tabular-nums">
                   <span>{formatSeconds(currentTime)}</span>
                   <span>{formatSeconds(duration)}</span>
                 </div>
@@ -194,8 +194,8 @@ export const FullPlayerModal: React.FC = () => {
                   <button
                     onClick={() => setIsShuffle(!isShuffle)}
                     title="Shuffle"
-                    className={`p-2 rounded hover:text-stone-900 cursor-pointer ${
-                      isShuffle ? 'text-orange-600 font-bold' : 'text-stone-400'
+                    className={`p-2 rounded hover:text-black cursor-pointer ${
+                      isShuffle ? 'text-orange-600 font-bold' : 'text-black/40'
                     }`}
                   >
                     <Shuffle className="w-4 h-4" />
@@ -203,8 +203,8 @@ export const FullPlayerModal: React.FC = () => {
                   <button
                     onClick={() => setRepeatMode(repeatMode === 'off' ? 'all' : repeatMode === 'all' ? 'one' : 'off')}
                     title={`Repeat: ${repeatMode}`}
-                    className={`p-2 rounded hover:text-stone-900 cursor-pointer ${
-                      repeatMode !== 'off' ? 'text-orange-600 font-bold' : 'text-stone-400'
+                    className={`p-2 rounded hover:text-black cursor-pointer ${
+                      repeatMode !== 'off' ? 'text-orange-600 font-bold' : 'text-black/40'
                     }`}
                   >
                     <Repeat className="w-4 h-4" />
@@ -214,7 +214,7 @@ export const FullPlayerModal: React.FC = () => {
                 <div className="flex items-center gap-4">
                   <button
                     onClick={prevTrack}
-                    className="text-stone-600 hover:text-stone-900 p-2 transition-colors cursor-pointer"
+                    className="text-black/60 hover:text-black p-2 transition-colors cursor-pointer"
                   >
                     <SkipBackwardFill className="w-5 h-5" />
                   </button>
@@ -228,7 +228,7 @@ export const FullPlayerModal: React.FC = () => {
 
                   <button
                     onClick={nextTrack}
-                    className="text-stone-600 hover:text-stone-900 p-2 transition-colors cursor-pointer"
+                    className="text-black/60 hover:text-black p-2 transition-colors cursor-pointer"
                   >
                     <SkipForwardFill className="w-5 h-5" />
                   </button>
@@ -243,7 +243,7 @@ export const FullPlayerModal: React.FC = () => {
                       className={`px-1.5 py-0.5 text-[10px] font-mono rounded cursor-pointer ${
                         playbackSpeed === spd
                           ? 'bg-orange-600 text-white font-bold'
-                          : 'text-stone-600 hover:bg-stone-100'
+                          : 'text-black/60 hover:bg-black/5'
                       }`}
                     >
                       {spd}x
@@ -253,14 +253,14 @@ export const FullPlayerModal: React.FC = () => {
               </div>
 
               {/* Actions row */}
-              <div className="flex items-center justify-between pt-3 border-t border-stone-100">
+              <div className="flex items-center justify-between pt-3 border-t border-black/10">
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => toggleSaveRecording(currentRecording.id)}
                     className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border transition-colors cursor-pointer ${
                       isSaved
                         ? 'border-orange-500 bg-orange-50 text-orange-900'
-                        : 'border-stone-200 text-stone-600 hover:text-stone-900'
+                        : 'border-black/10 text-black/60 hover:text-black'
                     }`}
                   >
                     {isSaved ? <BookmarkFill className="w-3.5 h-3.5 text-orange-600" /> : <Bookmark className="w-3.5 h-3.5" />}
@@ -272,7 +272,7 @@ export const FullPlayerModal: React.FC = () => {
                       navigator.clipboard?.writeText(window.location.href);
                       showToast('Citation link copied to clipboard');
                     }}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-stone-600 hover:text-stone-900 border border-stone-200 rounded-lg transition-colors cursor-pointer"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-black/60 hover:text-black border border-black/10 rounded-lg transition-colors cursor-pointer"
                   >
                     <Share className="w-3.5 h-3.5" />
                     <span>Cite</span>
@@ -295,7 +295,7 @@ export const FullPlayerModal: React.FC = () => {
 
           {activeTab === 'queue' && (
             <div className="space-y-3">
-              <span className="text-xs uppercase tracking-widest font-mono text-stone-500 block border-b border-stone-100 pb-2">
+              <span className="text-xs uppercase tracking-widest font-mono text-black/50 block border-b border-black/10 pb-2">
                 Playback Queue ({recordings.length} Recordings)
               </span>
               <div className="space-y-2">
@@ -308,7 +308,7 @@ export const FullPlayerModal: React.FC = () => {
                       className={`flex items-center justify-between p-3 rounded-lg border transition-colors cursor-pointer ${
                         isCurrent
                           ? 'border-orange-600 bg-orange-50'
-                          : 'border-stone-200 bg-white hover:border-stone-300'
+                          : 'border-black/10 bg-white hover:border-black/20'
                       }`}
                     >
                       <div className="flex items-center gap-3">
@@ -316,18 +316,18 @@ export const FullPlayerModal: React.FC = () => {
                           src={rec.coverImage}
                           alt={rec.title}
                           referrerPolicy="no-referrer"
-                          className="w-10 h-10 object-cover rounded border border-stone-200"
+                          className="w-10 h-10 object-cover rounded border border-black/10"
                         />
                         <div>
-                          <p className={`text-xs font-medium ${isCurrent ? 'text-orange-950 font-semibold' : 'text-stone-900'}`}>
+                          <p className={`text-xs font-medium ${isCurrent ? 'text-orange-950 font-semibold' : 'text-black'}`}>
                             {rec.title}
                           </p>
-                          <p className="text-[11px] text-stone-500">
+                          <p className="text-[11px] text-black/50">
                             {rec.artistOrBand} · {rec.releaseYear}
                           </p>
                         </div>
                       </div>
-                      <span className="text-xs font-mono text-stone-500 tabular-nums">
+                      <span className="text-xs font-mono text-black/50 tabular-nums">
                         {formatSeconds(rec.duration)}
                       </span>
                     </div>
@@ -339,22 +339,22 @@ export const FullPlayerModal: React.FC = () => {
 
           {activeTab === 'provenance' && (
             <div className="space-y-4">
-              <div className="border border-stone-200 rounded-xl p-4 bg-stone-50 space-y-2 text-xs">
-                <h3 className="font-serif font-medium text-stone-900 flex items-center gap-1.5 text-sm">
+              <div className="border border-black/10 rounded-xl p-4 bg-black/5 space-y-2 text-xs">
+                <h3 className="font-serif font-medium text-black flex items-center gap-1.5 text-sm">
                   <ShieldCheck className="w-4 h-4 text-orange-600" />
                   Archival Provenance & License Rights
                 </h3>
-                <p className="text-stone-600 leading-relaxed">
+                <p className="text-black/60 leading-relaxed">
                   {currentRecording.rightsDeclaration}
                 </p>
-                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-stone-200 font-mono text-[11px]">
+                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-black/10 font-mono text-[11px]">
                   <div>
-                    <span className="text-stone-500 block">Status:</span>
-                    <span className="text-stone-900 font-medium">{currentRecording.rightsStatus}</span>
+                    <span className="text-black/50 block">Status:</span>
+                    <span className="text-black font-medium">{currentRecording.rightsStatus}</span>
                   </div>
                   <div>
-                    <span className="text-stone-500 block">Verification:</span>
-                    <span className="text-emerald-700 font-medium">{currentRecording.verificationStatus}</span>
+                    <span className="text-black/50 block">Verification:</span>
+                    <span className="text-black font-medium">{currentRecording.verificationStatus}</span>
                   </div>
                 </div>
               </div>

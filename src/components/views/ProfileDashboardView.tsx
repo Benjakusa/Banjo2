@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
-import { useBanjo } from '../../context/BanjoContext';
 import {
-  User,
+  useBanjo } from '../../context/BanjoContext';
+import {
+  Person,
   ShieldCheck,
   CheckCircle,
-  Clock,
+  ClockHistory,
   XCircle,
   Bookmark,
-  ListMusic,
-  Play,
-  Trash2,
-} from 'lucide-react';
+  MusicPlayer,
+  PlayFill,
+  Trash
+} from 'react-bootstrap-icons';
 
 export const ProfileDashboardView: React.FC = () => {
   const {
@@ -33,10 +34,10 @@ export const ProfileDashboardView: React.FC = () => {
   return (
     <div className="mx-auto max-w-4xl px-4 sm:px-6 py-6 space-y-6 pb-36">
       {/* Contributor Profile Header */}
-      <header className="rounded-2xl border border-stone-200 bg-white p-5 sm:p-6 shadow-sm">
+      <header className="rounded-2xl border border-black/10 bg-white p-5 sm:p-6 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
-            <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-amber-600 bg-stone-100 shrink-0">
+            <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-orange-600 bg-black/5 shrink-0">
               <img
                 src={userProfile.avatarUrl}
                 alt={userProfile.displayName}
@@ -47,30 +48,30 @@ export const ProfileDashboardView: React.FC = () => {
 
             <div className="space-y-0.5">
               <div className="flex items-center gap-2">
-                <h1 className="font-serif text-xl sm:text-2xl font-bold text-stone-900">
+                <h1 className="font-serif text-xl sm:text-2xl font-bold text-black">
                   {userProfile.displayName}
                 </h1>
                 {userProfile.verifiedStatus && (
-                  <span className="text-[10px] font-mono text-emerald-800 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded font-bold">
+                  <span className="text-[10px] font-mono text-black bg-black/5 border border-black/20 px-1.5 py-0.5 rounded font-bold">
                     Verified Archivist
                   </span>
                 )}
               </div>
-              <p className="text-xs text-amber-800 font-mono">
+              <p className="text-xs text-orange-700 font-mono">
                 {userProfile.email} · Role: {activeRole}
               </p>
-              <p className="text-xs text-stone-600 max-w-md pt-0.5 leading-relaxed">
+              <p className="text-xs text-black/60 max-w-md pt-0.5 leading-relaxed">
                 {userProfile.bio}
               </p>
             </div>
           </div>
 
-          <div className="p-2.5 bg-stone-50 border border-stone-200 rounded-xl text-xs space-y-1">
-            <span className="text-[10px] font-mono uppercase text-stone-500 block">Switch System Role:</span>
+          <div className="p-2.5 bg-black/5 border border-black/10 rounded-xl text-xs space-y-1">
+            <span className="text-[10px] font-mono uppercase text-black/50 block">Switch System Role:</span>
             <select
               value={activeRole}
               onChange={(e) => setActiveRole(e.target.value as any)}
-              className="bg-white border border-stone-300 rounded px-2 py-1 text-xs text-stone-900 focus:border-amber-600 focus:outline-none"
+              className="bg-white border border-black/20 rounded px-2 py-1 text-xs text-black focus:border-orange-600 focus:outline-none"
             >
               <option value="senior_archivist">Senior Archivist</option>
               <option value="archivist">Archivist</option>
@@ -85,30 +86,30 @@ export const ProfileDashboardView: React.FC = () => {
 
       {/* Metrics Row */}
       <section className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
-        <div className="p-3.5 rounded-xl border border-stone-200 bg-white shadow-xs">
-          <span className="text-stone-500 text-[11px] block font-mono">Articles Submitted</span>
-          <span className="font-mono text-xl font-bold text-stone-900 mt-1 block">
+        <div className="p-3.5 rounded-xl border border-black/10 bg-white shadow-xs">
+          <span className="text-black/50 text-[11px] block font-mono">Articles Submitted</span>
+          <span className="font-mono text-xl font-bold text-black mt-1 block">
             {userProfile.songsSubmitted}
           </span>
         </div>
 
-        <div className="p-3.5 rounded-xl border border-stone-200 bg-white shadow-xs">
-          <span className="text-stone-500 text-[11px] block font-mono">Edits Proposed</span>
-          <span className="font-mono text-xl font-bold text-stone-900 mt-1 block">
+        <div className="p-3.5 rounded-xl border border-black/10 bg-white shadow-xs">
+          <span className="text-black/50 text-[11px] block font-mono">Edits Proposed</span>
+          <span className="font-mono text-xl font-bold text-black mt-1 block">
             {userProfile.editsSubmitted}
           </span>
         </div>
 
-        <div className="p-3.5 rounded-xl border border-stone-200 bg-white shadow-xs">
-          <span className="text-emerald-700 text-[11px] block font-mono">Approved Edits</span>
-          <span className="font-mono text-xl font-bold text-emerald-700 mt-1 block">
+        <div className="p-3.5 rounded-xl border border-black/10 bg-white shadow-xs">
+          <span className="text-black text-[11px] block font-mono">Approved Edits</span>
+          <span className="font-mono text-xl font-bold text-black mt-1 block">
             {userProfile.editsApproved}
           </span>
         </div>
 
-        <div className="p-3.5 rounded-xl border border-stone-200 bg-white shadow-xs">
-          <span className="text-amber-700 text-[11px] block font-mono">Under Review</span>
-          <span className="font-mono text-xl font-bold text-amber-700 mt-1 block">
+        <div className="p-3.5 rounded-xl border border-black/10 bg-white shadow-xs">
+          <span className="text-orange-600 text-[11px] block font-mono">Under Review</span>
+          <span className="font-mono text-xl font-bold text-orange-600 mt-1 block">
             {userProfile.pendingReview}
           </span>
         </div>
@@ -116,7 +117,7 @@ export const ProfileDashboardView: React.FC = () => {
 
       {/* Tabs */}
       <div className="space-y-4">
-        <div className="flex flex-wrap gap-1 border-b border-stone-200 pb-2 text-xs font-mono">
+        <div className="flex flex-wrap gap-1 border-b border-black/10 pb-2 text-xs font-mono">
           {[
             { key: 'contributions', label: `My Submissions (${submissions.length})` },
             { key: 'saved', label: `Saved Articles (${savedRecordings.length})` },
@@ -127,8 +128,8 @@ export const ProfileDashboardView: React.FC = () => {
               onClick={() => setActiveTab(tab.key as any)}
               className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
                 activeTab === tab.key
-                  ? 'bg-amber-700 text-white font-bold shadow-xs'
-                  : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
+                  ? 'bg-orange-600 text-white font-bold shadow-xs'
+                  : 'text-black/60 hover:text-black hover:bg-black/5'
               }`}
             >
               {tab.label}
@@ -142,22 +143,22 @@ export const ProfileDashboardView: React.FC = () => {
             {submissions.map((sub) => (
               <div
                 key={sub.id}
-                className="p-3.5 rounded-xl border border-stone-200 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-xs"
+                className="p-3.5 rounded-xl border border-black/10 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-xs"
               >
                 <div>
-                  <span className="font-mono text-[10px] text-amber-800 uppercase font-bold block">
+                  <span className="font-mono text-[10px] text-orange-700 uppercase font-bold block">
                     {sub.category} · {sub.submittedAt.slice(0, 10)}
                   </span>
-                  <h3 className="font-serif text-sm font-semibold text-stone-900 mt-0.5">{sub.title}</h3>
-                  <p className="text-stone-600 text-[11px] mt-0.5">{sub.rightsDeclaration}</p>
+                  <h3 className="font-serif text-sm font-semibold text-black mt-0.5">{sub.title}</h3>
+                  <p className="text-black/60 text-[11px] mt-0.5">{sub.rightsDeclaration}</p>
                 </div>
                 <span
                   className={`font-mono text-[10px] uppercase px-2 py-0.5 rounded border self-start sm:self-auto ${
                     sub.status === 'approved'
-                      ? 'text-emerald-800 bg-emerald-50 border-emerald-200'
+                      ? 'text-black bg-black/5 border-black/20'
                       : sub.status === 'rejected'
-                      ? 'text-rose-800 bg-rose-50 border-rose-200'
-                      : 'text-amber-800 bg-amber-50 border-amber-200'
+                      ? 'text-black bg-black/5 border-black/20'
+                      : 'text-orange-700 bg-orange-50 border-orange-200'
                   }`}
                 >
                   {sub.status.replace('_', ' ')}
@@ -173,14 +174,14 @@ export const ProfileDashboardView: React.FC = () => {
             {savedRecordings.map((rec) => (
               <div
                 key={rec.id}
-                className="p-3 rounded-xl border border-stone-200 bg-white hover:border-amber-600 transition-all flex items-center justify-between gap-3 text-xs shadow-xs"
+                className="p-3 rounded-xl border border-black/10 bg-white hover:border-orange-600 transition-all flex items-center justify-between gap-3 text-xs shadow-xs"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <img
                     src={rec.coverImage}
                     alt={rec.title}
                     referrerPolicy="no-referrer"
-                    className="w-10 h-10 rounded object-cover border border-stone-200 shrink-0"
+                    className="w-10 h-10 rounded object-cover border border-black/10 shrink-0"
                   />
                   <div className="min-w-0">
                     <h4
@@ -189,22 +190,22 @@ export const ProfileDashboardView: React.FC = () => {
                     >
                       {rec.title}
                     </h4>
-                    <p className="text-stone-500 text-[11px]">{rec.artistOrBand} · {rec.releaseYear}</p>
+                    <p className="text-black/50 text-[11px]">{rec.artistOrBand} · {rec.releaseYear}</p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => playSong(rec)}
-                    className="p-1.5 rounded-full bg-amber-700 text-white hover:bg-amber-800 cursor-pointer"
+                    className="p-1.5 rounded-full bg-orange-600 text-white hover:bg-orange-700 cursor-pointer"
                   >
-                    <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
+                    <PlayFill className="w-3.5 h-3.5 fill-current ml-0.5" />
                   </button>
                   <button
                     onClick={() => toggleSaveRecording(rec.id)}
-                    className="p-1.5 text-stone-400 hover:text-rose-600 cursor-pointer"
+                    className="p-1.5 text-black/40 hover:text-orange-600 cursor-pointer"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    <Trash className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
@@ -216,12 +217,12 @@ export const ProfileDashboardView: React.FC = () => {
         {activeTab === 'playlists' && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
             {userProfile.playlists.map((pl) => (
-              <div key={pl.id} className="p-4 rounded-xl border border-stone-200 bg-white space-y-2 shadow-xs">
+              <div key={pl.id} className="p-4 rounded-xl border border-black/10 bg-white space-y-2 shadow-xs">
                 <div className="flex justify-between items-center">
-                  <h3 className="font-serif text-sm font-bold text-stone-900">{pl.name}</h3>
-                  <span className="font-mono text-stone-500 text-[11px]">{pl.songIds.length} tracks</span>
+                  <h3 className="font-serif text-sm font-bold text-black">{pl.name}</h3>
+                  <span className="font-mono text-black/50 text-[11px]">{pl.songIds.length} tracks</span>
                 </div>
-                <p className="text-stone-600 text-[11px] leading-relaxed">{pl.description}</p>
+                <p className="text-black/60 text-[11px] leading-relaxed">{pl.description}</p>
               </div>
             ))}
           </div>

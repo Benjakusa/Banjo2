@@ -16,7 +16,7 @@ export const BottomNav: React.FC = () => {
   return (
     <nav
       aria-label="Mobile Navigation Bar"
-      className="fixed bottom-0 left-0 right-0 z-40 h-16 border-t border-stone-200 bg-white px-2 shadow-sm"
+      className="fixed bottom-0 left-0 right-0 z-40 h-16 border-t border-black/10 bg-white px-2 shadow-sm"
     >
       <div className="mx-auto flex h-full max-w-md items-center justify-around">
         {navItems.map((item) => {
@@ -31,7 +31,7 @@ export const BottomNav: React.FC = () => {
               key={item.tab}
               onClick={() => navigateTo(item.tab)}
               className={`flex min-h-[48px] min-w-[56px] flex-col items-center justify-center rounded-lg transition-colors cursor-pointer ${
-                isActive ? 'text-orange-600 font-semibold' : 'text-stone-500 hover:text-stone-900'
+                isActive ? 'text-orange-600 font-semibold' : 'text-black/50 hover:text-black'
               }`}
             >
               <div className="relative">
