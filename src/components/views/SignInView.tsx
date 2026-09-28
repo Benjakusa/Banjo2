@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useBanjo } from '../../context/BanjoContext';
 import { Wordmark } from '../common/Wordmark';
 import { SELF_ASSIGNABLE_ROLES, roleLabel } from '../../lib/auth';
@@ -12,9 +12,9 @@ const fieldClass =
   'outline-none transition-colors placeholder:text-ink-60 focus:border-focus';
 
 export const SignInView: React.FC = () => {
-  const { signIn, signUp, authError, clearAuthError, isOfflineAuth, navigateTo } = useBanjo();
+  const { signIn, signUp, authError, clearAuthError, isOfflineAuth, navigateTo, authMode, setAuthMode } = useBanjo();
 
-  const [mode, setMode] = useState<Mode>('signin');
+  const [mode, setMode] = useState<Mode>(authMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
@@ -38,8 +38,15 @@ export const SignInView: React.FC = () => {
     (mode === 'signin' || displayName.trim().length >= 2) &&
     !busy;
 
+  // If another view asked for "Create account", open on that form.
+  useEffect(() => {
+    setMode(authMode);
+    setTouched(false);
+  }, [authMode]);
+
   const switchMode = (next: Mode) => {
     setMode(next);
+    setAuthMode(next);
     setTouched(false);
     clearAuthError();
   };

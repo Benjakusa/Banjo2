@@ -264,7 +264,8 @@ export const UploadContributeView: React.FC = () => {
 
             <FileDropzone
               accept={AUDIO_ACCEPT}
-              label="Recording audio"
+              label="Upload music file"
+              cta="Choose a music file"
               hint="MP3, WAV, FLAC, M4A, OGG or AAC, up to 100 MB."
               icon="audio"
               file={audioFile}
@@ -276,7 +277,8 @@ export const UploadContributeView: React.FC = () => {
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto] sm:items-start">
               <FileDropzone
                 accept="image/*"
-                label="Thumbnail"
+                label="Upload thumbnail file"
+                cta="Choose a thumbnail image"
                 hint="Leave empty and the app draws cover art from the song title."
                 icon="image"
                 file={thumbnailFile}

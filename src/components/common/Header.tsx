@@ -14,6 +14,8 @@ import {
   Sun,
   X,
   Clock,
+  BoxArrowInRight,
+  BoxArrowRight,
 } from 'react-bootstrap-icons';
 
 const formatDuration = (seconds: number) => {
@@ -30,6 +32,10 @@ export const Header: React.FC<{ onOpenNav?: () => void }> = ({ onOpenNav }) => {
     theme,
     toggleTheme,
     userProfile,
+    isAuthenticated,
+    authEmail,
+    signOut,
+    setAuthMode,
     setIsCreateArticleModalOpen,
     openQuickEdit,
     currentRecording,
@@ -116,6 +122,12 @@ export const Header: React.FC<{ onOpenNav?: () => void }> = ({ onOpenNav }) => {
     if (recordings.some((r) => r.id === id)) {
       navigateTo('song_detail', { songId: id });
     }
+  };
+
+  const handleSignOut = async () => {
+    setIsProfileOpen(false);
+    await signOut();
+    navigateTo('home');
   };
 
   const showDesktopSuggestions = isSearchFocused && draft.trim().length > 0;
@@ -230,6 +242,23 @@ export const Header: React.FC<{ onOpenNav?: () => void }> = ({ onOpenNav }) => {
               <Bell className="h-5 w-5" />
             </button>
 
+            {/* Signed-out visitors get an explicit way in; account creation
+                lives one click away inside the sign-in view. */}
+            {!isAuthenticated && (
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthMode('signin');
+                  navigateTo('signin');
+                }}
+                className="flex items-center gap-1.5 rounded-full border border-ink-12 px-3 py-2 text-xs font-semibold text-ink transition-colors hover:bg-ink-06 sm:px-4 sm:text-sm"
+              >
+                <BoxArrowInRight className="h-4 w-4" />
+                Sign in
+              </button>
+            )}
+
+            {isAuthenticated && (
             <div className="relative" ref={profileRef}>
               <button
                 type="button"
@@ -259,6 +288,9 @@ export const Header: React.FC<{ onOpenNav?: () => void }> = ({ onOpenNav }) => {
                   <div className="border-b border-ink-12 px-4 py-3">
                     <p className="truncate text-sm font-semibold text-ink">
                       {userProfile.displayName}
+                    </p>
+                    <p className="truncate text-xs text-ink-60">
+                      {authEmail ?? userProfile.email}
                     </p>
                     <p className="truncate text-xs text-ink-60">
                       {userProfile.contributionsCount} contributions
@@ -321,9 +353,19 @@ export const Header: React.FC<{ onOpenNav?: () => void }> = ({ onOpenNav }) => {
                     <Clock className="h-4 w-4" />
                     Your contributions
                   </button>
+
+                  <button
+                    type="button"
+                    onClick={handleSignOut}
+                    className="flex w-full items-center gap-2 border-t border-ink-12 px-4 py-3 text-left text-sm text-ink transition-colors hover:bg-ink-06"
+                  >
+                    <BoxArrowRight className="h-4 w-4" />
+                    Sign out
+                  </button>
                 </div>
               )}
             </div>
+            )}
           </div>
         </div>
       </header>

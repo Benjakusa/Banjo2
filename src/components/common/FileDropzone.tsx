@@ -5,6 +5,8 @@ interface Props {
   accept: string;
   label: string;
   hint?: string;
+  /** Text on the empty-state button, before "or drag it here". */
+  cta?: string;
   icon?: 'audio' | 'image';
   file: File | null;
   onFile: (file: File | null) => void;
@@ -28,6 +30,7 @@ export const FileDropzone: React.FC<Props> = ({
   accept,
   label,
   hint,
+  cta = 'Choose a file',
   icon = 'audio',
   file,
   onFile,
@@ -131,7 +134,7 @@ export const FileDropzone: React.FC<Props> = ({
           >
             <CloudArrowUp className="mx-auto h-6 w-6 text-brand" />
             <span className="text-sm font-medium text-ink">
-              {isDragging ? 'Drop the file here' : 'Choose a file or drag it here'}
+              {isDragging ? 'Drop the file here' : `${cta} or drag it here`}
             </span>
             {hint && <span className="text-[11px] text-ink-60">{hint}</span>}
           </button>

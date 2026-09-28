@@ -137,6 +137,9 @@ interface BanjoContextType {
   authEmail: string | null;
   authError: string | null;
   isAuthenticated: boolean;
+  /** Which form the sign-in view opens with, so "Create account" lands on sign-up. */
+  authMode: 'signin' | 'signup';
+  setAuthMode: (mode: 'signin' | 'signup') => void;
   /** True when signing in/up is only simulated because the backend is absent. */
   isOfflineAuth: boolean;
   signIn: (email: string, password: string) => Promise<boolean>;
@@ -239,6 +242,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // clamped on every change, so an elevated role cannot be set from the client.
   const [authStatus, setAuthStatus] = useState<'loading' | 'signed_out' | 'signed_in'>('loading');
   const [authEmail, setAuthEmail] = useState<string | null>(null);
+  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
   const [authError, setAuthError] = useState<string | null>(null);
   const [isOfflineAuth, setIsOfflineAuth] = useState<boolean>(!isSupabaseConfigured);
 
@@ -1819,6 +1823,8 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         authEmail,
         authError,
         isAuthenticated,
+        authMode,
+        setAuthMode,
         isOfflineAuth,
         signIn,
         signUp,

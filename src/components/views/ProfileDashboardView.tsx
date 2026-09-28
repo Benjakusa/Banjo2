@@ -11,7 +11,10 @@ import {
   Bookmark,
   MusicPlayer,
   PlayFill,
-  Trash
+  Trash,
+  BoxArrowInRight,
+  BoxArrowRight,
+  PersonPlus
 } from 'react-bootstrap-icons';
 
 export const ProfileDashboardView: React.FC = () => {
@@ -24,6 +27,11 @@ export const ProfileDashboardView: React.FC = () => {
     activeRole,
     setActiveRole,
     toggleSaveRecording,
+    isAuthenticated,
+    authEmail,
+    isOfflineAuth,
+    signOut,
+    setAuthMode,
   } = useBanjo();
 
   const [activeTab, setActiveTab] = useState<'contributions' | 'saved' | 'playlists' | 'drafts'>('contributions');
@@ -31,6 +39,16 @@ export const ProfileDashboardView: React.FC = () => {
   const savedRecordings = recordings.filter((r) =>
     userProfile.savedRecordingIds.includes(r.id)
   );
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigateTo('home');
+  };
+
+  const goToAuth = (intent: 'signin' | 'signup') => {
+    setAuthMode(intent);
+    navigateTo('signin');
+  };
 
   return (
     <div className="mx-auto max-w-4xl px-4 sm:px-6 py-6 space-y-6 pb-36">
@@ -59,7 +77,7 @@ export const ProfileDashboardView: React.FC = () => {
                 )}
               </div>
               <p className="text-xs text-ink-60 font-mono">
-                {userProfile.email} · Role: {activeRole}
+                {authEmail ?? userProfile.email} · Role: {activeRole}
               </p>
               <p className="text-xs text-ink-60 max-w-md pt-0.5 leading-relaxed">
                 {userProfile.bio}
@@ -117,6 +135,54 @@ export const ProfileDashboardView: React.FC = () => {
             {userProfile.pendingReview}
           </span>
         </div>
+      </section>
+
+      {/* Account: sign in, create an account, or sign out ------------------- */}
+      <section className="rounded-2xl border border-ink-12 bg-paper p-4 sm:p-5">
+        <h2 className="font-serif text-sm font-semibold text-ink">Account</h2>
+
+        {isAuthenticated ? (
+          <>
+            <p className="mt-1 text-xs text-ink-60">
+              Signed in as{' '}
+              <span className="font-mono text-ink">{authEmail ?? userProfile.email}</span>
+              {isOfflineAuth && ' · browser-only session, no archive backend attached'}
+            </p>
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-ink-12 px-4 py-2 text-xs font-semibold text-ink transition-colors hover:bg-ink-06"
+            >
+              <BoxArrowRight className="h-3.5 w-3.5" />
+              Sign out
+            </button>
+          </>
+        ) : (
+          <>
+            <p className="mt-1 text-xs text-ink-60">
+              You are browsing as a guest. Sign in to propose edits and upload
+              recordings, or create an account if this is your first visit.
+            </p>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => goToAuth('signin')}
+                className="inline-flex items-center gap-1.5 rounded-full bg-brand px-4 py-2 text-xs font-semibold text-on-orange transition-opacity hover:opacity-90"
+              >
+                <BoxArrowInRight className="h-3.5 w-3.5" />
+                Sign in
+              </button>
+              <button
+                type="button"
+                onClick={() => goToAuth('signup')}
+                className="inline-flex items-center gap-1.5 rounded-full border border-ink-12 px-4 py-2 text-xs font-semibold text-ink transition-colors hover:bg-ink-06"
+              >
+                <PersonPlus className="h-3.5 w-3.5" />
+                Create account
+              </button>
+            </div>
+          </>
+        )}
       </section>
 
       {/* Tabs */}
