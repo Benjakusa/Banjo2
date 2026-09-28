@@ -58,7 +58,7 @@ The rest of the schema (people, songs, recordings, rights, media jobs, RLS on
 | 0022 | `0022_rls_supplementary_policies.sql` | policies for the remaining tables |
 | 0023 | `0023_private_schema_grants.sql` | `usage` on `private` so RLS read paths can reach the helpers |
 | 0024 | `0024_solo_credits_and_lyrics.sql` | solo credit roles, `is_soloist` / `solo_order`, `recording_musician_solos` |
-| — | `seed.sql` | Phase 1 synthetic reference dataset (one benga band, end-to-end slice) |
+| — | `seed.sql` | Phase 1 reference dataset — D.O. Misiani & Shirati Jazz, Kenyan benga 1970s (one band, end-to-end slice) |
 
 ## Verified locally
 
@@ -68,6 +68,13 @@ roles stubbed in):
 
 * `migrations/0001` → `0024` apply in order with no errors → **87 tables, 162 policies**.
 * `banjo-full-schema.sql` applies as **one transaction** (`--single-transaction`) → same 87/162, seed rows loaded (20 instruments, 26 countries, 17 genres).
+* After the reference dataset was swapped to real 1970s benga (D.O. Misiani &
+  Shirati Jazz), `seed.sql` was re-verified on a clean instance: it loads in one
+  transaction, a second run changes no row counts, the closing
+  `update recordings set status = status` re-validates every recording through
+  `enforce_rights_before_publish` **without creating a revision** (ADR-04), and as
+  role `anon` the draft plus the `rights_unknown` recording stay invisible
+  (9 of 11 recordings, 10 songs).
 * `SUPABASE_COPY_PASTE.sql` applies **twice** in a row (idempotent) and works on a
   plain Postgres with no Supabase default privileges — the GRANTs are stated explicitly.
 * As role `anon`, the exact payloads the app sends insert, select and update
