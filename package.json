@@ -10,7 +10,9 @@
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit",
     "check:palette": "bash scripts/check-palette.sh",
-    "sql:bundle": "bash scripts/build-sql-bundle.sh"
+    "sql:bundle": "bash scripts/build-sql-bundle.sh",
+    "db:seed": "bash scripts/db-seed.sh",
+    "db:test": "bash scripts/db-test.sh"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",

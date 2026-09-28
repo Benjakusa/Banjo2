@@ -84,6 +84,39 @@ Migrations are versioned, not idempotent — run them once, in order, on a fresh
 database (`supabase db push` tracks them in `supabase_migrations.schema_migrations`).
 Only `SUPABASE_COPY_PASTE.sql`, `0021` and `seed.sql` are safe to re-run.
 
+## Applying and verifying the seed
+
+`seed.sql` is the Phase 1 reference dataset. Two wrappers make it runnable and
+checkable without remembering the `psql` incantations:
+
+| Command | What it does |
+| --- | --- |
+| `npm run db:seed` | applies `seed.sql` in **one transaction** (`--single-transaction`, `ON_ERROR_STOP`), then prints which row counts changed |
+| `npm run db:test` | asserts the dataset is intact: row counts, the `rights_unknown` invariant, the publish guard, the disputed release year, ADR-04 revision hygiene, `anon` visibility, and that a second seed run changes nothing |
+| `npm run db:test -- --no-reseed` | the read-only half of the suite: skips the idempotency re-run, its only writer |
+| `bash scripts/db-seed.sh --fingerprint` | the census of seeded rows alone, which `db:test` compares around its re-run |
+
+Both resolve their target as `DATABASE_URL` → `BANJO_DB` → `banjo_seed_v2`, so
+the database this pass was verified on is the default:
+
+```sh
+createdb banjo_seed_v2          # stub auth.* and apply the migrations once, then
+npm run db:seed && npm run db:test
+```
+
+The census counts only rows whose UUIDs carry the dataset's `-0000-4000-8000-`
+marker, so it stays meaningful on a database that also holds unrelated rows. On
+the local reference database: `db:test OK  (8 checks)` — 153 seeded rows across
+29 tables.
+
+**Seeding is one-way.** Re-running this dataset is a no-op, but an *older*
+dataset cannot be upgraded by re-seeding: applying it over the previous
+synthetic rows fails loudly (`duplicate key value violates unique constraint
+"people_pkey"`, because `people` is matched on `full_name` while `bands`,
+`songs` and `recordings` are matched on `id`) and rolls back, leaving the
+database untouched. Moving an older database onto this dataset needs a clean
+schema.
+
 ### Fixes made while verifying
 
 `0024_solo_credits_and_lyrics.sql` could not run at all before this pass:
