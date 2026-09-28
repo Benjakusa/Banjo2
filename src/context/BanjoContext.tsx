@@ -3,6 +3,7 @@ import {
   Recording,
   SongComposition,
   Musician,
+  MusicianCredit,
   Band,
   OralHistory,
   HistoricalDocument,
@@ -13,6 +14,8 @@ import {
   UserProfile,
   UserRole,
   Revision,
+  LyricLine,
+  LyricsVersion,
 } from '../types';
 import {
   INITIAL_RECORDINGS,
@@ -72,6 +75,9 @@ interface BanjoContextType {
   duration: number;
   playbackSpeed: number;
   isDataSaver: boolean;
+  theme: 'light' | 'dark';
+  setTheme: (theme: 'light' | 'dark') => void;
+  toggleTheme: () => void;
   isFullPlayerOpen: boolean;
   setIsFullPlayerOpen: (open: boolean) => void;
   playSong: (recording: Recording, queueList?: Recording[]) => void;
@@ -108,10 +114,6 @@ interface BanjoContextType {
   isCreateArticleModalOpen: boolean;
   setIsCreateArticleModalOpen: (open: boolean) => void;
 
-  // Mobile View Preferences
-  isMobileDeviceFrame: boolean;
-  setIsMobileDeviceFrame: (val: boolean) => void;
-
   // Data Collections
   recordings: Recording[];
   songs: SongComposition[];
@@ -132,9 +134,12 @@ interface BanjoContextType {
   toggleSaveRecording: (recordingId: string) => void;
   submitSongEdit: (recordingId: string, form: { title: string; year: string; composer: string; history: string; sources: string; explanation: string }) => void;
   addMusicianToRecording: (recordingId: string, musicianName: string, role: string, instrument: string) => void;
+  addSoloistToRecording: (recordingId: string, musicianName: string, role: string, instrument: string, isSoloist: boolean, soloOrder: number, solos?: { startSec: number; endSec: number; label?: string }[], notes?: string, sourceId?: string) => void;
+  updateMusicianCredit: (recordingId: string, musicianId: string, updates: Partial<MusicianCredit>) => void;
   addSourceToRecording: (recordingId: string, sourceTitle: string, sourceType: any, notes: string) => void;
   addHistoricalParagraph: (recordingId: string, paragraph: string, sourceCitation: string) => void;
   addLyricsToRecording: (recordingId: string, lyrics: string, translation: string, language?: string) => void;
+  addLyricsVersionToRecording: (recordingId: string, language: string, isOriginal: boolean, isTranslation: boolean, translationOfId?: string, lines?: LyricLine[], lyricist?: string, transcribedBy?: string, sourceId?: string, isInstrumental?: boolean) => void;
   addTriviaToRecording: (recordingId: string, triviaText: string, citation?: string) => void;
   addAlternateVersionToRecording: (recordingId: string, title: string, band: string, year: number, label?: string) => void;
   addTalkComment: (recordingId: string, topic: string, comment: string) => void;
@@ -188,7 +193,6 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [quickEditTarget, setQuickEditTarget] = useState<{ recordingId: string; section: string; currentText?: string } | null>(null);
 
   // Mobile View Preferences (Mobile-First Shell)
-  const [isMobileDeviceFrame, setIsMobileDeviceFrame] = useState(false);
 
   const openQuickEdit = useCallback((recordingId: string, section: string, currentText?: string) => {
     setQuickEditTarget({ recordingId, section, currentText });
@@ -455,6 +459,24 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     showToast(enabled ? 'Data Saver Active: Low-bandwidth audio profile enabled.' : 'Standard Quality: High-resolution audio profile active.');
   }, [showToast]);
 
+  const [theme, setThemeState] = useState<'light' | 'dark'>(() => {
+    if (typeof window === 'undefined') return 'light';
+    const stored = window.localStorage.getItem('banjo-theme');
+    if (stored === 'light' || stored === 'dark') return stored;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  });
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    window.localStorage.setItem('banjo-theme', theme);
+  }, [theme]);
+
+  const setTheme = useCallback((next: 'light' | 'dark') => setThemeState(next), []);
+  const toggleTheme = useCallback(
+    () => setThemeState((prev) => (prev === 'dark' ? 'light' : 'dark')),
+    []
+  );
+
   const openDiffViewer = useCallback((recording: Recording, revision: Revision) => {
     setActiveDiffRevision({ recording, revision });
     setIsDiffViewerOpen(true);
@@ -539,7 +561,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     [recordings, userProfile, showToast]
   );
 
-  // Direct Wikipedia-style addition of Musician credit to recording
+  /// Banjo-style addition of Musician credit to recording
   const addMusicianToRecording = useCallback(
     (recordingId: string, musicianName: string, role: string, instrument: string) => {
       setRecordings((prev) =>
@@ -594,7 +616,227 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     [userProfile, showToast]
   );
 
-  // Direct Wikipedia-style addition of Source/Citation to recording
+  // Add a soloist credit to a recording with solo span info
+  const addSoloistToRecording = useCallback(
+    (recordingId: string, musicianName: string, role: string, instrument: string, isSoloist: boolean, soloOrder: number, solos?: { startSec: number; endSec: number; label?: string }[], notes?: string, sourceId?: string) => {
+      setRecordings((prev) =>
+        prev.map((rec) => {
+          if (rec.id === recordingId) {
+            const newMusician = {
+              musicianId: `mus-${Date.now()}`,
+              musicianName,
+              role,
+              instrument,
+              isSoloist,
+              soloOrder,
+              solos: solos || [],
+              notes,
+              sourceId,
+            };
+            const updatedMusicians = [...rec.musicians, newMusician];
+            const updatedInstruments = Array.from(new Set([...rec.instruments, instrument]));
+
+            const newRev: Revision = {
+              id: `rev-${Date.now()}`,
+              version: rec.revisions.length + 1,
+              date: new Date().toISOString().split('T')[0],
+              authorName: userProfile.displayName,
+              authorRole: 'Community Contributor',
+              summary: `Added soloist credit: ${musicianName} (${instrument}) ${isSoloist ? 'solo' : ''}`,
+              changes: [
+                {
+                  field: 'musicians',
+                  previous: `${rec.musicians.length} musicians credited`,
+                  proposed: `Added ${musicianName} (${role}, ${instrument}) ${isSoloist ? 'soloist' : ''}`,
+                },
+              ],
+              status: 'approved',
+            };
+
+            return {
+              ...rec,
+              musicians: updatedMusicians,
+              instruments: updatedInstruments,
+              revisions: [newRev, ...rec.revisions],
+              updatedAt: new Date().toISOString(),
+            };
+          }
+          return rec;
+        })
+      );
+
+      setUserProfile((prev) => ({
+        ...prev,
+        contributionsCount: prev.contributionsCount + 1,
+        editsApproved: prev.editsApproved + 1,
+      }));
+
+      showToast(`Soloist credit added: ${musicianName} (${instrument})`);
+    },
+    [userProfile, showToast]
+  );
+
+  // Update an existing musician credit on a recording
+  const updateMusicianCredit = useCallback(
+    (recordingId: string, musicianId: string, updates: Partial<MusicianCredit>) => {
+      setRecordings((prev) =>
+        prev.map((rec) => {
+          if (rec.id === recordingId) {
+            const musicianToUpdate = rec.musicians.find((m) => m.musicianId === musicianId);
+            const updatedMusicians = rec.musicians.map((m: MusicianCredit) =>
+              m.musicianId === musicianId ? { ...m, ...updates } : m
+            );
+
+            const newRev: Revision = {
+              id: `rev-${Date.now()}`,
+              version: rec.revisions.length + 1,
+              date: new Date().toISOString().split('T')[0],
+              authorName: userProfile.displayName,
+              authorRole: 'Community Contributor',
+              summary: `Updated musician credit for ${updates.musicianName || musicianToUpdate?.musicianName || 'unknown'}`,
+              changes: [
+                {
+                  field: 'musicians',
+                  previous: `${rec.musicians.length} musicians credited`,
+                  proposed: `Updated credit for ${updates.musicianName || musicianToUpdate?.musicianName || 'unknown'}`,
+                },
+              ],
+              status: 'approved',
+            };
+
+            return {
+              ...rec,
+              musicians: updatedMusicians,
+              revisions: [newRev, ...rec.revisions],
+              updatedAt: new Date().toISOString(),
+            };
+          }
+          return rec;
+        })
+      );
+
+      setUserProfile((prev) => ({
+        ...prev,
+        contributionsCount: prev.contributionsCount + 1,
+        editsApproved: prev.editsApproved + 1,
+      }));
+
+      showToast('Musician credit updated');
+    },
+    [userProfile]
+  );
+
+  // Direct addition of Lyrics & Translation (enhanced with lyricsVersions)
+  const addLyricsToRecording = useCallback(
+    (recordingId: string, lyrics: string, translation: string, language?: string) => {
+      setRecordings((prev) =>
+        prev.map((rec) => {
+          if (rec.id === recordingId) {
+            const newRev: Revision = {
+              id: `rev-${Date.now()}`,
+              version: rec.revisions.length + 1,
+              date: new Date().toISOString().split('T')[0],
+              authorName: userProfile.displayName,
+              authorRole: 'Community Contributor',
+              summary: `Added lyrics and English translation (${language || rec.language})`,
+              changes: [
+                {
+                  field: 'lyrics',
+                  previous: rec.lyrics ? 'Previous lyrics excerpt' : 'No lyrics documented',
+                  proposed: 'Added full native lyrics and translation',
+                },
+                {
+                  field: 'lyricsTranslation',
+                  previous: rec.lyricsTranslation || 'No translation provided',
+                  proposed: translation,
+                },
+              ],
+              status: 'approved',
+            };
+
+            return {
+              ...rec,
+              lyrics,
+              lyricsTranslation: translation,
+              revisions: [newRev, ...rec.revisions],
+              updatedAt: new Date().toISOString(),
+            };
+          }
+          return rec;
+        })
+      );
+
+      setUserProfile((prev) => ({
+        ...prev,
+        contributionsCount: prev.contributionsCount + 1,
+        editsApproved: prev.editsApproved + 1,
+      }));
+
+      showToast('Lyrics & translation published to encyclopedia!');
+    },
+    [userProfile, showToast]
+  );
+
+  // Add a full LyricsVersion to a recording (multi-language support)
+  const addLyricsVersionToRecording = useCallback(
+    (recordingId: string, language: string, isOriginal: boolean, isTranslation: boolean, translationOfId?: string, lines?: LyricLine[], lyricist?: string, transcribedBy?: string, sourceId?: string, isInstrumental?: boolean) => {
+      setRecordings((prev) =>
+        prev.map((rec) => {
+          if (rec.id === recordingId) {
+            const newRev: Revision = {
+              id: `rev-${Date.now()}`,
+              version: rec.revisions.length + 1,
+              date: new Date().toISOString().split('T')[0],
+              authorName: userProfile.displayName,
+              authorRole: 'Community Contributor',
+              summary: `Added lyrics version in ${language} ${isTranslation ? '(translation)' : ''}`,
+              changes: [
+                {
+                  field: 'lyricsVersions',
+                  previous: rec.lyricsVersions ? `${rec.lyricsVersions.length} version(s) documented` : 'No lyrics versions',
+                  proposed: `Added lyrics version in ${language}`,
+                },
+              ],
+              status: 'approved',
+            };
+
+            const updatedLyricsVersions = (rec.lyricsVersions || []).concat({
+              id: `lyr-${Date.now()}`,
+              language,
+              isOriginal,
+              isTranslation,
+              translationOfId,
+              lines: lines || [],
+              lyricist,
+              transcribedBy,
+              sourceId,
+              isInstrumental,
+              updatedAt: new Date().toISOString(),
+            });
+
+            return {
+              ...rec,
+              lyricsVersions: updatedLyricsVersions,
+              revisions: [newRev, ...rec.revisions],
+              updatedAt: new Date().toISOString(),
+            };
+          }
+          return rec;
+        })
+      );
+
+      setUserProfile((prev) => ({
+        ...prev,
+        contributionsCount: prev.contributionsCount + 1,
+        editsApproved: prev.editsApproved + 1,
+      }));
+
+      showToast(`Lyrics version added: ${language}`);
+    },
+    [userProfile]
+  );
+
+  /// Banjo-style addition of Source/Citation to recording
   const addSourceToRecording = useCallback(
     (recordingId: string, sourceTitle: string, sourceType: any, notes: string) => {
       setRecordings((prev) =>
@@ -647,7 +889,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     [userProfile, showToast]
   );
 
-  // Direct Wikipedia-style addition of Historical Narrative paragraph
+  /// Banjo-style addition of Historical Narrative paragraph
   const addHistoricalParagraph = useCallback(
     (recordingId: string, paragraph: string, sourceCitation: string) => {
       setRecordings((prev) =>
@@ -690,52 +932,6 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }));
 
       showToast('New historical details added to encyclopedia entry!');
-    },
-    [userProfile, showToast]
-  );
-
-  // Direct addition of Lyrics & Translation
-  const addLyricsToRecording = useCallback(
-    (recordingId: string, lyrics: string, translation: string, language?: string) => {
-      setRecordings((prev) =>
-        prev.map((rec) => {
-          if (rec.id === recordingId) {
-            const newRev: Revision = {
-              id: `rev-${Date.now()}`,
-              version: rec.revisions.length + 1,
-              date: new Date().toISOString().split('T')[0],
-              authorName: userProfile.displayName,
-              authorRole: 'Community Contributor',
-              summary: `Added lyrics and English translation (${language || rec.language})`,
-              changes: [
-                {
-                  field: 'lyrics',
-                  previous: rec.lyrics ? 'Previous lyrics excerpt' : 'No lyrics documented',
-                  proposed: 'Added full native lyrics and translation',
-                },
-              ],
-              status: 'approved',
-            };
-
-            return {
-              ...rec,
-              lyrics,
-              lyricsTranslation: translation,
-              revisions: [newRev, ...rec.revisions],
-              updatedAt: new Date().toISOString(),
-            };
-          }
-          return rec;
-        })
-      );
-
-      setUserProfile((prev) => ({
-        ...prev,
-        contributionsCount: prev.contributionsCount + 1,
-        editsApproved: prev.editsApproved + 1,
-      }));
-
-      showToast('Lyrics & translation published to encyclopedia!');
     },
     [userProfile, showToast]
   );
@@ -1117,7 +1313,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         editsApproved: prev.editsApproved + 1,
       }));
 
-      showToast(`New article "${data.title}" published to Wikipedia of African Music!`);
+      showToast(`"${data.title}" published to Banjo!`);
       setIsCreateArticleModalOpen(false);
     },
     [userProfile, showToast]
@@ -1382,6 +1578,9 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         prevTrack,
         setSpeed,
         setDataSaver,
+        theme,
+        setTheme,
+        toggleTheme,
 
         searchQuery,
         setSearchQuery,
@@ -1406,9 +1605,6 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         isCreateArticleModalOpen,
         setIsCreateArticleModalOpen,
 
-        isMobileDeviceFrame,
-        setIsMobileDeviceFrame,
-
         recordings,
         songs,
         musicians,
@@ -1423,22 +1619,25 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         activeRole,
         setActiveRole,
 
-        toggleSaveRecording,
-        submitSongEdit,
-        addMusicianToRecording,
-        addSourceToRecording,
-        addHistoricalParagraph,
-        addLyricsToRecording,
-        addTriviaToRecording,
-        addAlternateVersionToRecording,
-        addTalkComment,
-        updateMusicianBio,
-        updateBandHistory,
-        createArticle,
-        submitNewRecording,
-        submitProblemReport,
-        reviewSubmission,
-        resolveCopyrightCase,
+toggleSaveRecording,
+         submitSongEdit,
+         addMusicianToRecording,
+         addSoloistToRecording,
+         updateMusicianCredit,
+         addSourceToRecording,
+         addHistoricalParagraph,
+         addLyricsToRecording,
+         addLyricsVersionToRecording,
+         addTriviaToRecording,
+         addAlternateVersionToRecording,
+         addTalkComment,
+         updateMusicianBio,
+         updateBandHistory,
+         createArticle,
+         submitNewRecording,
+         submitProblemReport,
+         reviewSubmission,
+         resolveCopyrightCase,
 
         isBackendConnected,
         toastMessage,

@@ -28,11 +28,22 @@ export type UserRole =
   | 'contributor'
   | 'listener';
 
+export interface SoloSpan {
+  startSec?: number;
+  endSec?: number;
+  label?: string; // e.g. "2nd guitar solo"
+}
+
 export interface MusicianCredit {
   musicianId: string;
   musicianName: string;
   instrument: string;
   role: string; // e.g. "Lead Guitarist", "Lead Vocals", "Bassist", "Arranger"
+  isSoloist?: boolean;
+  soloOrder?: number; // 1 = first solo heard, 2 = second, ...
+  solos?: SoloSpan[]; // 0..n solo passages for this person
+  notes?: string; // e.g. "plays the bridge solo, panned left"
+  sourceId?: string; // citation backing this credit
 }
 
 export interface SourceCitation {
@@ -126,6 +137,7 @@ export interface Recording {
   playsCount: number;
   createdAt: string;
   updatedAt: string;
+  lyricsVersions?: LyricsVersion[];
 }
 
 export interface SongComposition {
@@ -324,4 +336,25 @@ export interface UserProfile {
   savedRecordingIds: string[];
   bookmarkedPages: { type: string; id: string; title: string }[];
   playlists: { id: string; name: string; description: string; songIds: string[] }[];
+}
+
+export interface LyricLine {
+  text: string;
+  startSec?: number;
+  endSec?: number;
+  section?: string; // "Verse 1", "Chorus"
+}
+
+export interface LyricsVersion {
+  id: string;
+  language: string; // "Dholuo", "Lingala", "Kiswahili", "English"...
+  isOriginal: boolean;
+  isTranslation: boolean;
+  translationOfId?: string;
+  lines: LyricLine[]; // ordered; startSec optional (synced when present)
+  lyricist?: string;
+  transcribedBy?: string;
+  sourceId?: string; // citation (sleeve, booklet, interview...)
+  isInstrumental?: boolean;
+  updatedAt: string;
 }

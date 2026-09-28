@@ -35,7 +35,7 @@ export const DiffViewerModal: React.FC = () => {
             <ArrowsAngleContract className="w-5 h-5 text-orange-600" />
             <div>
               <span className="text-[10px] uppercase tracking-widest font-mono text-orange-700 font-bold block">
-                Wikipedia Diff Viewer
+                Banjo Diff Viewer
               </span>
               <h2 className="text-xl font-serif font-medium text-black">
                 Comparing Version {revision.version}.0 with Previous

@@ -131,7 +131,7 @@ export const SearchView: React.FC = () => {
       {/* Search Header */}
       <div className="space-y-3">
         <span className="text-xs uppercase tracking-widest font-mono text-orange-700 font-semibold">
-          Wikipedia Search
+          Banjo Search
         </span>
         <h1 className="text-2xl sm:text-3xl font-serif font-medium text-black">
           Search the African Music Knowledge Base
@@ -230,7 +230,7 @@ export const SearchView: React.FC = () => {
           </div>
         )}
 
-        {/* Wikipedia Categorized Tabs */}
+        {/* Banjo Categorized Tabs */}
         <div className="flex flex-wrap items-center gap-1 border-b border-black/10 pb-2 text-xs font-mono">
           {[
             { key: 'all', label: `All (${totalResultsCount})` },

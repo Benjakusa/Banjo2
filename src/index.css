@@ -1,38 +1,84 @@
 @import "tailwindcss";
-@import "bootstrap-icons/font/bootstrap-icons.css";
 
-@layer base {
-  body {
-    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  }
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
-  h1, h2, h3, .font-serif {
-    font-family: 'Newsreader', Georgia, serif;
-  }
-
-  .font-display {
-    font-family: 'Cinzel', Georgia, serif;
-  }
-
-  .font-mono {
-    font-family: 'Space Mono', monospace;
-  }
+:root {
+  color-scheme: light;
+  --banjo-bg: #ffffff;
+  --banjo-surface: #f2f2f2;
+  --banjo-surface-2: #f7f7f7;
+  --banjo-text: #0f0f0f;
+  --banjo-muted: #606060;
+  --banjo-line: #e5e5e5;
+  --banjo-chip: #f2f2f2;
+  --banjo-hover: #e8e8e8;
+  --banjo-link: #065fd4;
+  --banjo-primary: #c2410c;
+  --banjo-primary-hover: #9a3412;
+  --banjo-accent: #fb923c;
 }
 
-/* Custom scrollbar - black / white / orange only */
+[data-theme="dark"] {
+  color-scheme: dark;
+  --banjo-bg: #0f0f0f;
+  --banjo-surface: #272727;
+  --banjo-surface-2: #1c1c1c;
+  --banjo-text: #f1f1f1;
+  --banjo-muted: #aaaaaa;
+  --banjo-line: #303030;
+  --banjo-chip: #272727;
+  --banjo-hover: #3a3a3a;
+  --banjo-link: #3ea6ff;
+  --banjo-primary: #fb923c;
+  --banjo-primary-hover: #fdba74;
+  --banjo-accent: #fdba74;
+}
+
+html {
+  background-color: var(--banjo-bg);
+}
+
+body {
+  background-color: var(--banjo-bg);
+  color: var(--banjo-text);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  font-family: "Newsreader", Georgia, "Times New Roman", serif;
+}
+
+::selection {
+  background-color: var(--banjo-primary);
+  color: #ffffff;
+}
+
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: #FFFFFF;
-}
-::-webkit-scrollbar-thumb {
-  background: #000000;
-  border-radius: 3px;
-  opacity: 0.2;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #EA580C;
+  width: 10px;
+  height: 10px;
 }
 
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--banjo-chip);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--banjo-hover);
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

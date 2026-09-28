@@ -46,7 +46,7 @@ export const OralHistoryView: React.FC = () => {
     <div className="mx-auto max-w-4xl px-4 sm:px-6 py-6 space-y-6 pb-36">
       <div>
         <span className="text-xs uppercase tracking-widest font-mono text-orange-700 font-semibold">
-          Wikipedia Audio Archives
+          Banjo Audio Archives
         </span>
         <h1 className="text-2xl sm:text-3xl font-serif font-medium text-black mt-0.5">
           Master Musician Oral Histories & Transcripts

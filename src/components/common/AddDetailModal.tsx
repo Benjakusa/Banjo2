@@ -212,11 +212,11 @@ export const AddDetailModal: React.FC = () => {
         <div className="flex items-center justify-between border-b border-black/10 px-5 py-3.5 bg-black/5 shrink-0">
           <div className="flex items-center gap-2.5">
             <span className="flex items-center justify-center w-6 h-6 rounded bg-orange-600 text-white font-serif font-bold text-xs">
-              W
+              &#9834;
             </span>
             <div>
               <span className="text-[10px] uppercase tracking-wider font-mono text-orange-700 font-bold block">
-                Wikipedia of African Music · Community Editor
+                Banjo · Community Editor
               </span>
               <h2 className="text-sm sm:text-base font-serif font-bold text-black truncate max-w-sm sm:max-w-md">
                 Add Details to {entityType === 'musician' ? targetMusician.name : entityType === 'band' ? targetBand.name : targetRecording.title}

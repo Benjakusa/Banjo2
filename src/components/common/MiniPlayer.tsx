@@ -1,12 +1,21 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useBanjo } from '../../context/BanjoContext';
 import {
   PlayFill,
   PauseFill,
   SkipForwardFill,
-  ChevronUp,
-  BroadcastPin,
+  SkipStartFill,
+  MusicNoteList,
+  VolumeUpFill,
+  MusicNoteBeamed,
 } from 'react-bootstrap-icons';
+
+const formatSeconds = (sec: number) => {
+  const safe = Math.max(0, Math.floor(sec || 0));
+  const m = Math.floor(safe / 60);
+  const s = safe % 60;
+  return `${m}:${s < 10 ? '0' : ''}${s}`;
+};
 
 export const MiniPlayer: React.FC = () => {
   const {
@@ -16,110 +25,189 @@ export const MiniPlayer: React.FC = () => {
     duration,
     togglePlay,
     nextTrack,
+    prevTrack,
     setIsFullPlayerOpen,
     navigateTo,
+    seek,
   } = useBanjo();
+
+  const soloSegments = useMemo(() => {
+    if (!currentRecording) return [];
+    return currentRecording.musicians
+      .filter((m) => m.isSoloist)
+      .flatMap((credit) =>
+        (credit.solos || [])
+          .filter((s) => typeof s.startSec === 'number' && typeof s.endSec === 'number')
+          .map((span) => ({
+            name: credit.musicianName,
+            order: credit.soloOrder,
+            start: span.startSec as number,
+            end: span.endSec as number,
+          }))
+      )
+      .sort((a, b) => a.start - b.start);
+  }, [currentRecording]);
 
   if (!currentRecording) return null;
 
-  const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
+  const progressPercent = duration > 0 ? Math.min(100, (currentTime / duration) * 100) : 0;
+  const total = duration || currentRecording.duration || 1;
+  const hasSoloStrip = soloSegments.length > 0;
+  const isOralHistory = currentRecording.songId === 'oral-interview';
 
-  const formatSeconds = (sec: number) => {
-    const m = Math.floor(sec / 60);
-    const s = Math.floor(sec % 60);
-    return `${m}:${s < 10 ? '0' : ''}${s}`;
+  const openRecording = () => {
+    if (!isOralHistory) {
+      navigateTo('song_detail', { songId: currentRecording.id });
+    }
+  };
+
+  const handleBarClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const ratio = (e.clientX - rect.left) / rect.width;
+    seek(Math.max(0, Math.min(total, ratio * total)));
   };
 
   return (
     <aside
-      aria-label="Audio Playback Bar"
-      className="fixed bottom-16 md:bottom-0 left-0 right-0 z-40 border-t border-black/10 bg-white shadow-md transition-all"
+      aria-label="Now playing"
+      className="fixed inset-x-0 bottom-14 z-40 border-t border-[var(--banjo-line)] bg-[var(--banjo-bg)]/95 backdrop-blur sm:bottom-0 sm:z-30 min-[1000px]:left-[220px]"
     >
-      {/* Top progress seek line */}
-      <div className="w-full bg-black/5 h-1 relative overflow-hidden">
+      <div
+        onClick={handleBarClick}
+        role="slider"
+        tabIndex={0}
+        aria-label="Seek"
+        aria-valuemin={0}
+        aria-valuemax={Math.round(total)}
+        aria-valuenow={Math.round(currentTime)}
+        onKeyDown={(e) => {
+          if (e.key === 'ArrowRight') seek(Math.min(total, currentTime + 5));
+          if (e.key === 'ArrowLeft') seek(Math.max(0, currentTime - 5));
+        }}
+        className="relative h-1 w-full cursor-pointer bg-[var(--banjo-chip)]"
+      >
         <div
-          className="h-full bg-orange-600 transition-all duration-150 ease-linear"
+          className="h-full bg-[var(--banjo-text)]"
           style={{ width: `${progressPercent}%` }}
         />
+        {soloSegments.map((seg, i) => (
+          <span
+            key={i}
+            title={`${seg.name} — ${formatSeconds(seg.start)} to ${formatSeconds(seg.end)}`}
+            className={`absolute inset-y-0 ${
+              currentTime >= seg.start && currentTime <= seg.end
+                ? 'bg-[var(--banjo-accent)]'
+                : 'bg-[var(--banjo-primary)]'
+            }`}
+            style={{
+              left: `${(seg.start / total) * 100}%`,
+              width: `${Math.max(0.6, ((seg.end - seg.start) / total) * 100)}%`,
+            }}
+          />
+        ))}
       </div>
 
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-3 sm:px-6 lg:px-8">
-        {/* Track Info */}
-        <div className="flex items-center gap-3 min-w-0 max-w-md">
-          <div
-            onClick={() => {
-              if (currentRecording.songId !== 'oral-interview') {
-                navigateTo('song_detail', { songId: currentRecording.id });
-              }
-            }}
-            className="group relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-md border border-black/10 cursor-pointer bg-black/5"
-          >
+      <div className="mx-auto flex h-14 max-w-[1800px] items-center gap-2 px-2 sm:gap-3 sm:px-6">
+        <button
+          type="button"
+          onClick={openRecording}
+          disabled={isOralHistory}
+          className="flex min-w-0 flex-1 items-center gap-2 text-left sm:flex-none sm:max-w-xs"
+        >
+          <span className="relative h-8 w-8 shrink-0 overflow-hidden rounded bg-[var(--banjo-chip)]">
             <img
               src={currentRecording.coverImage}
-              alt={currentRecording.title}
+              alt=""
               referrerPolicy="no-referrer"
-              className="h-full w-full object-cover transition-transform group-hover:scale-105"
+              className="h-full w-full object-cover"
             />
             {isPlaying && (
-              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                <BroadcastPin className="w-4 h-4 text-orange-400" />
-              </div>
+              <span className="absolute inset-0 flex items-center justify-center bg-black/40">
+                <MusicNoteBeamed className="h-3.5 w-3.5 text-[var(--banjo-accent)]" />
+              </span>
             )}
-          </div>
-
-          <div className="min-w-0 flex-1">
-            <p
-              onClick={() => {
-                if (currentRecording.songId !== 'oral-interview') {
-                  navigateTo('song_detail', { songId: currentRecording.id });
-                }
-              }}
-              className="truncate text-xs sm:text-sm font-serif font-medium text-black hover:text-orange-700 cursor-pointer"
-            >
-              {currentRecording.title}
-            </p>
-            <p className="truncate text-[11px] text-black/50">
-              {currentRecording.artistOrBand}
-              <span className="mx-1.5 text-black/30">·</span>
-              <span className="font-mono text-[10px]">{currentRecording.releaseYear}</span>
-              <span className="mx-1.5 text-black/30">·</span>
-              <span>{currentRecording.genre}</span>
-            </p>
-          </div>
-        </div>
-
-        {/* Center / Controls */}
-        <div className="flex items-center gap-2 sm:gap-4">
-          <span className="hidden sm:inline-block font-mono text-[11px] text-black/50 tabular-nums">
-            {formatSeconds(currentTime)} / {formatSeconds(duration)}
           </span>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-xs font-semibold leading-tight text-[var(--banjo-text)] sm:text-sm">
+              {currentRecording.title}
+            </span>
+            <span className="mt-0.5 block truncate text-[11px] text-[var(--banjo-muted)]">
+              {soloSegments.length > 0 ? (
+                <span className="text-[var(--banjo-primary)]">
+                  {soloSegments.length} solo{soloSegments.length === 1 ? '' : 's'} credited
+                </span>
+              ) : (
+                currentRecording.artistOrBand
+              )}
+            </span>
+          </span>
+        </button>
 
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
           <button
-            onClick={togglePlay}
-            aria-label={isPlaying ? 'Pause' : 'Play'}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-orange-600 text-white hover:bg-orange-700 transition-transform active:scale-95 cursor-pointer shadow-xs"
+            type="button"
+            onClick={prevTrack}
+            aria-label="Previous track"
+            className="hidden h-8 w-8 items-center justify-center rounded-full text-[var(--banjo-text)] transition-colors hover:bg-[var(--banjo-chip)] sm:flex"
           >
-            {isPlaying ? <PauseFill className="h-4 w-4" /> : <PlayFill className="h-4 w-4 ml-0.5" />}
+            <SkipStartFill className="h-4 w-4" />
           </button>
 
           <button
+            type="button"
+            onClick={togglePlay}
+            aria-label={isPlaying ? 'Pause' : 'Play'}
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--banjo-text)] text-[var(--banjo-bg)] transition-opacity hover:opacity-85"
+          >
+            {isPlaying ? <PauseFill className="h-4 w-4" /> : <PlayFill className="ml-0.5 h-4 w-4" />}
+          </button>
+
+          <button
+            type="button"
             onClick={nextTrack}
             aria-label="Next track"
-            title="Next in archive queue"
-            className="text-black/50 hover:text-black transition-colors p-1 cursor-pointer"
+            className="hidden h-8 w-8 items-center justify-center rounded-full text-[var(--banjo-text)] transition-colors hover:bg-[var(--banjo-chip)] sm:flex"
           >
             <SkipForwardFill className="h-4 w-4" />
           </button>
 
-          {/* Open Full Player */}
           <button
-            onClick={() => setIsFullPlayerOpen(true)}
-            aria-label="Open full player view"
-            title="Open Audio Sheet"
-            className="flex items-center gap-1 px-2 py-1 text-[11px] font-mono text-black/70 hover:text-black bg-black/5 border border-black/10 rounded transition-colors cursor-pointer"
+            type="button"
+            onClick={nextTrack}
+            aria-label="Queue"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--banjo-text)] transition-colors hover:bg-[var(--banjo-chip)] sm:hidden"
           >
-            <span className="hidden sm:inline">Player</span>
-            <ChevronUp className="h-3 w-3 text-orange-600" />
+            <MusicNoteList className="h-4 w-4" />
+          </button>
+
+          <span className="ml-1 hidden items-center gap-1.5 sm:flex">
+            <VolumeUpFill className="h-4 w-4 text-[var(--banjo-muted)]" />
+            <span
+              aria-hidden="true"
+              className="h-1 w-14 overflow-hidden rounded-full bg-[var(--banjo-chip)]"
+            >
+              <span className="block h-full w-2/3 bg-[var(--banjo-muted)]" />
+            </span>
+          </span>
+
+          <span className="ml-1 hidden font-mono text-[11px] tabular-nums text-[var(--banjo-muted)] lg:inline">
+            {formatSeconds(currentTime)} / {formatSeconds(total)}
+          </span>
+
+          <button
+            type="button"
+            onClick={() => setIsFullPlayerOpen(true)}
+            aria-label="Open full player"
+            title="Open full player"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[var(--banjo-text)] transition-colors hover:bg-[var(--banjo-chip)]"
+          >
+            <img
+              src={currentRecording.coverImage}
+              alt=""
+              aria-hidden="true"
+              referrerPolicy="no-referrer"
+              className="h-8 w-8 rounded object-cover"
+            />
           </button>
         </div>
       </div>

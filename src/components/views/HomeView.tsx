@@ -57,15 +57,15 @@ export const HomeView: React.FC = () => {
 
   return (
     <div className="space-y-8 pb-32">
-      {/* 1. Wikipedia Welcome Header Banner */}
+      {/* 1. Banjo Welcome Header Banner */}
       <section className="border-b border-black/10 bg-white py-6 sm:py-8 shadow-xs">
         <div className="mx-auto max-w-4xl px-4 sm:px-6">
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="font-serif italic font-bold text-orange-600 text-xl">W</span>
+                <span className="flex items-center justify-center w-5 h-5 rounded bg-orange-600 text-white font-serif font-bold text-[10px]">&#9834;</span>
                 <span className="text-xs uppercase tracking-widest font-mono text-black/50 font-semibold">
-                  Wikipedia of African Music
+                  the free encyclopedia of African music
                 </span>
               </div>
               <span className="text-xs font-mono text-black bg-black/5 border border-black/20 px-2 py-0.5 rounded">
@@ -275,7 +275,7 @@ export const HomeView: React.FC = () => {
           </div>
         </section>
 
-        {/* 5. Recently Documented Recordings (Wikipedia Entries Feed) */}
+        {/* 5. Recently Documented Recordings (Banjo Entries Feed) */}
         <section className="space-y-4">
           <div className="flex items-center justify-between border-b border-black/10 pb-2">
             <div>
@@ -364,7 +364,7 @@ export const HomeView: React.FC = () => {
           </div>
         </section>
 
-        {/* 6. Traceable History & Recent Revisions (Wikipedia Style) */}
+        {/* 6. Traceable History & Recent Revisions (Banjo Style) */}
         <section className="rounded-2xl border border-black/10 bg-white p-5 space-y-3">
           <div className="flex items-center justify-between border-b border-black/10 pb-2">
             <div>

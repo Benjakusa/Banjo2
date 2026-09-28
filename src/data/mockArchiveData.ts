@@ -492,6 +492,240 @@ The song exemplifies the seamless synthesis of the Congolese *seben* (the fast-p
     playsCount: 45200,
     createdAt: '2026-01-20T09:30:00Z',
     updatedAt: '2026-01-20T09:30:00Z'
+  },
+  {
+    id: 'rec-007',
+    songId: 'song-001',
+    title: 'Bengaline Groove (Live at Garden Square)',
+    recordingTitle: 'Bengaline Groove — Live at Garden Square Nairobi',
+    artistOrBand: 'Victoria Stars Band',
+    bandId: 'band-victoria-stars',
+    artistId: 'mus-peter-ochieng',
+    releaseYear: 1980,
+    country: 'Kenya',
+    region: 'Nyanza',
+    language: 'Luo',
+    genre: 'Benga',
+    label: 'Polygram Records Kenya',
+    composer: 'John Ochieng',
+    lyricist: 'John Ochieng',
+    producer: 'A. P. Chandarana',
+    studio: 'Garden Square, Nairobi',
+    recordingLocation: 'Nairobi, Kenya',
+    duration: 380, // 6m 20s
+    audioQuality: 'FLAC Master',
+    audioSampleType: 'benga_fast',
+    rightsStatus: 'permission_granted',
+    rightsDeclaration: 'Live recording from Garden Square residency, digitized from audience cassette with band permission.',
+    verificationStatus: 'source_verified',
+    coverImage: '/src/assets/images/vintage_record_sleeve_1790502822184.jpg',
+    story: `A live concert recording from 1980 capturing Victoria Stars Band at the height of their Garden Square residency. The evening featured extended improvisation sections showcasing the band's dual-lead guitar capabilities.`,
+    recordingHistory: [
+      '1980: Recorded live at Garden Square Nairobi during a six-night residency.',
+      '2026: Archival transfer from original audience cassette into Banjo Heritage Repository.'
+    ],
+    musicians: [
+      {
+        musicianId: 'mus-peter-ochieng',
+        musicianName: 'Peter Ochieng',
+        instrument: 'Lead Guitar',
+        role: 'Lead Guitarist & Soloist',
+        isSoloist: true,
+        soloOrder: 1,
+        solos: [
+          { startSec: 45, endSec: 78, label: '1st guitar solo' },
+          { startSec: 120, endSec: 150, label: '2nd guitar solo' }
+        ],
+        notes: 'Panned center, uses Ibanez custom with treble boost'
+      },
+      {
+        musicianId: 'mus-john-ochieng',
+        musicianName: 'John Ochieng',
+        instrument: 'Rhythm Guitar',
+        role: 'Composer & Rhythm',
+        isSoloist: true,
+        soloOrder: 2,
+        solos: [
+          { startSec: 100, endSec: 130, label: 'rhythm solo' }
+        ],
+        notes: 'Panned left, chordal fills'
+      },
+      {
+        musicianId: 'mus-mary-achieng',
+        musicianName: 'Mary Achieng',
+        instrument: 'Vocals',
+        role: 'Lead Vocalist',
+        isSoloist: true,
+        soloOrder: 3,
+        solos: [
+          { startSec: 200, endSec: 240, label: 'vocalise solo' }
+        ],
+        notes: 'Ad lib over the groove, panned right'
+      },
+      {
+        musicianId: 'mus-james-ouma',
+        musicianName: 'James Ouma',
+        instrument: 'Bass Guitar',
+        role: 'Electric Bassist (Walking Syncopation)'
+      },
+      {
+        musicianId: 'mus-george-onyango',
+        musicianName: 'George Onyango',
+        instrument: 'Drums',
+        role: 'Drummer & Traditional Shaker'
+      }
+    ],
+    instruments: ['Electric Lead Guitar (Ibanez Custom)', 'Rhythm Guitar (Fender Telecaster)', 'Bass Guitar (Fender Precision)', 'Drum Kit', 'Asili / Metal Shakers'],
+    sources: [
+      {
+        id: 'src-009',
+        type: 'Artist interview',
+        title: 'Interview with Peter Ochieng by Mary Otieno',
+        authorOrWitness: 'Peter Ochieng & Mary Otieno',
+        year: 2026,
+        notes: 'Details the three-guitar setup for the Garden Square residency shows.'
+      },
+      {
+        id: 'src-010',
+        type: 'Studio documentation',
+        title: 'Polygram Nairobi Studio Daily Log Book Vol. V',
+        publisher: 'East African Records Ltd Archive',
+        year: 1980,
+        notes: 'Live session notes listing 6 musicians, dual lead guitar arrangement.'
+      }
+    ],
+    disputedClaims: [],
+    revisions: [
+      {
+        id: 'rev-007',
+        version: 1,
+        date: '2026-05-01',
+        authorName: 'Mary Otieno',
+        authorRole: 'Field Archivist',
+        summary: 'Initial recording entry with three-guitarist solo credits and live session metadata.',
+        changes: [
+          { field: 'musicians', previous: '5 musicians credited', proposed: '5 musicians credited with solo spans and order' }
+        ],
+        status: 'approved'
+      }
+    ],
+    waveformPoints: [18, 35, 62, 85, 92, 76, 54, 88, 95, 78, 83, 67, 90, 82, 70, 89, 94, 60, 45, 30],
+    playsCount: 8920,
+    createdAt: '2026-05-01T10:14:00Z',
+    updatedAt: '2026-05-01T16:22:00Z'
+  },
+  {
+    id: 'rec-008',
+    songId: 'song-002',
+    title: 'Chandala (1974 Kericho Field Recording)',
+    recordingTitle: 'Chandala — 1974 Kericho Field Test',
+    artistOrBand: 'Victoria Jazz Band',
+    bandId: 'band-victoria-stars',
+    releaseYear: 1974,
+    country: 'Kenya',
+    region: 'Rift Valley / Nyanza',
+    language: 'Luo',
+    genre: 'Benga / Traditional Folk',
+    label: 'Chandarana Records Kericho',
+    composer: 'John Ochieng',
+    lyricist: 'John Ochieng',
+    producer: 'A. P. Chandarana',
+    studio: 'Chandarana Music Store Backroom',
+    recordingLocation: 'Kericho, Kenya',
+    duration: 215, // 3m 35s
+    audioQuality: '128kbps Stream',
+    audioSampleType: 'benga_fast',
+    rightsStatus: 'public_domain',
+    rightsDeclaration: 'Historical field tape recording whose commercial 50-year phonogram protection period expired under East African archival preservation provisions.',
+    verificationStatus: 'reviewed',
+    coverImage: '/src/assets/images/vintage_record_sleeve_1790502822184.jpg',
+    story: `A companion field recording to the better-known "Kano Ni Nyasaye" mono take, captured four years prior at the same Kericho location using a single microphone. This version features alternate guitar solos and a distinct vocal improvisation by John Ochieng.`,
+    recordingHistory: [
+      'July 1974: Live single-mic mono capture in Kericho backroom, alternate take.',
+      'August 1974: Pressed on 500 copies 7-inch vinyl for regional juke-boxes as B-side.'
+    ],
+    musicians: [
+      {
+        musicianId: 'mus-john-ochieng',
+        musicianName: 'John Ochieng',
+        instrument: 'Acoustic Guitar',
+        role: 'Bandleader & Vocals',
+        isSoloist: true,
+        soloOrder: 1,
+        solos: [
+          { startSec: 30, endSec: 65, label: '1st solo' },
+          { startSec: 110, endSec: 145, label: '2nd solo' }
+        ],
+        notes: 'Acoustic nylon-string, panned center'
+      },
+      {
+        musicianId: 'mus-james-ouma',
+        musicianName: 'James Ouma',
+        instrument: 'Bass Guitar',
+        role: 'Bass'
+      },
+      {
+        musicianId: 'mus-george-onyango',
+        musicianName: 'George Onyango',
+        instrument: 'Nyatiti / Shakers',
+        role: 'Percussionist'
+      }
+    ],
+    instruments: ['Acoustic Guitar', 'Acoustic Bass', 'Nyatiti', 'Shakers'],
+    sources: [
+      {
+        id: 'src-011',
+        type: 'Band member testimony',
+        title: 'Kericho Session Oral Account by George Onyango',
+        year: 2026,
+        notes: 'Recounts the 1974 session with alternate solo sections.'
+      }
+    ],
+    disputedClaims: [],
+    revisions: [],
+    lyrics: 'Luo verse chorus structure:\nVerse 1: Nyari ke nyari ba nyanja...\nChorus: Nyasaye nyasaye nyari...\nVerse 2: Olwanda olwanda...\nChorus: Nyasaye nyasaye nyari...',
+    lyricsTranslation: 'English translation:\nVerse 1: Wait a bit my friend...\nChorus: Oh God oh God my friend...\nVerse 2: The Lord the Lord...\nChorus: Oh God oh God my friend...',
+    lyricsVersions: [
+      {
+        id: 'lyr-001',
+        language: 'Luo',
+        isOriginal: true,
+        isTranslation: false,
+        lines: [
+          { text: 'Nyari ke nyari ba nyanja', startSec: 0, endSec: 30, section: 'Verse 1' },
+          { text: 'Nyasaye nyasaye nyari', startSec: 30, endSec: 60, section: 'Chorus' },
+          { text: 'Olwanda olwanda', startSec: 60, endSec: 90, section: 'Verse 2' },
+          { text: 'Nyasaye nyasaye nyari', startSec: 90, endSec: 120, section: 'Chorus' }
+        ],
+        lyricist: 'John Ochieng',
+        transcribedBy: 'Mary Otieno',
+        sourceId: 'src-011',
+        isInstrumental: false,
+        updatedAt: '2026-05-01T12:00:00Z'
+      },
+      {
+        id: 'lyr-002',
+        language: 'English',
+        isOriginal: false,
+        isTranslation: true,
+        translationOfId: 'lyr-001',
+        lines: [
+          { text: 'Wait a bit my friend', startSec: 0, endSec: 30, section: 'Verse 1' },
+          { text: 'Oh God oh God my friend', startSec: 30, endSec: 60, section: 'Chorus' },
+          { text: 'The Lord the Lord', startSec: 60, endSec: 90, section: 'Verse 2' },
+          { text: 'Oh God oh God my friend', startSec: 90, endSec: 120, section: 'Chorus' }
+        ],
+        lyricist: 'John Ochieng',
+        transcribedBy: 'Mary Otieno',
+        sourceId: 'src-011',
+        isInstrumental: false,
+        updatedAt: '2026-05-01T12:00:00Z'
+      }
+    ],
+    waveformPoints: [10, 22, 45, 60, 75, 65, 50, 70, 80, 60, 55, 45, 60, 50, 40, 55, 60, 40, 25, 15],
+    playsCount: 6310,
+    createdAt: '2026-05-01T11:00:00Z',
+    updatedAt: '2026-05-01T11:00:00Z'
   }
 ];
 

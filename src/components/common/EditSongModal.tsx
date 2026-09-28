@@ -37,13 +37,13 @@ export const EditSongModal: React.FC = () => {
       <div className="relative w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-2xl border border-black/10 bg-white p-6 shadow-xl space-y-4">
         <div className="flex items-center justify-between border-b border-black/10 pb-3">
           <div className="flex items-center gap-2">
-            <span className="font-serif italic font-bold text-orange-600 text-lg">W</span>
+            <span className="flex items-center justify-center w-6 h-6 rounded bg-orange-600 text-white font-serif font-bold text-xs">&#9834;</span>
             <div>
               <span className="text-[10px] uppercase tracking-widest font-mono text-orange-700 font-bold block">
-                Wikipedia Editor
+                Banjo Editor
               </span>
               <h2 className="text-lg font-serif font-medium text-black">
-                Edit Article: {currentRecording.title}
+                Edit page: {currentRecording.title}
               </h2>
             </div>
           </div>

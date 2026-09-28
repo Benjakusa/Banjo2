@@ -68,7 +68,7 @@ export const BandDetailView: React.FC = () => {
         </p>
       </div>
 
-      {/* Wikipedia Infobox */}
+      {/* Banjo Infobox */}
       <aside className="border border-black/20 rounded-xl bg-black/5 p-4 space-y-3 sm:float-right sm:w-68 sm:ml-6 sm:mb-4 shadow-xs text-xs">
         <div className="flex items-center justify-between border-b border-black/10 pb-1.5">
           <span className="font-serif font-bold text-black">{band.name}</span>

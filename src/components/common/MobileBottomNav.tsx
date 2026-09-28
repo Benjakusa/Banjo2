@@ -1,16 +1,21 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useBanjo } from '../../context/BanjoContext';
 import {
-  Book,
+  House,
+  Compass,
   Search,
   PlusLg,
-  ClockHistory,
-  PersonFill,
-  PlusCircleFill,
-  FileEarmarkPlusFill,
-  MusicNoteBeamed,
-  XLg,
+  Collection,
+  X,
+  PencilSquare,
+  CloudArrowUp,
+  FileEarmarkPlus,
 } from 'react-bootstrap-icons';
+
+const formatDuration = (seconds: number) => {
+  const safe = Math.max(0, Math.floor(seconds || 0));
+  return `${Math.floor(safe / 60)}:${String(safe % 60).padStart(2, '0')}`;
+};
 
 export const MobileBottomNav: React.FC = () => {
   const {
@@ -22,185 +27,301 @@ export const MobileBottomNav: React.FC = () => {
     selectedSongId,
     selectedMusicianId,
     selectedBandId,
+    searchQuery,
+    setSearchQuery,
+    recordings,
+    musicians,
+    bands,
   } = useBanjo();
 
-  const [isQuickActionMenuOpen, setIsQuickActionMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [draft, setDraft] = useState(searchQuery);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleCenterAddClick = () => {
-    setIsQuickActionMenuOpen(!isQuickActionMenuOpen);
-  };
+  useEffect(() => {
+    setDraft(searchQuery);
+  }, [searchQuery]);
 
-  const handleAddDetailToCurrent = () => {
-    setIsQuickActionMenuOpen(false);
+  useEffect(() => {
+    if (isSearchOpen) inputRef.current?.focus();
+  }, [isSearchOpen]);
+
+  useEffect(() => {
+    if (!isSheetOpen && !isSearchOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsSheetOpen(false);
+        setIsSearchOpen(false);
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [isSheetOpen, isSearchOpen]);
+
+  const suggestions = useMemo(() => {
+    const q = draft.trim().toLowerCase();
+    const recs = recordings
+      .filter((r) =>
+        q.length === 0
+          ? true
+          : `${r.title} ${r.artistOrBand} ${r.genre} ${r.country} ${r.releaseYear}`
+              .toLowerCase()
+              .includes(q)
+      )
+      .slice(0, 6)
+      .map((r) => ({
+        id: r.id,
+        title: r.title,
+        meta: `${r.artistOrBand} · ${r.releaseYear}`,
+        seconds: r.duration,
+        isRecording: true,
+      }));
+
+    if (q.length === 0) return recs;
+
+    const pages = [
+      ...musicians.map((m) => ({ id: m.id, title: m.name, meta: m.role, seconds: 0, isRecording: false })),
+      ...bands.map((b) => ({ id: b.id, title: b.name, meta: b.genre, seconds: 0, isRecording: false })),
+    ]
+      .filter((p) => `${p.title} ${p.meta}`.toLowerCase().includes(q))
+      .slice(0, 4);
+
+    return [...recs, ...pages];
+  }, [draft, recordings, musicians, bands]);
+
+  const handleAddDetail = () => {
+    setIsSheetOpen(false);
     const targetId =
       activeTab === 'song_detail'
         ? selectedSongId || currentRecording?.id || 'rec-001'
         : activeTab === 'musician_detail'
-        ? selectedMusicianId || 'mus-peter-ochieng'
-        : activeTab === 'band_detail'
-        ? selectedBandId || 'band-victoria-stars'
-        : currentRecording?.id || 'rec-001';
-
+          ? selectedMusicianId || 'mus-peter-ochieng'
+          : activeTab === 'band_detail'
+            ? selectedBandId || 'band-victoria-stars'
+            : currentRecording?.id || 'rec-001';
     openQuickEdit(targetId, 'musicians');
   };
 
-  const handleCreateNewArticle = () => {
-    setIsQuickActionMenuOpen(false);
-    setIsCreateArticleModalOpen(true);
-  };
-
-  const handleUploadAudio = () => {
-    setIsQuickActionMenuOpen(false);
-    navigateTo('upload');
-  };
+  const tabButton = (
+    label: string,
+    Icon: React.ComponentType<{ className?: string }>,
+    isActive: boolean,
+    onClick: () => void
+  ) => (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-current={isActive ? 'page' : undefined}
+      className={`flex flex-1 flex-col items-center justify-center gap-0.5 py-1.5 transition-colors ${
+        isActive ? 'text-[var(--banjo-text)]' : 'text-[var(--banjo-muted)]'
+      }`}
+    >
+      <Icon className="h-5 w-5" />
+      <span className="text-[10px] font-medium tracking-tight">{label}</span>
+    </button>
+  );
 
   return (
     <>
-      {/* Quick Action Sheet Popover */}
-      {isQuickActionMenuOpen && (
-        <div
-          role="dialog"
-          aria-label="Add options"
-          className="fixed inset-0 z-50 flex flex-col justify-end bg-black/60 p-3 md:hidden animate-in fade-in duration-150"
-          onClick={() => setIsQuickActionMenuOpen(false)}
+      <nav
+        aria-label="Primary"
+        className="fixed inset-x-0 bottom-0 z-40 flex border-t border-[var(--banjo-line)] bg-[var(--banjo-bg)]/95 pb-[env(safe-area-inset-bottom)] backdrop-blur sm:hidden"
+      >
+        {tabButton('Home', House, activeTab === 'home', () => navigateTo('home'))}
+        {tabButton('Explore', Compass, activeTab === 'explore', () => navigateTo('explore'))}
+
+        <button
+          type="button"
+          onClick={() => setIsSearchOpen(true)}
+          aria-label="Search"
+          className="flex flex-1 flex-col items-center justify-center gap-0.5 py-1.5 text-[var(--banjo-muted)] transition-colors"
         >
-          <div
-            className="w-full rounded-2xl bg-white p-4 space-y-3 shadow-xl border border-black/10 animate-in slide-in-from-bottom-6 duration-200"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between border-b border-black/10 pb-2">
-              <span className="text-xs uppercase tracking-wider font-mono text-orange-700 font-bold">
-                Wikipedia Contribution Menu
-              </span>
-              <button
-                onClick={() => setIsQuickActionMenuOpen(false)}
-                className="p-1 rounded text-black/40 hover:text-black/70 cursor-pointer"
-              >
-                <XLg className="w-4 h-4" />
-              </button>
-            </div>
+          <Search className="h-5 w-5" />
+          <span className="text-[10px] font-medium tracking-tight">Search</span>
+        </button>
 
-            <div className="space-y-1.5 text-xs">
-              <button
-                onClick={handleAddDetailToCurrent}
-                className="w-full flex items-center gap-3 p-3 rounded-xl bg-orange-50 hover:bg-orange-100 text-orange-950 font-medium text-left transition-colors cursor-pointer"
-              >
-                <div className="w-8 h-8 rounded-lg bg-orange-600 text-white flex items-center justify-center shrink-0">
-                  <PlusCircleFill className="w-4 h-4" />
-                </div>
-                <div>
-                  <p className="font-semibold text-black">Add Details to Current Article</p>
-                  <p className="text-[11px] text-black/60">
-                    Add musician credits, historical lore, lyrics, or citations to this page
-                  </p>
-                </div>
-              </button>
+        <button
+          type="button"
+          onClick={() => setIsSheetOpen(true)}
+          aria-label="Contribute"
+          className="flex flex-1 flex-col items-center justify-center gap-0.5 py-1.5 text-[var(--banjo-primary)] transition-opacity hover:opacity-80"
+        >
+          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--banjo-primary)] text-white">
+            <PlusLg className="h-3.5 w-3.5" />
+          </span>
+          <span className="text-[10px] font-semibold tracking-tight">Add</span>
+        </button>
 
-              <button
-                onClick={handleCreateNewArticle}
-                className="w-full flex items-center gap-3 p-3 rounded-xl bg-black/5 hover:bg-black/5 text-black font-medium text-left transition-colors cursor-pointer"
-              >
-                <div className="w-8 h-8 rounded-lg bg-black/80 text-white flex items-center justify-center shrink-0">
-                  <FileEarmarkPlusFill className="w-4 h-4" />
-                </div>
-                <div>
-                  <p className="font-semibold text-black">Create New Encyclopedia Article</p>
-                  <p className="text-[11px] text-black/60">
-                    Document a new song, musician biography, or band history
-                  </p>
-                </div>
-              </button>
+        {tabButton('Library', Collection, activeTab === 'profile', () => navigateTo('profile'))}
+      </nav>
 
-              <button
-                onClick={handleUploadAudio}
-                className="w-full flex items-center gap-3 p-3 rounded-xl bg-black/5 hover:bg-black/5 text-black font-medium text-left transition-colors cursor-pointer"
-              >
-                <div className="w-8 h-8 rounded-lg bg-black text-white flex items-center justify-center shrink-0">
-                  <MusicNoteBeamed className="w-4 h-4" />
-                </div>
-                <div>
-                  <p className="font-semibold text-black">Upload Sound Recording</p>
-                  <p className="text-[11px] text-black/60">
-                    Submit a digitized tape, 45rpm record, or oral interview
-                  </p>
-                </div>
-              </button>
-            </div>
+      {isSearchOpen && (
+        <div className="fixed inset-0 z-50 flex flex-col bg-[var(--banjo-bg)] sm:hidden">
+          <div className="flex h-14 items-center gap-2 border-b border-[var(--banjo-line)] px-2">
+            <Search className="ml-1 h-5 w-5 shrink-0 text-[var(--banjo-muted)]" />
+            <input
+              ref={inputRef}
+              type="text"
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              placeholder="Search Banjo"
+              aria-label="Search Banjo"
+              className="h-10 min-w-0 flex-1 bg-transparent text-base text-[var(--banjo-text)] outline-none placeholder:text-[var(--banjo-muted)]"
+            />
+            <button
+              type="button"
+              onClick={() => {
+                setSearchQuery(draft);
+                setIsSearchOpen(false);
+                navigateTo('search');
+              }}
+              className="shrink-0 rounded-full bg-[var(--banjo-chip)] px-3 py-1.5 text-xs font-semibold text-[var(--banjo-text)]"
+            >
+              Go
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsSearchOpen(false)}
+              aria-label="Close search"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--banjo-text)]"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-3 py-3 pb-24">
+            <p className="mb-2 px-1 text-[11px] font-bold uppercase tracking-wide text-[var(--banjo-muted)]">
+              {draft.trim() ? 'Results' : 'Recent recordings'}
+            </p>
+            {suggestions.length === 0 ? (
+              <p className="px-1 text-sm text-[var(--banjo-muted)]">No matches for “{draft}”.</p>
+            ) : (
+              <ul className="space-y-1">
+                {suggestions.map((s) => (
+                  <li key={`${s.isRecording ? 'rec' : 'page'}-${s.id}`}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSearchQuery(draft);
+                        setIsSearchOpen(false);
+                        if (s.isRecording) {
+                          navigateTo('song_detail', { songId: s.id });
+                        } else {
+                          navigateTo('search');
+                        }
+                      }}
+                      className="flex w-full items-center gap-3 rounded-xl px-2 py-2.5 text-left transition-colors hover:bg-[var(--banjo-chip)]"
+                    >
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--banjo-chip)] text-[var(--banjo-muted)]">
+                        <Search className="h-4 w-4" />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-medium text-[var(--banjo-text)]">
+                          {s.title}
+                        </span>
+                        <span className="block truncate text-xs text-[var(--banjo-muted)]">{s.meta}</span>
+                      </span>
+                      {s.isRecording && (
+                        <span className="shrink-0 font-mono text-[11px] text-[var(--banjo-muted)]">
+                          {formatDuration(s.seconds)}
+                        </span>
+                      )}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
       )}
 
-      {/* Sticky Bottom Navigation Bar for Mobile */}
-      <nav
-        aria-label="Mobile Navigation"
-        className="fixed bottom-0 left-0 right-0 z-40 border-t border-black/10 bg-white px-2 py-1 flex items-center justify-around h-16 shadow-sm md:hidden"
-      >
-        {/* Tab 1: Encyclopedia (Home) */}
-        <button
-          onClick={() => navigateTo('home')}
-          className={`flex flex-col items-center justify-center flex-1 py-1 cursor-pointer transition-colors ${
-            activeTab === 'home' || activeTab === 'explore'
-              ? 'text-orange-600 font-bold'
-              : 'text-black/50 hover:text-black'
-          }`}
-        >
-          <Book className="w-5 h-5 mb-0.5" />
-          <span className="text-[10px] tracking-tight">Archive</span>
-        </button>
-
-        {/* Tab 2: Search */}
-        <button
-          onClick={() => navigateTo('search')}
-          className={`flex flex-col items-center justify-center flex-1 py-1 cursor-pointer transition-colors ${
-            activeTab === 'search'
-              ? 'text-orange-600 font-bold'
-              : 'text-black/50 hover:text-black'
-          }`}
-        >
-          <Search className="w-5 h-5 mb-0.5" />
-          <span className="text-[10px] tracking-tight">Search</span>
-        </button>
-
-        {/* Center Raised Action Button: Add Details */}
-        <div className="flex flex-col items-center justify-center flex-1 -mt-4">
+      {isSheetOpen && (
+        <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/50 sm:hidden">
           <button
-            onClick={handleCenterAddClick}
-            aria-label="Add details or contribute article"
-            className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-600 text-white shadow-md hover:bg-orange-700 active:scale-95 transition-transform cursor-pointer border-2 border-white"
-          >
-            <PlusLg className="w-5 h-5 stroke-[2.5]" />
-          </button>
-          <span className="text-[9px] font-bold text-orange-700 tracking-tight mt-0.5">
-            Add Details
-          </span>
+            type="button"
+            aria-label="Close contribution sheet"
+            onClick={() => setIsSheetOpen(false)}
+            className="flex-1"
+          />
+          <div className="rounded-t-2xl border-t border-[var(--banjo-line)] bg-[var(--banjo-bg)] px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3">
+            <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-[var(--banjo-line)]" />
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-base font-bold text-[var(--banjo-text)]">Contribute to Banjo</h2>
+              <button
+                type="button"
+                onClick={() => setIsSheetOpen(false)}
+                aria-label="Close"
+                className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--banjo-muted)]"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <ul className="space-y-2 pb-2">
+              <li>
+                <button
+                  type="button"
+                  onClick={handleAddDetail}
+                  className="flex w-full items-center gap-3 rounded-xl bg-[var(--banjo-primary)]/10 p-3 text-left"
+                >
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--banjo-primary)] text-white">
+                    <PencilSquare className="h-4 w-4" />
+                  </span>
+                  <span>
+                    <span className="block text-sm font-semibold text-[var(--banjo-text)]">Add details</span>
+                    <span className="block text-xs text-[var(--banjo-muted)]">
+                      Credit a soloist, transcribe lyrics, or cite a source on this page
+                    </span>
+                  </span>
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsSheetOpen(false);
+                    navigateTo('upload');
+                  }}
+                  className="flex w-full items-center gap-3 rounded-xl bg-[var(--banjo-chip)] p-3 text-left"
+                >
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--banjo-text)] text-[var(--banjo-bg)]">
+                    <CloudArrowUp className="h-4 w-4" />
+                  </span>
+                  <span>
+                    <span className="block text-sm font-semibold text-[var(--banjo-text)]">
+                      Upload a recording
+                    </span>
+                    <span className="block text-xs text-[var(--banjo-muted)]">
+                      Submit a digitized tape, record, or oral interview
+                    </span>
+                  </span>
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsSheetOpen(false);
+                    setIsCreateArticleModalOpen(true);
+                  }}
+                  className="flex w-full items-center gap-3 rounded-xl bg-[var(--banjo-chip)] p-3 text-left"
+                >
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--banjo-text)] text-[var(--banjo-bg)]">
+                    <FileEarmarkPlus className="h-4 w-4" />
+                  </span>
+                  <span>
+                    <span className="block text-sm font-semibold text-[var(--banjo-text)]">Create a page</span>
+                    <span className="block text-xs text-[var(--banjo-muted)]">
+                      Start a new musician, band, or recording page
+                    </span>
+                  </span>
+                </button>
+              </li>
+            </ul>
+          </div>
         </div>
-
-        {/* Tab 4: Chronology / Timeline */}
-        <button
-          onClick={() => navigateTo('timeline')}
-          className={`flex flex-col items-center justify-center flex-1 py-1 cursor-pointer transition-colors ${
-            activeTab === 'timeline'
-              ? 'text-orange-600 font-bold'
-              : 'text-black/50 hover:text-black'
-          }`}
-        >
-          <ClockHistory className="w-5 h-5 mb-0.5" />
-          <span className="text-[10px] tracking-tight">Timeline</span>
-        </button>
-
-        {/* Tab 5: Profile / Library */}
-        <button
-          onClick={() => navigateTo('profile')}
-          className={`flex flex-col items-center justify-center flex-1 py-1 cursor-pointer transition-colors ${
-            activeTab === 'profile'
-              ? 'text-orange-600 font-bold'
-              : 'text-black/50 hover:text-black'
-          }`}
-        >
-          <PersonFill className="w-5 h-5 mb-0.5" />
-          <span className="text-[10px] tracking-tight">Profile</span>
-        </button>
-      </nav>
+      )}
     </>
   );
 };

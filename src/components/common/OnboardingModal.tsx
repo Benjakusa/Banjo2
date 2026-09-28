@@ -12,7 +12,7 @@ export const OnboardingModal: React.FC = () => {
     {
       icon: Compass,
       title: 'Discover African Music',
-      subtitle: 'The Wikipedia of African Music Heritage',
+      subtitle: 'the free encyclopedia of African music',
       description:
         'Explore decades of recorded sound from the 1950s onward across Kenya, Congo, Tanzania, Nigeria, Ghana, Zimbabwe, and beyond. Every track is connected to its historical cultural origins.',
     },
@@ -28,7 +28,7 @@ export const OnboardingModal: React.FC = () => {
       title: 'Anyone Can Add Details',
       subtitle: 'Community-Curated · Version-Controlled',
       description:
-        'Just like Wikipedia, you can add missing musicians, add documentary citations, suggest revisions, and upload verified master recordings. Every edit is version-controlled and traceable.',
+        'Anyone can edit Banjo: add missing musicians, add documentary citations, suggest revisions, and upload verified master recordings. Every edit is version-controlled and traceable.',
     },
     {
       icon: People,
