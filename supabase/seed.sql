@@ -5,7 +5,8 @@
 -- revision history, with one seeded band from Kenyan benga as the reference dataset."
 --
 -- The dataset uses REAL Luo benga songs and artists from the 1970s, drawn from
--- documented Kenyan benga history. The specific metadata (matrix numbers,
+-- documented Kenyan benga history (D.O. Misiani & Shirati Jazz, Ochieng Nelly,
+-- George Ramogi, Ochieng Kabaselleh). The specific metadata (matrix numbers,
 -- exact recording dates) are illustrative for development purposes and should
 -- be verified against the original pressings before any public assertion.
 --
