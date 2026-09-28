@@ -29,7 +29,7 @@ import { SignInView } from './components/views/SignInView';
 import { isElevated } from './lib/auth';
 
 const AppContent: React.FC = () => {
-  const { activeTab, toastMessage, navigateTo, userProfile, isAuthenticated, activeRole } = useBanjo();
+  const { activeTab, toastMessage, navigateTo, userProfile, isAuthenticated, activeRole, showToast } = useBanjo();
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
 
   // Reading is open to everyone. Contributing and archivist tools are not.
@@ -39,9 +39,15 @@ const AppContent: React.FC = () => {
 
   React.useEffect(() => {
     if (requiresAuth && !isAuthenticated) {
+      // Say why the page did not open, then send them to the form that unlocks it.
+      showToast(
+        activeTab === 'admin'
+          ? 'Sign in with an archivist account to open the archivist tools.'
+          : 'Sign in or create an account to contribute.'
+      );
       navigateTo('signin');
     }
-  }, [requiresAuth, isAuthenticated, navigateTo]);
+  }, [requiresAuth, isAuthenticated, activeTab, navigateTo, showToast]);
 
   React.useEffect(() => {
     if (activeTab === 'admin' && !hasArchivistAccess) {
@@ -87,7 +93,11 @@ const AppContent: React.FC = () => {
       <Header onOpenNav={() => setIsSidebarOpen(true)} />
 
       {activeTab === 'signin' ? (
-        <main className="min-w-0 flex-1">{renderActiveView()}</main>
+        // Signing in is a single card, so it gets the page to itself: the card is
+        // centered in it rather than sitting in a sidebar layout.
+        <main className="flex min-h-[70vh] min-w-0 flex-1 items-center justify-center px-4 py-10 sm:px-6">
+          {renderActiveView()}
+        </main>
       ) : (
         <div className="mx-auto flex w-full max-w-[1800px]">
           <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />

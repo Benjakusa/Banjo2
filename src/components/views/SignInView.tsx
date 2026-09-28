@@ -66,17 +66,17 @@ export const SignInView: React.FC = () => {
   };
 
   return (
-    <div className="mx-auto flex min-h-[70vh] w-full max-w-md flex-col justify-center px-4 py-10 sm:px-6">
+    <div className="w-full max-w-md space-y-6 rounded-2xl border border-ink-12 bg-paper p-6 sm:p-8">
       <button
         type="button"
         onClick={() => navigateTo('home')}
-        className="mb-6 inline-flex w-fit items-center gap-1.5 text-xs text-ink-60 transition-colors hover:text-ink"
+        className="mx-auto flex w-fit items-center gap-1.5 text-xs text-ink-60 transition-colors hover:text-ink"
       >
         <ArrowLeft className="h-3.5 w-3.5" />
         Back to the archive
       </button>
 
-      <div className="mb-6">
+      <div className="text-center">
         <Wordmark size="md" alt="Banjo" />
         <h1 className="mt-4 font-serif text-2xl text-ink">
           {mode === 'signin' ? 'Sign in to contribute' : 'Create an account'}
@@ -190,7 +190,7 @@ export const SignInView: React.FC = () => {
         </button>
       </form>
 
-      <p className="mt-5 text-sm text-ink-60">
+      <p className="text-center text-sm text-ink-60">
         {mode === 'signin' ? 'No account yet?' : 'Already registered?'}{' '}
         <button
           type="button"

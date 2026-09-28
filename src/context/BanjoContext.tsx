@@ -492,6 +492,42 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     []
   );
 
+  // ---- Contribution gate ---------------------------------------------------
+  // Reading the archive is open to everyone; writing to it is not (doc 05 §4.1).
+  // Every contribution entry point — the header "Add +", the sidebar "Record
+  // submission", the inline "Add details" buttons on song/musician/band pages and
+  // the mobile contribute sheet — reaches the UI through openQuickEdit or the
+  // create-article modal below, so one check here keeps an anonymous visitor out of
+  // a form they could never submit. They are sent to the sign-in view instead, which
+  // carries the "Create one" path to registration, and the toast says why.
+  const requireAccount = useCallback(() => {
+    if (isAuthenticated) return true;
+
+    setAuthMode('signin');
+    showToast('Sign in or create an account to contribute.');
+    navigateTo('signin');
+    return false;
+  }, [isAuthenticated, navigateTo, showToast]);
+
+  // Exposed as `openQuickEdit`. Registered contributors go straight through.
+  const openContributionForm = useCallback(
+    (recordingId: string, section: string, currentText?: string) => {
+      if (!requireAccount()) return;
+      openQuickEdit(recordingId, section, currentText);
+    },
+    [openQuickEdit, requireAccount]
+  );
+
+  // Exposed as `setIsCreateArticleModalOpen`. Closing is never gated — the modal
+  // itself calls this with `false`, and so does the publish handler.
+  const setCreateArticleModalOpen = useCallback(
+    (open: boolean) => {
+      if (open && !requireAccount()) return;
+      setIsCreateArticleModalOpen(open);
+    },
+    [requireAccount]
+  );
+
   const goBack = useCallback(() => {
     if (navHistory.length > 1) {
       const newHistory = [...navHistory];
@@ -1799,12 +1835,14 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         activeDiffRevision,
         openDiffViewer,
         quickEditTarget,
-        openQuickEdit,
+        // Both are gated by requireAccount: signed-out visitors are routed to the
+        // sign-in view rather than into a contribution form (see above).
+        openQuickEdit: openContributionForm,
         closeQuickEdit,
         isAddDetailModalOpen,
         setIsAddDetailModalOpen,
         isCreateArticleModalOpen,
-        setIsCreateArticleModalOpen,
+        setIsCreateArticleModalOpen: setCreateArticleModalOpen,
 
         recordings,
         songs,
