@@ -1,6 +1,7 @@
 import React from 'react';
 import { useBanjo } from '../../context/BanjoContext';
 import type { MainNavTab } from '../../context/BanjoContext';
+import { isElevated } from '../../lib/auth';
 import {
   House,
   Compass,
@@ -18,17 +19,6 @@ import {
   X,
 } from 'react-bootstrap-icons';
 
-const ARCHIVIST_ROLES = [
-  'super_admin',
-  'platform_admin',
-  'senior_archivist',
-  'archivist',
-  'moderator',
-  'rights_manager',
-  'support_agent',
-  'analyst',
-];
-
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
@@ -42,9 +32,10 @@ interface NavEntry {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
-  const { activeTab, navigateTo, userProfile, setIsCreateArticleModalOpen } = useBanjo();
+  const { activeTab, navigateTo, isAuthenticated, activeRole, setIsCreateArticleModalOpen } = useBanjo();
 
-  const isArchivist = ARCHIVIST_ROLES.includes(userProfile.role);
+  // Archivist tooling follows the signed-in session, never a profile fixture.
+  const isArchivist = isAuthenticated && isElevated(activeRole);
 
   const go = (tab: MainNavTab) => {
     navigateTo(tab);
@@ -119,7 +110,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
       <aside
         aria-label="Main navigation"
-        className={`fixed inset-y-0 left-0 z-40 hidden w-[220px] shrink-0 self-start flex-col border-r border-ink-12 bg-paper transition-transform duration-200 min-[640px]:flex ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-[220px] shrink-0 self-start flex-col overflow-y-auto overscroll-contain border-r border-ink-12 bg-paper transition-transform duration-200 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         } min-[1000px]:sticky min-[1000px]:top-14 min-[1000px]:z-auto min-[1000px]:inset-y-auto min-[1000px]:h-[calc(100dvh-3.5rem)] min-[1000px]:translate-x-0`}
       >
@@ -151,7 +142,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto pb-4">
+        <nav className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-4">
           {renderSection('Archive', primaryItems)}
           {renderSection('You', youItems)}
           {renderSection('Community', communityItems)}

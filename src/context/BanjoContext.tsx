@@ -32,6 +32,7 @@ import {
 } from '../data/mockArchiveData';
 import { audioEngine } from '../utils/audioEngine';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { DEFAULT_ROLE, canSelfAssign, isElevated } from '../lib/auth';
 
 export type MainNavTab =
   | 'home'
@@ -45,7 +46,8 @@ export type MainNavTab =
   | 'band_detail'
   | 'upload'
   | 'profile'
-  | 'admin';
+  | 'admin'
+  | 'signin';
 
 interface NavigationState {
   tab: MainNavTab;
@@ -129,6 +131,18 @@ interface BanjoContextType {
   activeRole: UserRole;
   setActiveRole: (role: UserRole) => void;
   isBackendConnected: boolean;
+
+  // Authentication
+  authStatus: 'loading' | 'signed_out' | 'signed_in';
+  authEmail: string | null;
+  authError: string | null;
+  isAuthenticated: boolean;
+  /** True when signing in/up is only simulated because the backend is absent. */
+  isOfflineAuth: boolean;
+  signIn: (email: string, password: string) => Promise<boolean>;
+  signUp: (email: string, password: string, displayName: string) => Promise<boolean>;
+  signOut: () => Promise<void>;
+  clearAuthError: () => void;
 
   // Actions
   toggleSaveRecording: (recordingId: string) => void;
@@ -216,16 +230,147 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [copyrightCases, setCopyrightCases] = useState<CopyrightCase[]>(INITIAL_COPYRIGHT_CASES);
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>(INITIAL_AUDIT_LOGS);
   const [userProfile, setUserProfile] = useState<UserProfile>(CURRENT_USER_PROFILE);
-  const [activeRole, setActiveRole] = useState<UserRole>('senior_archivist');
+  const [activeRole, setActiveRoleState] = useState<UserRole>(DEFAULT_ROLE);
   const [isBackendConnected, setIsBackendConnected] = useState<boolean>(false);
 
-  // Sync with Supabase on mount
+  // ---- Authentication ----------------------------------------------------
+  // The session is the real gate. `activeRole` is only ever a *view* of the
+  // signed-in user's role: it starts at the least-privileged default and is
+  // clamped on every change, so an elevated role cannot be set from the client.
+  const [authStatus, setAuthStatus] = useState<'loading' | 'signed_out' | 'signed_in'>('loading');
+  const [authEmail, setAuthEmail] = useState<string | null>(null);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [isOfflineAuth, setIsOfflineAuth] = useState<boolean>(!isSupabaseConfigured);
+
+  const isAuthenticated = authStatus === 'signed_in';
+
+  const setActiveRole = useCallback((role: UserRole) => {
+    if (canSelfAssign(role) || isElevated(activeRole)) {
+      setActiveRoleState(role);
+    }
+  }, [activeRole]);
+
+  const clearAuthError = useCallback(() => setAuthError(null), []);
+
+  // Restore an existing session on mount, and keep it in sync.
+  useEffect(() => {
+    if (!isSupabaseConfigured) {
+      setAuthStatus('signed_out');
+      return;
+    }
+
+    let active = true;
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (!active) return;
+      const email = data.session?.user?.email ?? null;
+      setAuthEmail(email);
+      setAuthStatus(email ? 'signed_in' : 'signed_out');
+    });
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      const email = session?.user?.email ?? null;
+      setAuthEmail(email);
+      setAuthStatus(email ? 'signed_in' : 'signed_out');
+    });
+
+    return () => {
+      active = false;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
+
+  const signIn = useCallback(async (email: string, password: string) => {
+    setAuthError(null);
+
+    if (!isSupabaseConfigured) {
+      // Offline fallback so the flows stay usable without a backend. This is
+      // a local-only session and grants no real access.
+      setIsOfflineAuth(true);
+      setAuthEmail(email.trim().toLowerCase());
+      setAuthStatus('signed_in');
+      return true;
+    }
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email.trim().toLowerCase(),
+      password,
+    });
+
+    if (error) {
+      setAuthError(
+        error.message === 'Invalid login credentials'
+          ? 'That email and password do not match an account.'
+          : error.message
+      );
+      return false;
+    }
+
+    setAuthEmail(data.user?.email ?? null);
+    setAuthStatus('signed_in');
+    return true;
+  }, []);
+
+  const signUp = useCallback(async (email: string, password: string, displayName: string) => {
+    setAuthError(null);
+
+    if (!isSupabaseConfigured) {
+      setIsOfflineAuth(true);
+      setAuthEmail(email.trim().toLowerCase());
+      setAuthStatus('signed_in');
+      return true;
+    }
+
+    const { data, error } = await supabase.auth.signUp({
+      email: email.trim().toLowerCase(),
+      password,
+      options: {
+        data: {
+          display_name: displayName.trim(),
+          // Recorded as metadata only. The granted role lives in `user_roles`
+          // and is assigned by an administrator, never by the person signing up.
+          requested_role: DEFAULT_ROLE,
+        },
+      },
+    });
+
+    if (error) {
+      setAuthError(
+        error.message === 'User already registered'
+          ? 'An account already exists for that email. Try signing in.'
+          : error.message
+      );
+      return false;
+    }
+
+    // With email confirmation on, there is no session until the link is used.
+    if (!data.session) {
+      setAuthError('Check your email to confirm the account, then sign in.');
+      return false;
+    }
+
+    setAuthEmail(data.user?.email ?? null);
+    setAuthStatus('signed_in');
+    return true;
+  }, []);
+
+  const signOut = useCallback(async () => {
+    setAuthError(null);
+    if (isSupabaseConfigured) {
+      await supabase.auth.signOut();
+    }
+    setAuthEmail(null);
+    setAuthStatus('signed_out');
+    setActiveRoleState(DEFAULT_ROLE);
+  }, []);
+
+  // Sync with the archive backend on mount
   useEffect(() => {
     if (!isSupabaseConfigured) return;
 
     let isMounted = true;
 
-    async function fetchSupabaseData() {
+    async function fetchArchiveData() {
       try {
         const [subRes, auditRes, copyrightRes] = await Promise.all([
           supabase.from('app_submissions').select('*').order('created_at', { ascending: false }),
@@ -245,7 +390,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             targetId: row.target_id || undefined,
             targetTitle: row.target_title || undefined,
             targetType: row.target_type || undefined,
-            category: 'Supabase Import',
+            category: 'Archive Import',
             priority: (row.priority as any) || 'normal',
             status: (row.status as any) || 'pending',
             rightsDeclaration: '',
@@ -290,11 +435,11 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
         setIsBackendConnected(true);
       } catch (err) {
-        console.warn('Supabase fetch failed, continuing with local state:', err);
+        console.warn('Archive fetch failed, continuing with local state:', err);
       }
     }
 
-    fetchSupabaseData();
+    fetchArchiveData();
 
     return () => {
       isMounted = false;
@@ -545,7 +690,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           sources_provided: newSubmission.sourcesProvided,
           review_notes: newSubmission.reviewNotes,
         }).then(({ error }) => {
-          if (error) console.error('Error inserting edit submission to Supabase:', error);
+          if (error) console.error('Error inserting edit submission:', error);
         });
       }
       setUserProfile((prev) => ({
@@ -1341,6 +1486,13 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           genre: data.genre || 'Benga',
           studio: data.studio || 'Nairobi Studio',
           composer: data.composer || '',
+          // Media attached by the contributor, so a reviewer can see what was
+          // actually supplied rather than inferring it from the metadata.
+          coverImage: data.coverImage || '',
+          audioFileName: data.audioFileName || '',
+          audioMimeType: data.audioMimeType || '',
+          audioFileSize: String(data.audioFileSize || 0),
+          audioAttached: String(Boolean(data.audioUrl || data.audioFileName)),
         },
         sourcesProvided,
       };
@@ -1358,9 +1510,54 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           proposed_data: newSubmission.proposedData,
           sources_provided: newSubmission.sourcesProvided,
         }).then(({ error }) => {
-          if (error) console.error('Error inserting new recording submission to Supabase:', error);
+          if (error) console.error('Error inserting new recording submission:', error);
         });
       }
+      // Add the contribution to the archive so it is immediately browsable and
+      // playable, with the artwork resolved at submission time.
+      const newRecording: Recording = {
+        id: `rec-${Date.now()}`,
+        songId: `song-${Date.now()}`,
+        title: data.title || 'Untitled Historical Recording',
+        recordingTitle: data.title || 'Untitled Historical Recording',
+        artistOrBand: data.artistOrBand || 'Traditional Ensemble',
+        releaseYear: Number(data.releaseYear) || 1978,
+        country: data.country || 'Kenya',
+        region: data.region || 'Nyanza',
+        language: data.language || 'Luo',
+        genre: data.genre || 'Benga',
+        label: 'Community Submission',
+        composer: data.composer || '',
+        lyricist: '',
+        producer: data.producer || '',
+        studio: data.studio || 'Nairobi Studio',
+        recordingLocation: data.country || 'Kenya',
+        duration: 0,
+        audioQuality: '320kbps MP3',
+        audioSampleType: 'benga_fast',
+        audioUrl: data.audioUrl,
+        audioFileName: data.audioFileName,
+        audioMimeType: data.audioMimeType,
+        audioFileSize: data.audioFileSize,
+        rightsStatus: 'permission_granted',
+        rightsDeclaration,
+        verificationStatus: 'unverified',
+        coverImage: data.coverImage || '',
+        story: data.story || '',
+        recordingHistory: [`Submitted by ${userProfile.displayName}`],
+        musicians: [],
+        instruments: [],
+        sources: sourcesProvided
+          ? [{ id: `src-${Date.now()}`, type: 'Community submission', title: sourcesProvided, notes: '' }]
+          : [],
+        revisions: [],
+        waveformPoints: [],
+        playsCount: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      setRecordings((prev) => [newRecording, ...prev]);
+
       setUserProfile((prev) => ({
         ...prev,
         songsSubmitted: prev.songsSubmitted + 1,
@@ -1405,7 +1602,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             filed_date: newCase.filedDate,
             summary: newCase.evidenceSummary,
           }).then(({ error }) => {
-            if (error) console.error('Error inserting copyright case to Supabase:', error);
+            if (error) console.error('Error inserting copyright case:', error);
           });
         }
       }
@@ -1437,7 +1634,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           status: decision === 'approve' ? 'approved' : decision === 'reject' ? 'rejected' : 'evidence_requested',
           review_notes: note || sub.reviewNotes,
         }).eq('id', submissionId).then(({ error }) => {
-          if (error) console.error('Error updating submission in Supabase:', error);
+          if (error) console.error('Error updating submission:', error);
         });
       }
 
@@ -1462,7 +1659,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           timestamp: newAuditLog.when,
           notes: newAuditLog.reason,
         }).then(({ error }) => {
-          if (error) console.error('Error inserting audit log to Supabase:', error);
+          if (error) console.error('Error inserting audit log:', error);
         });
       }
 
@@ -1515,7 +1712,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         supabase.from('app_copyright_cases').update({
           status: action,
         }).eq('id', caseId).then(({ error }) => {
-          if (error) console.error('Error updating copyright case in Supabase:', error);
+          if (error) console.error('Error updating copyright case:', error);
         });
       }
       const caseItem = copyrightCases.find((c) => c.id === caseId);
@@ -1540,7 +1737,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           timestamp: newAuditLog.when,
           notes: newAuditLog.reason,
         }).then(({ error }) => {
-          if (error) console.error('Error inserting copyright audit log to Supabase:', error);
+          if (error) console.error('Error inserting copyright audit log:', error);
         });
       }
 
@@ -1618,6 +1815,15 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         userProfile,
         activeRole,
         setActiveRole,
+        authStatus,
+        authEmail,
+        authError,
+        isAuthenticated,
+        isOfflineAuth,
+        signIn,
+        signUp,
+        signOut,
+        clearAuthError,
 
 toggleSaveRecording,
          submitSongEdit,

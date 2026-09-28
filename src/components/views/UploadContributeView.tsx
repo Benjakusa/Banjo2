@@ -13,6 +13,20 @@ import {
   Stars,
   CheckLg
 } from 'react-bootstrap-icons';
+import { FileDropzone } from '../common/FileDropzone';
+import { generateThumbnail, initialsFromTitle, validateThumbnail } from '../../lib/thumbnail';
+
+const AUDIO_ACCEPT = 'audio/*,.mp3,.wav,.flac,.m4a,.ogg,.aac';
+const AUDIO_MAX_BYTES = 100 * 1024 * 1024;
+
+const validateAudio = (file: File): string | null => {
+  const looksLikeAudio =
+    file.type.startsWith('audio/') || /\.(mp3|wav|flac|m4a|ogg|aac)$/i.test(file.name);
+  if (!looksLikeAudio) return 'That does not look like an audio file. Use MP3, WAV, FLAC, M4A, OGG or AAC.';
+  if (file.size > AUDIO_MAX_BYTES) return 'Audio must be under 100 MB.';
+  if (file.size === 0) return 'That audio file is empty.';
+  return null;
+};
 
 export const UploadContributeView: React.FC = () => {
   const { submitNewRecording, navigateTo } = useBanjo();
@@ -51,10 +65,55 @@ export const UploadContributeView: React.FC = () => {
   );
 
   // Upload simulation & resilience state
+  // Media attached to the submission. The audio file is mandatory: a song
+  // entry with no recording is not a song entry. The thumbnail is not -- when
+  // it is missing the app draws one from the title instead.
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [audioError, setAudioError] = useState<string | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [thumbnailError, setThumbnailError] = useState<string | null>(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
+  const [thumbnailTouched, setThumbnailTouched] = useState(false);
+
   const [uploadStatus, setUploadStatus] = useState<
     'idle' | 'scanning' | 'uploading' | 'verifying_hash' | 'completed'
   >('idle');
   const [uploadProgress, setUploadProgress] = useState(0);
+
+  // The cover shown throughout the wizard: the uploaded image if there is one,
+  // otherwise artwork derived from whatever title has been typed so far.
+  const coverImage = thumbnailPreview || (title.trim() ? generateThumbnail(title) : '');
+  const isAutoCover = !thumbnailPreview && Boolean(coverImage);
+
+  const handleAudioFile = (file: File | null) => {
+    setAudioFile(file);
+    setAudioError(file ? validateAudio(file) : null);
+    if (audioUrl) URL.revokeObjectURL(audioUrl);
+    setAudioUrl(file ? URL.createObjectURL(file) : null);
+  };
+
+  const handleThumbnailFile = (file: File | null) => {
+    setThumbnailFile(file);
+    if (file) {
+      const problem = validateThumbnail(file);
+      setThumbnailError(problem);
+      if (problem) {
+        setThumbnailFile(null);
+        return;
+      }
+    } else {
+      setThumbnailError(null);
+    }
+    setThumbnailTouched(true);
+  };
+
+  // Release the object URL when the wizard unmounts.
+  React.useEffect(() => {
+    return () => {
+      if (audioUrl) URL.revokeObjectURL(audioUrl);
+    };
+  }, [audioUrl]);
 
   const rightsOptions = [
     {
@@ -110,6 +169,14 @@ export const UploadContributeView: React.FC = () => {
           composer,
           producer,
           story: historyNarrative || 'Historical details submitted by community contributor.',
+          // Carried through so the new entry is immediately playable and has
+          // artwork. The object URL is session-scoped; a durable copy needs a
+          // Storage upload, which is why the audio file name is kept alongside it.
+          coverImage,
+          audioUrl: audioUrl || undefined,
+          audioFileName: audioFile?.name,
+          audioFileSize: audioFile?.size,
+          audioMimeType: audioFile?.type,
         },
         rightsDeclaration,
         sourcesProvided
@@ -195,14 +262,41 @@ export const UploadContributeView: React.FC = () => {
               <p className="text-ink-60">Provide title, artist, year, and studio information.</p>
             </div>
 
-            <div className="border-2 border-dashed border-ink-12 hover:border-brand rounded-xl p-6 text-center bg-ink-06 transition-colors cursor-pointer space-y-1.5">
-              <CloudArrowUp className="w-7 h-7 text-brand mx-auto" />
-              <p className="font-medium text-ink text-sm">
-                Attach Audio File (FLAC, WAV, MP3)
-              </p>
-              <p className="text-[11px] text-ink-60">
-                Automatic audio validation will verify bit depth and generate waveform.
-              </p>
+            <FileDropzone
+              accept={AUDIO_ACCEPT}
+              label="Recording audio"
+              hint="MP3, WAV, FLAC, M4A, OGG or AAC, up to 100 MB."
+              icon="audio"
+              file={audioFile}
+              onFile={handleAudioFile}
+              error={audioError}
+              required
+            />
+
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto] sm:items-start">
+              <FileDropzone
+                accept="image/*"
+                label="Thumbnail"
+                hint="Leave empty and the app draws cover art from the song title."
+                icon="image"
+                file={thumbnailFile}
+                onFile={handleThumbnailFile}
+                onPreview={setThumbnailPreview}
+                error={thumbnailError}
+              />
+
+              {coverImage && (
+                <figure className="flex flex-col items-center gap-1.5">
+                  <img
+                    src={coverImage}
+                    alt="Cover art preview"
+                    className="h-20 w-20 rounded-lg border border-ink-12 object-cover"
+                  />
+                  <figcaption className="text-center font-mono text-[10px] text-ink-60">
+                    {isAutoCover ? 'Auto from title' : 'Your image'}
+                  </figcaption>
+                </figure>
+              )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -398,12 +492,20 @@ export const UploadContributeView: React.FC = () => {
               <div><strong>Artist:</strong> {artistOrBand || 'Traditional Artists'}</div>
               <div><strong>Year:</strong> {releaseYear}</div>
               <div><strong>Rights:</strong> {rightsDeclaration}</div>
+              <div>
+                <strong>Audio:</strong>{' '}
+                {audioFile ? `${audioFile.name} (${audioFile.type || 'audio'})` : 'not attached'}
+              </div>
+              <div>
+                <strong>Cover:</strong>{' '}
+                {isAutoCover ? `generated from title (${initialsFromTitle(title)})` : thumbnailFile ? thumbnailFile.name : 'none'}
+              </div>
             </div>
 
             {uploadStatus !== 'idle' && (
               <div className="p-4 rounded-xl bg-brand/10 border border-brand space-y-2">
                 <div className="flex justify-between font-mono text-[11px] text-ink-60">
-                  <span>Uploading to Cloudflare R2 archive storage...</span>
+                  <span>Uploading to archive storage...</span>
                   <span className="font-bold">{uploadProgress}%</span>
                 </div>
                 <div className="w-full bg-brand/10 h-2 rounded-full overflow-hidden">
@@ -419,14 +521,23 @@ export const UploadContributeView: React.FC = () => {
             )}
 
             {uploadStatus === 'idle' && (
-              <button
-                type="button"
-                onClick={handleSimulatedUpload}
-                className="w-full py-3 rounded-xl bg-brand hover:bg-brand text-on-orange font-semibold text-xs cursor-pointer flex items-center justify-center gap-2"
-              >
-                <CloudArrowUp className="w-4 h-4" />
-                <span>Publish to Archival Review Queue</span>
-              </button>
+              <>
+                {!audioFile && (
+                  <p className="rounded-xl border border-ink-12 bg-ink-06 px-3 py-2 text-ink-60">
+                    A song entry needs its recording. Go back to step 1 and attach an
+                    audio file before publishing.
+                  </p>
+                )}
+                <button
+                  type="button"
+                  onClick={handleSimulatedUpload}
+                  disabled={!audioFile}
+                  className="w-full py-3 rounded-xl bg-brand text-on-orange font-semibold text-xs cursor-pointer flex items-center justify-center gap-2 transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <CloudArrowUp className="w-4 h-4" />
+                  <span>Publish to Archival Review Queue</span>
+                </button>
+              </>
             )}
           </div>
         )}

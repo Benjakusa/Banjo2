@@ -15,7 +15,7 @@ import {
   Funnel,
   Lock
 } from 'react-bootstrap-icons';
-import { UserRole } from '../../types';
+import { roleLabel } from '../../lib/auth';
 
 export const AdminDashboardView: React.FC = () => {
   const {
@@ -70,27 +70,19 @@ export const AdminDashboardView: React.FC = () => {
 
         <div className="flex items-center gap-2">
           <span className="text-xs text-ink-60 font-mono">Role:</span>
-          <select
-            value={activeRole}
-            onChange={(e) => setActiveRole(e.target.value as UserRole)}
-            className="bg-paper border border-ink-12 rounded-lg px-2.5 py-1 text-xs text-ink font-medium focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
-          >
-            <option value="senior_archivist">Senior Archivist</option>
-            <option value="archivist">Archivist</option>
-            <option value="rights_manager">Rights Manager</option>
-            <option value="moderator">Moderator</option>
-            <option value="super_admin">Super Administrator</option>
-          </select>
+          <span className="rounded-lg border border-ink-12 px-2.5 py-1 text-xs font-medium text-ink">
+            {roleLabel(activeRole)}
+          </span>
           <span
             className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-mono font-medium ${
               isBackendConnected
                 ? 'bg-ink-06 text-ink border border-ink-12'
                 : 'bg-ink-06 text-ink-60 border border-ink-12'
             }`}
-            title={isBackendConnected ? 'Connected to live Supabase pooler' : 'Running in local fallback mode'}
+            title={isBackendConnected ? 'Connected to the live archive' : 'Running in local fallback mode'}
           >
             <span className={`w-1.5 h-1.5 rounded-full ${isBackendConnected ? 'bg-ink animate-pulse' : 'bg-ink/40'}`}></span>
-            {isBackendConnected ? 'Supabase Live' : 'Local Fallback'}
+            {isBackendConnected ? 'Live Archive' : 'Local Fallback'}
           </span>
         </div>
       </div>

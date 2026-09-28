@@ -63,6 +63,18 @@ if [ -n "$hits" ]; then report "shadow utilities (only shadow-none is allowed):"
 hits=$(grep -rniE 'wikipedia|youtube' "${FILES[@]}" 2>/dev/null || true)
 if [ -n "$hits" ]; then report "legacy branding strings:"; echo "$hits" | sed 's/^/    /'; fi
 
+# ------------------------------------------------- backend vendor mentions
+# The backing service must never surface to a reader: no UI copy, labels,
+# titles, console text, or category names may name the vendor. Only the SDK
+# plumbing itself is exempt -- the lib module, its import, the config flag,
+# the query builder, and the VITE_* env keys.
+hits=$(
+  grep -rniE 'supabase' "${FILES[@]}" 2>/dev/null \
+    | grep -vE "lib/supabase|@supabase/supabase-js|isSupabaseConfigured|supabase\.(from|auth)[.(]|VITE_SUPABASE_|^\S+:[0-9]+:\s*import\b" \
+    || true
+)
+if [ -n "$hits" ]; then report "backend vendor mentioned outside the SDK plumbing:"; echo "$hits" | sed 's/^/    /'; fi
+
 if [ "$fail" -ne 0 ]; then
   printf '\ncheck:palette FAILED\n'
   exit 1

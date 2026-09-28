@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { SELF_ASSIGNABLE_ROLES, roleLabel } from '../../lib/auth';
 import {
   useBanjo } from '../../context/BanjoContext';
 import {
@@ -67,19 +68,22 @@ export const ProfileDashboardView: React.FC = () => {
           </div>
 
           <div className="p-2.5 bg-ink-06 border border-ink-12 rounded-xl text-xs space-y-1">
-            <span className="text-[10px] font-mono uppercase text-ink-60 block">Switch System Role:</span>
+            <span className="text-[10px] font-mono uppercase text-ink-60 block">Your role:</span>
             <select
               value={activeRole}
               onChange={(e) => setActiveRole(e.target.value as any)}
               className="bg-paper border border-ink-12 rounded px-2 py-1 text-xs text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
             >
-              <option value="senior_archivist">Senior Archivist</option>
-              <option value="archivist">Archivist</option>
-              <option value="contributor">Contributor</option>
-              <option value="rights_manager">Rights Manager</option>
-              <option value="moderator">Moderator</option>
-              <option value="super_admin">Super Administrator</option>
+              {SELF_ASSIGNABLE_ROLES.map((r) => (
+                <option key={r} value={r}>
+                  {roleLabel(r)}
+                </option>
+              ))}
             </select>
+            <p className="mt-1 max-w-[22rem] text-[11px] text-ink-60">
+              Archivist and moderation roles are granted by an administrator and cannot be
+              selected here.
+            </p>
           </div>
         </div>
       </header>

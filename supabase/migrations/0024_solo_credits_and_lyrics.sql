@@ -1,6 +1,6 @@
 -- ============================================================================
 -- 0024 — Solo Credits and Lyrics
--- ==========================================================================--
+-- ============================================================================
 
 -- Extend the credit_role enum with solo role values
 -- These values identify when a musician plays a solo; is_soloist boolean
@@ -8,13 +8,11 @@
 -- additional categorisation (e.g. "solo_guitar" vs "lead_guitar").
 -- Document: relying on is_soloist is the canonical flag; role values are
 -- informational categorisation. Keeping lead_guitar for backward compat.
-create type extension credit_role_ext as enum (
-  'solo_guitar',
-  'solo_saxophone',
-  'solo_trumpet',
-  'solo_keyboard',
-  'solo_other'
-);
+alter type credit_role add value if not exists 'solo_guitar';
+alter type credit_role add value if not exists 'solo_saxophone';
+alter type credit_role add value if not exists 'solo_trumpet';
+alter type credit_role add value if not exists 'solo_keyboard';
+alter type credit_role add value if not exists 'solo_other';
 
 -- Add is_soloist and solo_order columns to recording_musicians
 -- (notes column already exists; we add the two new columns)
@@ -68,19 +66,24 @@ alter table recording_musicians
   add column if not exists deleted_at timestamptz;
 
 -- Update existing rows: set is_soloist where role starts with 'solo_'
-update recording_musicians
+-- (role is the credit_role enum, so it needs an explicit text cast for LIKE;
+-- window functions are not allowed directly in UPDATE, so rank in a subquery)
+update recording_musicians rm
 set is_soloist = true,
-  solo_order = row_number() over (partition by recording_id order by person_id)
-from (select distinct on (recording_id, person_id) recording_id, person_id, role
-      from recording_musicians
-      where role like 'solo_%'
-      order by recording_id, person_id, role) sub
-where recording_musicians.recording_id = sub.recording_id
-  and recording_musicians.person_id = sub.person_id;
+    solo_order = sub.rn
+from (
+  select recording_id, person_id,
+         row_number() over (partition by recording_id order by person_id) as rn
+  from (select distinct recording_id, person_id
+        from recording_musicians
+        where role::text like 'solo_%') soloists
+) sub
+where rm.recording_id = sub.recording_id
+  and rm.person_id = sub.person_id;
 
 -- Grant usage on the extended enum to public roles so PostgREST can resolve them
 grant usage on schema public to anon, authenticated;
-grant type credit_role_ext to anon, authenticated;
+grant usage on type credit_role to anon, authenticated;
 
 comment on table recording_musician_solos is 'Individual solo passages within a recording_musician credit;
   each row = one solo span (startSec-endSec) for one person on one recording.';

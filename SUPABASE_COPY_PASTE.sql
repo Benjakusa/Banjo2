@@ -65,6 +65,13 @@ alter table public.app_submissions enable row level security;
 alter table public.app_audit_logs enable row level security;
 alter table public.app_copyright_cases enable row level security;
 
+-- Supabase grants these automatically through its default privileges; stated
+-- explicitly so the script also works on a plain PostgreSQL instance.
+grant usage on schema public to anon, authenticated;
+grant select, insert, update on public.app_submissions to anon, authenticated;
+grant select, insert on public.app_audit_logs to anon, authenticated;
+grant select, insert, update on public.app_copyright_cases to anon, authenticated;
+
 drop policy if exists "public read" on public.app_submissions;
 create policy "public read" on public.app_submissions
   for select to anon, authenticated using (true);

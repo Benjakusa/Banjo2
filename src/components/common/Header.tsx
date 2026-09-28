@@ -123,7 +123,7 @@ export const Header: React.FC<{ onOpenNav?: () => void }> = ({ onOpenNav }) => {
   return (
     <>
       <header className="sticky top-0 z-40 w-full border-b border-ink-12 bg-paper/90 backdrop-blur">
-        <div className="flex h-14 items-center gap-2 px-2 sm:gap-4 sm:px-6">
+        <div className="flex h-14 items-center gap-3 px-2 sm:gap-5 sm:px-6">
           <button
             type="button"
             onClick={() => navigateTo('home')}
@@ -137,14 +137,16 @@ export const Header: React.FC<{ onOpenNav?: () => void }> = ({ onOpenNav }) => {
             type="button"
             onClick={onOpenNav}
             aria-label="Open navigation"
-            className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink transition-colors hover:bg-ink-06 min-[640px]:flex"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink transition-colors hover:bg-ink-06 min-[1000px]:hidden"
           >
             <List className="h-5 w-5" />
           </button>
 
           <div className="relative hidden min-w-0 flex-1 justify-center md:flex">
-            <form onSubmit={handleSubmit} className="w-full max-w-[640px]">
-              <Search className="pointer-events-none absolute left-4 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-ink-60" />
+            <form
+              onSubmit={handleSubmit}
+              className="flex h-10 w-full max-w-[640px] items-center gap-4 rounded-full border border-ink-12 bg-ink-06 pl-4 pr-2 transition-colors focus-within:border-link"
+            >
               <input
                 type="text"
                 value={draft}
@@ -153,9 +155,9 @@ export const Header: React.FC<{ onOpenNav?: () => void }> = ({ onOpenNav }) => {
                 onBlur={() => window.setTimeout(() => setIsSearchFocused(false), 150)}
                 placeholder="Search songs, guitarists, bands, studios, years"
                 aria-label="Search Banjo"
-                className="h-10 w-full rounded-full border border-ink-12 bg-ink-06 pl-11 pr-32 text-sm text-ink outline-none transition-colors placeholder:text-ink-60 focus:border-link"
+                className="min-w-0 flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-ink-60"
               />
-              <div className="absolute right-2 top-1/2 z-10 flex -translate-y-1/2 items-center gap-2.5">
+              <div className="flex shrink-0 items-center gap-3">
                 <button
                   type="button"
                   aria-label="Search by voice"
@@ -165,8 +167,9 @@ export const Header: React.FC<{ onOpenNav?: () => void }> = ({ onOpenNav }) => {
                 </button>
                 <button
                   type="submit"
-                  className="flex h-8 shrink-0 items-center gap-1 rounded-full border border-ink-12 bg-paper px-3.5 text-xs font-semibold text-ink transition-colors hover:bg-ink-06"
+                  className="flex h-8 shrink-0 items-center gap-1.5 rounded-full border border-ink-12 bg-paper pl-3 pr-4 text-xs font-semibold text-ink transition-colors hover:bg-ink-06"
                 >
+                  <Search className="h-3.5 w-3.5" />
                   Search
                 </button>
               </div>
@@ -200,7 +203,7 @@ export const Header: React.FC<{ onOpenNav?: () => void }> = ({ onOpenNav }) => {
             )}
           </div>
 
-          <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
+          <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2.5">
             <button
               type="button"
               onClick={() => setIsSearchOpen(true)}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { BanjoProvider, useBanjo } from './context/BanjoContext';
+import { BanjoProvider, useBanjo, MainNavTab } from './context/BanjoContext';
 import { Header } from './components/common/Header';
 import { Sidebar } from './components/common/Sidebar';
 import { MiniPlayer } from './components/common/MiniPlayer';
@@ -25,10 +25,29 @@ import { DocumentsView } from './components/views/DocumentsView';
 import { UploadContributeView } from './components/views/UploadContributeView';
 import { ProfileDashboardView } from './components/views/ProfileDashboardView';
 import { AdminDashboardView } from './components/views/AdminDashboardView';
+import { SignInView } from './components/views/SignInView';
+import { isElevated } from './lib/auth';
 
 const AppContent: React.FC = () => {
-  const { activeTab, toastMessage, navigateTo, userProfile } = useBanjo();
+  const { activeTab, toastMessage, navigateTo, userProfile, isAuthenticated, activeRole } = useBanjo();
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+
+  // Reading is open to everyone. Contributing and archivist tools are not.
+  const PROTECTED_TABS: MainNavTab[] = ['upload', 'admin', 'profile'];
+  const requiresAuth = PROTECTED_TABS.includes(activeTab);
+  const hasArchivistAccess = isAuthenticated && isElevated(activeRole);
+
+  React.useEffect(() => {
+    if (requiresAuth && !isAuthenticated) {
+      navigateTo('signin');
+    }
+  }, [requiresAuth, isAuthenticated, navigateTo]);
+
+  React.useEffect(() => {
+    if (activeTab === 'admin' && !hasArchivistAccess) {
+      navigateTo('home');
+    }
+  }, [activeTab, hasArchivistAccess, navigateTo]);
 
   const renderActiveView = () => {
     switch (activeTab) {
@@ -55,32 +74,27 @@ const AppContent: React.FC = () => {
       case 'profile':
         return <ProfileDashboardView />;
       case 'admin':
-        return <AdminDashboardView />;
+        return hasArchivistAccess ? <AdminDashboardView /> : <HomeView />;
+      case 'signin':
+        return <SignInView />;
       default:
         return <HomeView />;
     }
   };
 
-  const archivistRoles = [
-    'super_admin',
-    'platform_admin',
-    'senior_archivist',
-    'archivist',
-    'moderator',
-    'rights_manager',
-    'support_agent',
-    'analyst',
-  ];
-
   return (
     <div className="min-h-screen bg-paper text-ink">
       <Header onOpenNav={() => setIsSidebarOpen(true)} />
 
-      <div className="mx-auto flex w-full max-w-[1800px]">
-        <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      {activeTab === 'signin' ? (
+        <main className="min-w-0 flex-1">{renderActiveView()}</main>
+      ) : (
+        <div className="mx-auto flex w-full max-w-[1800px]">
+          <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
-        <main className="min-w-0 flex-1 pb-40 sm:pb-24 min-[1000px]:pb-8">{renderActiveView()}</main>
-      </div>
+          <main className="min-w-0 flex-1 pb-40 sm:pb-24 min-[1000px]:pb-8">{renderActiveView()}</main>
+        </div>
+      )}
 
       <footer className="border-t border-ink-12 bg-ink-06 px-4 py-8 text-xs text-ink-60 sm:px-6">
         <div className="mx-auto flex max-w-[1800px] flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -121,7 +135,7 @@ const AppContent: React.FC = () => {
             >
               Contribute
             </button>
-            {archivistRoles.includes(userProfile.role) && (
+            {hasArchivistAccess && (
               <button
                 type="button"
                 onClick={() => navigateTo('admin')}

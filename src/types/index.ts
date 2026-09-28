@@ -117,6 +117,12 @@ export interface Recording {
   duration: number; // in seconds
   audioQuality: 'FLAC Master' | '320kbps MP3' | '128kbps Stream';
   audioSampleType: 'benga_fast' | 'rhumba_slow' | 'highlife' | 'taarab' | 'soukous';
+  /** Playable source for the uploaded master. Session-scoped object URL for
+   *  local contributions; a Storage path once the file is durably uploaded. */
+  audioUrl?: string;
+  audioFileName?: string;
+  audioMimeType?: string;
+  audioFileSize?: number;
   rightsStatus: RightsStatus;
   rightsDeclaration: string;
   verificationStatus: VerificationStatus;
