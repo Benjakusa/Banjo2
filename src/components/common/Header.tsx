@@ -130,7 +130,7 @@ export const Header: React.FC<{ onOpenNav?: () => void }> = ({ onOpenNav }) => {
             className="flex shrink-0 items-center gap-1.5"
             aria-label="Banjo home"
           >
-            <Wordmark className="text-[22px] leading-none" />
+            <Wordmark size="md" alt="" />
           </button>
 
           <button

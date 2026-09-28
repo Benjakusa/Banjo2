@@ -85,7 +85,7 @@ const AppContent: React.FC = () => {
       <footer className="border-t border-ink-12 bg-ink-06 px-4 py-8 text-xs text-ink-60 sm:px-6">
         <div className="mx-auto flex max-w-[1800px] flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-1.5">
-            <Wordmark className="text-lg leading-none" />
+            <Wordmark size="sm" />
             <p className="max-w-md leading-relaxed">
               The free encyclopedia of African music. Every recording, credit,
               lyric, and claim here is community-submitted, sourced, and versioned.
