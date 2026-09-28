@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useBanjo } from '../../context/BanjoContext';
+import { VerificationBadge } from './VerificationBadge';
 import type { LyricsVersion } from '../../types';
 import {
   PlayFill,
@@ -141,19 +142,19 @@ export const FullPlayerModal: React.FC = () => {
       role="dialog"
       aria-modal="true"
       aria-label="Full player"
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-6"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-ink/60 p-0 sm:items-center sm:p-6"
       onClick={() => setIsFullPlayerOpen(false)}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-t-2xl border border-[var(--banjo-line)] bg-[var(--banjo-bg)] shadow-xl sm:rounded-2xl"
+        className="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-t-2xl border border-ink-12 bg-paper sm:rounded-2xl"
       >
-        <div className="flex items-center justify-between gap-2 border-b border-[var(--banjo-line)] px-3 py-2.5 sm:px-5">
+        <div className="flex items-center justify-between gap-2 border-b border-ink-12 px-3 py-2.5 sm:px-5">
           <button
             type="button"
             onClick={() => setIsFullPlayerOpen(false)}
             aria-label="Collapse player"
-            className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--banjo-muted)] transition-colors hover:bg-[var(--banjo-chip)] hover:text-[var(--banjo-text)]"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-ink-60 transition-colors hover:bg-ink-06 hover:text-ink"
           >
             <ChevronDown className="h-5 w-5" />
           </button>
@@ -167,8 +168,8 @@ export const FullPlayerModal: React.FC = () => {
                 aria-current={activeTab === tab.id ? 'true' : undefined}
                 className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
                   activeTab === tab.id
-                    ? 'bg-[var(--banjo-text)] text-[var(--banjo-bg)]'
-                    : 'text-[var(--banjo-muted)] hover:bg-[var(--banjo-chip)] hover:text-[var(--banjo-text)]'
+                    ? 'bg-ink text-paper'
+                    : 'text-ink-60 hover:bg-ink-06 hover:text-ink'
                 }`}
               >
                 {tab.label}
@@ -181,39 +182,39 @@ export const FullPlayerModal: React.FC = () => {
           {activeTab === 'player' && (
             <>
               <div className="flex flex-col items-center">
-                <div className="relative aspect-square w-48 overflow-hidden rounded-xl bg-[var(--banjo-chip)] sm:w-60">
+                <div className="relative aspect-square w-48 overflow-hidden rounded-xl bg-ink-06 sm:w-60">
                   <img
                     src={currentRecording.coverImage}
                     alt={currentRecording.title}
                     referrerPolicy="no-referrer"
                     className="h-full w-full object-cover"
                   />
-                  <span className="absolute bottom-2 left-2 rounded bg-black/80 px-2 py-0.5 font-mono text-[10px] text-white">
+                  <span className="absolute bottom-2 left-2 rounded bg-ink/80 px-2 py-0.5 font-mono text-[10px] text-paper">
                     {currentRecording.audioQuality}
                   </span>
                 </div>
 
                 <div className="mt-4 space-y-1 text-center">
-                  <p className="text-xs text-[var(--banjo-muted)]">
+                  <p className="text-xs text-ink-60">
                     {currentRecording.country} · {currentRecording.releaseYear} ·{' '}
                     {currentRecording.genre}
                   </p>
-                  <h2 className="text-xl font-bold leading-tight text-[var(--banjo-text)] sm:text-2xl">
+                  <h2 className="text-xl font-bold leading-tight text-ink sm:text-2xl">
                     {currentRecording.title}
                   </h2>
-                  <p className="text-sm font-medium text-[var(--banjo-primary)]">
+                  <p className="text-sm font-medium text-ink-60">
                     {currentRecording.artistOrBand}
                   </p>
                 </div>
               </div>
 
               {soloSegments.length > 0 && (
-                <div className="rounded-xl border border-[var(--banjo-line)] p-3">
-                  <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-[var(--banjo-text)]">
-                    <MusicNoteBeamed className="h-4 w-4 text-[var(--banjo-accent)]" />
+                <div className="rounded-xl border border-ink-12 p-3">
+                  <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-ink">
+                    <MusicNoteBeamed className="h-4 w-4 text-brand" />
                     Solo credits
                   </p>
-                  <div className="relative h-8 w-full overflow-hidden rounded-full bg-[var(--banjo-chip)]">
+                  <div className="relative h-8 w-full overflow-hidden rounded-full bg-ink-06">
                     {soloSegments.map((seg, i) => (
                       <button
                         key={i}
@@ -222,8 +223,8 @@ export const FullPlayerModal: React.FC = () => {
                         title={`${seg.name} — ${formatSeconds(seg.start)} to ${formatSeconds(seg.end)}`}
                         className={`absolute inset-y-0.5 rounded-full ${
                           currentTime >= seg.start && currentTime <= seg.end
-                            ? 'bg-[var(--banjo-primary)] ring-2 ring-white'
-                            : 'bg-[var(--banjo-primary)]/60 hover:bg-[var(--banjo-primary)]'
+                            ? 'bg-brand ring-2 ring-paper'
+                            : 'bg-brand/60 hover:bg-brand'
                         }`}
                         style={{
                           left: `${(seg.start / total) * 100}%`,
@@ -236,10 +237,10 @@ export const FullPlayerModal: React.FC = () => {
                       </button>
                     ))}
                   </div>
-                  <ul className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-[var(--banjo-muted)]">
+                  <ul className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-ink-60">
                     {soloSegments.map((seg, i) => (
                       <li key={i} className="inline-flex items-center gap-1">
-                        <span className="h-1.5 w-1.5 rounded-full bg-[var(--banjo-primary)]" />
+                        <span className="h-1.5 w-1.5 rounded-full bg-brand" />
                         {seg.name}
                         <span className="font-mono">
                           {formatSeconds(seg.start)}–{formatSeconds(seg.end)}
@@ -259,9 +260,9 @@ export const FullPlayerModal: React.FC = () => {
                   value={Math.min(currentTime, total || 100)}
                   onChange={(e) => seek(parseFloat(e.target.value))}
                   aria-label="Seek"
-                  className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-[var(--banjo-chip)] accent-[var(--banjo-primary)]"
+                  className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-ink-06 accent-brand"
                 />
-                <div className="flex justify-between font-mono text-[11px] tabular-nums text-[var(--banjo-muted)]">
+                <div className="flex justify-between font-mono text-[11px] tabular-nums text-ink-60">
                   <span>{formatSeconds(currentTime)}</span>
                   <span>{formatSeconds(total)}</span>
                 </div>
@@ -275,7 +276,7 @@ export const FullPlayerModal: React.FC = () => {
                     title="Shuffle"
                     aria-label="Shuffle"
                     className={`rounded p-2 transition-colors ${
-                      isShuffle ? 'text-[var(--banjo-primary)]' : 'text-[var(--banjo-muted)] hover:text-[var(--banjo-text)]'
+                      isShuffle ? 'text-brand' : 'text-ink-60 hover:text-ink'
                     }`}
                   >
                     <Shuffle className="h-4 w-4" />
@@ -289,8 +290,8 @@ export const FullPlayerModal: React.FC = () => {
                     aria-label={`Repeat: ${repeatMode}`}
                     className={`rounded p-2 transition-colors ${
                       repeatMode !== 'off'
-                        ? 'text-[var(--banjo-primary)]'
-                        : 'text-[var(--banjo-muted)] hover:text-[var(--banjo-text)]'
+                        ? 'text-brand'
+                        : 'text-ink-60 hover:text-ink'
                     }`}
                   >
                     <Repeat className="h-4 w-4" />
@@ -302,7 +303,7 @@ export const FullPlayerModal: React.FC = () => {
                     type="button"
                     onClick={prevTrack}
                     aria-label="Previous track"
-                    className="p-2 text-[var(--banjo-muted)] transition-colors hover:text-[var(--banjo-text)]"
+                    className="p-2 text-ink-60 transition-colors hover:text-ink"
                   >
                     <SkipBackwardFill className="h-5 w-5" />
                   </button>
@@ -310,7 +311,7 @@ export const FullPlayerModal: React.FC = () => {
                     type="button"
                     onClick={togglePlay}
                     aria-label={isPlaying ? 'Pause' : 'Play'}
-                    className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--banjo-text)] text-[var(--banjo-bg)] transition-opacity hover:opacity-85"
+                    className="flex h-12 w-12 items-center justify-center rounded-full bg-ink text-paper transition-opacity hover:opacity-85"
                   >
                     {isPlaying ? (
                       <PauseFill className="h-6 w-6" />
@@ -322,7 +323,7 @@ export const FullPlayerModal: React.FC = () => {
                     type="button"
                     onClick={nextTrack}
                     aria-label="Next track"
-                    className="p-2 text-[var(--banjo-muted)] transition-colors hover:text-[var(--banjo-text)]"
+                    className="p-2 text-ink-60 transition-colors hover:text-ink"
                   >
                     <SkipForwardFill className="h-5 w-5" />
                   </button>
@@ -336,8 +337,8 @@ export const FullPlayerModal: React.FC = () => {
                       onClick={() => setSpeed(spd)}
                       className={`rounded px-1.5 py-0.5 font-mono text-[10px] transition-colors ${
                         playbackSpeed === spd
-                          ? 'bg-[var(--banjo-text)] text-[var(--banjo-bg)]'
-                          : 'text-[var(--banjo-muted)] hover:bg-[var(--banjo-chip)]'
+                          ? 'bg-ink text-paper'
+                          : 'text-ink-60 hover:bg-ink-06'
                       }`}
                     >
                       {spd}x
@@ -346,19 +347,19 @@ export const FullPlayerModal: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between gap-2 border-t border-[var(--banjo-line)] pt-3">
+              <div className="flex items-center justify-between gap-2 border-t border-ink-12 pt-3">
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => toggleSaveRecording(currentRecording.id)}
                     className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
                       isSaved
-                        ? 'bg-[var(--banjo-chip)] text-[var(--banjo-text)]'
-                        : 'bg-[var(--banjo-chip)] text-[var(--banjo-muted)] hover:text-[var(--banjo-text)]'
+                        ? 'bg-ink-06 text-ink'
+                        : 'bg-ink-06 text-ink-60 hover:text-ink'
                     }`}
                   >
                     {isSaved ? (
-                      <BookmarkFill className="h-3.5 w-3.5 text-[var(--banjo-primary)]" />
+                      <BookmarkFill className="h-3.5 w-3.5 text-brand" />
                     ) : (
                       <Bookmark className="h-3.5 w-3.5" />
                     )}
@@ -371,7 +372,7 @@ export const FullPlayerModal: React.FC = () => {
                       navigator.clipboard?.writeText(window.location.href);
                       showToast('Citation link copied to clipboard');
                     }}
-                    className="flex items-center gap-1.5 rounded-full border border-[var(--banjo-line)] px-3 py-1.5 text-xs font-semibold text-[var(--banjo-muted)] transition-colors hover:text-[var(--banjo-text)]"
+                    className="flex items-center gap-1.5 rounded-full border border-ink-12 px-3 py-1.5 text-xs font-semibold text-ink-60 transition-colors hover:text-ink"
                   >
                     <Share className="h-3.5 w-3.5" />
                     Share
@@ -384,7 +385,7 @@ export const FullPlayerModal: React.FC = () => {
                     setIsFullPlayerOpen(false);
                     navigateTo('song_detail', { songId: currentRecording.id });
                   }}
-                  className="flex items-center gap-1.5 rounded-full bg-[var(--banjo-primary)] px-4 py-2 text-xs font-semibold text-white transition-opacity hover:opacity-90"
+                  className="flex items-center gap-1.5 rounded-full bg-brand px-4 py-2 text-xs font-semibold text-on-orange transition-opacity hover:opacity-90"
                 >
                   <JournalText className="h-3.5 w-3.5" />
                   Open article
@@ -403,8 +404,8 @@ export const FullPlayerModal: React.FC = () => {
                     onClick={() => setActiveLyricsId(version.id)}
                     className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
                       activeLyrics?.id === version.id
-                        ? 'bg-[var(--banjo-text)] text-[var(--banjo-bg)]'
-                        : 'bg-[var(--banjo-chip)] text-[var(--banjo-muted)] hover:text-[var(--banjo-text)]'
+                        ? 'bg-ink text-paper'
+                        : 'bg-ink-06 text-ink-60 hover:text-ink'
                     }`}
                   >
                     {version.isTranslation ? (
@@ -416,7 +417,7 @@ export const FullPlayerModal: React.FC = () => {
                   </button>
                 ))}
                 {isSynced && (
-                  <span className="ml-auto inline-flex items-center gap-1 text-[11px] text-[var(--banjo-muted)]">
+                  <span className="ml-auto inline-flex items-center gap-1 text-[11px] text-ink-60">
                     <ClockFill className="h-3 w-3" />
                     Time-synced
                   </span>
@@ -425,7 +426,7 @@ export const FullPlayerModal: React.FC = () => {
 
               {activeLyrics ? (
                 activeLyrics.isInstrumental ? (
-                  <p className="rounded-xl border border-[var(--banjo-line)] p-4 text-sm text-[var(--banjo-muted)]">
+                  <p className="rounded-xl border border-ink-12 p-4 text-sm text-ink-60">
                     Instrumental — no sung lyrics were transcribed for this version.
                   </p>
                 ) : (
@@ -441,14 +442,14 @@ export const FullPlayerModal: React.FC = () => {
                             onClick={() => clickable && seek(line.startSec as number)}
                             className={`block w-full rounded-md px-2.5 py-1.5 text-left text-sm leading-relaxed transition-colors ${
                               active
-                                ? 'bg-[var(--banjo-primary)] font-semibold text-white'
+                                ? 'bg-brand font-semibold text-on-orange'
                                 : clickable
-                                  ? 'text-[var(--banjo-text)]/80 hover:bg-[var(--banjo-chip)]'
-                                  : 'cursor-default text-[var(--banjo-text)]/80'
+                                  ? 'text-ink/80 hover:bg-ink-06'
+                                  : 'cursor-default text-ink/80'
                             }`}
                           >
                             {line.section && (
-                              <span className="mr-1.5 font-mono text-[10px] font-bold uppercase tracking-wide text-[var(--banjo-primary)]">
+                              <span className="mr-1.5 font-mono text-[10px] font-bold uppercase tracking-wide text-ink-60">
                                 {line.section}
                               </span>
                             )}
@@ -460,7 +461,7 @@ export const FullPlayerModal: React.FC = () => {
                   </ul>
                 )
               ) : (
-                <p className="text-sm text-[var(--banjo-muted)]">No lyrics available.</p>
+                <p className="text-sm text-ink-60">No lyrics available.</p>
               )}
             </div>
           )}
@@ -468,25 +469,25 @@ export const FullPlayerModal: React.FC = () => {
           {activeTab === 'personnel' && (
             <div className="space-y-5">
               <section>
-                <h3 className="mb-2 flex items-center gap-1.5 text-sm font-bold text-[var(--banjo-text)]">
-                  <MusicNoteBeamed className="h-4 w-4 text-[var(--banjo-accent)]" />
+                <h3 className="mb-2 flex items-center gap-1.5 text-sm font-bold text-ink">
+                  <MusicNoteBeamed className="h-4 w-4 text-brand" />
                   Soloists
                 </h3>
                 {soloists.length === 0 ? (
-                  <p className="text-sm text-[var(--banjo-muted)]">No soloists credited for this recording.</p>
+                  <p className="text-sm text-ink-60">No soloists credited for this recording.</p>
                 ) : (
                   <ol className="space-y-2">
                     {soloists.map((credit) => (
                       <li
                         key={`${credit.musicianId}-${credit.instrument}-${credit.soloOrder}`}
-                        className="flex items-start gap-3 rounded-xl border border-[var(--banjo-line)] p-3"
+                        className="flex items-start gap-3 rounded-xl border border-ink-12 p-3"
                       >
-                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--banjo-primary)] font-mono text-[11px] font-bold text-white">
+                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand font-mono text-[11px] font-bold text-on-orange">
                           {credit.soloOrder ?? '–'}
                         </span>
                         <div className="min-w-0 flex-1">
-                          <p className="text-sm font-semibold text-[var(--banjo-text)]">{credit.musicianName}</p>
-                          <p className="text-xs text-[var(--banjo-muted)]">
+                          <p className="text-sm font-semibold text-ink">{credit.musicianName}</p>
+                          <p className="text-xs text-ink-60">
                             {credit.role} · {credit.instrument}
                           </p>
                           {credit.solos && credit.solos.length > 0 && (
@@ -497,7 +498,7 @@ export const FullPlayerModal: React.FC = () => {
                                   type="button"
                                   disabled={typeof span.startSec !== 'number'}
                                   onClick={() => seek(span.startSec || 0)}
-                                  className="rounded-full border border-[var(--banjo-line)] px-2 py-0.5 font-mono text-[11px] text-[var(--banjo-muted)] transition-colors hover:border-[var(--banjo-primary)] hover:text-[var(--banjo-primary)]"
+                                  className="rounded-full border border-ink-12 px-2 py-0.5 font-mono text-[11px] text-ink-60 transition-colors hover:border-brand hover:text-link"
                                 >
                                   {span.label || 'Solo'} {formatSeconds(span.startSec || 0)}–
                                   {formatSeconds(span.endSec || 0)}
@@ -513,8 +514,8 @@ export const FullPlayerModal: React.FC = () => {
               </section>
 
               <section>
-                <h3 className="mb-2 text-sm font-bold text-[var(--banjo-text)]">Other musicians</h3>
-                <ul className="divide-y divide-[var(--banjo-line)] rounded-xl border border-[var(--banjo-line)]">
+                <h3 className="mb-2 text-sm font-bold text-ink">Other musicians</h3>
+                <ul className="divide-y divide-ink-12 rounded-xl border border-ink-12">
                   {currentRecording.musicians
                     .filter((m) => !m.isSoloist)
                     .map((credit, i) => (
@@ -522,10 +523,10 @@ export const FullPlayerModal: React.FC = () => {
                         key={`${credit.musicianId}-${i}`}
                         className="flex items-center gap-3 p-3 text-sm"
                       >
-                        <span className="font-semibold text-[var(--banjo-text)]">{credit.musicianName}</span>
-                        <span className="text-xs text-[var(--banjo-muted)]">{credit.instrument}</span>
+                        <span className="font-semibold text-ink">{credit.musicianName}</span>
+                        <span className="text-xs text-ink-60">{credit.instrument}</span>
                         {credit.notes && (
-                          <span className="ml-auto text-xs italic text-[var(--banjo-muted)]">{credit.notes}</span>
+                          <span className="ml-auto text-xs italic text-ink-60">{credit.notes}</span>
                         )}
                       </li>
                     ))}
@@ -545,8 +546,8 @@ export const FullPlayerModal: React.FC = () => {
                     onClick={() => playSong(rec)}
                     className={`flex w-full items-center gap-3 rounded-lg border p-3 text-left transition-colors ${
                       isCurrent
-                        ? 'border-[var(--banjo-primary)] bg-[var(--banjo-primary)]/5'
-                        : 'border-[var(--banjo-line)] hover:bg-[var(--banjo-chip)]'
+                        ? 'border-brand bg-brand/5'
+                        : 'border-ink-12 hover:bg-ink-06'
                     }`}
                   >
                     <img
@@ -558,16 +559,16 @@ export const FullPlayerModal: React.FC = () => {
                     <span className="min-w-0 flex-1">
                       <span
                         className={`block truncate text-xs font-semibold ${
-                          isCurrent ? 'text-[var(--banjo-primary)]' : 'text-[var(--banjo-text)]'
+                          isCurrent ? 'text-brand' : 'text-ink'
                         }`}
                       >
                         {rec.title}
                       </span>
-                      <span className="block truncate text-[11px] text-[var(--banjo-muted)]">
+                      <span className="block truncate text-[11px] text-ink-60">
                         {rec.artistOrBand} · {rec.releaseYear}
                       </span>
                     </span>
-                    <span className="shrink-0 font-mono text-[11px] text-[var(--banjo-muted)]">
+                    <span className="shrink-0 font-mono text-[11px] text-ink-60">
                       {formatSeconds(rec.duration)}
                     </span>
                   </button>
@@ -577,22 +578,22 @@ export const FullPlayerModal: React.FC = () => {
           )}
 
           {activeTab === 'provenance' && (
-            <div className="rounded-xl border border-[var(--banjo-line)] p-4">
-              <h3 className="mb-2 flex items-center gap-1.5 text-sm font-bold text-[var(--banjo-text)]">
-                <ShieldCheck className="h-4 w-4 text-[var(--banjo-primary)]" />
+            <div className="rounded-xl border border-ink-12 p-4">
+              <h3 className="mb-2 flex items-center gap-1.5 text-sm font-bold text-ink">
+                <ShieldCheck className="h-4 w-4 text-brand" />
                 Provenance and rights
               </h3>
-              <p className="text-xs leading-relaxed text-[var(--banjo-muted)]">
+              <p className="text-xs leading-relaxed text-ink-60">
                 {currentRecording.rightsDeclaration}
               </p>
-              <div className="mt-3 grid grid-cols-2 gap-2 border-t border-[var(--banjo-line)] pt-2 font-mono text-[11px]">
+              <div className="mt-3 grid grid-cols-2 gap-2 border-t border-ink-12 pt-2 font-mono text-[11px]">
                 <div>
-                  <span className="block text-[var(--banjo-muted)]">Status</span>
-                  <span className="text-[var(--banjo-text)]">{currentRecording.rightsStatus}</span>
+                  <span className="block text-ink-60">Status</span>
+                  <span className="text-ink">{currentRecording.rightsStatus}</span>
                 </div>
                 <div>
-                  <span className="block text-[var(--banjo-muted)]">Verification</span>
-                  <span className="text-[var(--banjo-text)]">{currentRecording.verificationStatus}</span>
+                  <span className="block text-ink-60">Verification</span>
+                  <VerificationBadge status={currentRecording.verificationStatus} className="h-4 w-4" />
                 </div>
               </div>
             </div>

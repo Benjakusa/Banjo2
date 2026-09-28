@@ -120,13 +120,13 @@ export const UploadContributeView: React.FC = () => {
   return (
     <div className="mx-auto max-w-3xl px-4 sm:px-6 py-6 space-y-6 pb-36">
       <div>
-        <span className="text-xs uppercase tracking-widest font-mono text-orange-700 font-semibold">
+        <span className="text-xs uppercase tracking-widest font-mono text-ink-60 font-semibold">
           Community Contribution
         </span>
-        <h1 className="text-2xl sm:text-3xl font-serif font-medium text-black mt-0.5">
+        <h1 className="text-2xl sm:text-3xl font-serif font-medium text-ink mt-0.5">
           Contribute Knowledge & Recordings
         </h1>
-        <p className="text-xs text-black/60 mt-1">
+        <p className="text-xs text-ink-60 mt-1">
           Add missing details, upload digitized master recordings, or submit documentary evidence to the encyclopedia.
         </p>
       </div>
@@ -148,11 +148,11 @@ export const UploadContributeView: React.FC = () => {
               onClick={() => setSubmissionCategory(item.key as any)}
               className={`p-3 rounded-xl border text-left flex flex-col justify-between gap-1.5 transition-all cursor-pointer ${
                 isSelected
-                  ? 'border-orange-600 bg-orange-50 text-orange-800 shadow-xs'
-                  : 'border-black/10 bg-white text-black/60 hover:bg-black/5'
+                  ? 'border-ink bg-ink text-paper'
+                  : 'border-ink-12 bg-paper text-ink-60 hover:bg-ink-06'
               }`}
             >
-              <IconC className={`w-4 h-4 ${isSelected ? 'text-orange-600' : 'text-black/40'}`} />
+              <IconC className={`w-4 h-4 ${isSelected ? 'text-brand' : 'text-ink-60'}`} />
               <span className="font-semibold text-[11px]">{item.label}</span>
             </button>
           );
@@ -160,19 +160,19 @@ export const UploadContributeView: React.FC = () => {
       </div>
 
       {/* Step Wizard Container */}
-      <div className="rounded-2xl border border-black/10 bg-white p-6 sm:p-8 space-y-6 shadow-sm">
+      <div className="rounded-2xl border border-ink-12 bg-paper p-6 sm:p-8 space-y-6">
         {/* Step Indicator */}
-        <div className="flex items-center justify-between border-b border-black/10 pb-3">
+        <div className="flex items-center justify-between border-b border-ink-12 pb-3">
           <div className="flex items-center gap-2">
             {[1, 2, 3, 4, 5].map((s) => (
               <div
                 key={s}
                 className={`flex items-center justify-center w-7 h-7 rounded-full text-xs font-mono font-bold transition-all ${
                   s === step
-                    ? 'bg-orange-600 text-white'
+                    ? 'bg-brand text-on-orange'
                     : s < step
-                    ? 'bg-orange-100 text-orange-800'
-                    : 'bg-black/5 text-black/40'
+                    ? 'bg-ink-06 text-ink-60'
+                    : 'bg-ink-06 text-ink-60'
                 }`}
               >
                 {s < step ? <CheckLg className="w-3.5 h-3.5" /> : s}
@@ -180,7 +180,7 @@ export const UploadContributeView: React.FC = () => {
             ))}
           </div>
 
-          <span className="text-xs font-mono text-orange-700 font-bold uppercase">
+          <span className="text-xs font-mono text-ink-60 font-bold uppercase">
             Step {step} of 5
           </span>
         </div>
@@ -189,62 +189,62 @@ export const UploadContributeView: React.FC = () => {
         {step === 1 && (
           <div className="space-y-4 text-xs">
             <div>
-              <h2 className="text-lg font-serif font-medium text-black">
+              <h2 className="text-lg font-serif font-medium text-ink">
                 Step 1: Song & Recording Metadata
               </h2>
-              <p className="text-black/50">Provide title, artist, year, and studio information.</p>
+              <p className="text-ink-60">Provide title, artist, year, and studio information.</p>
             </div>
 
-            <div className="border-2 border-dashed border-black/20 hover:border-orange-600 rounded-xl p-6 text-center bg-black/5 transition-colors cursor-pointer space-y-1.5">
-              <CloudArrowUp className="w-7 h-7 text-orange-600 mx-auto" />
-              <p className="font-medium text-black text-sm">
+            <div className="border-2 border-dashed border-ink-12 hover:border-brand rounded-xl p-6 text-center bg-ink-06 transition-colors cursor-pointer space-y-1.5">
+              <CloudArrowUp className="w-7 h-7 text-brand mx-auto" />
+              <p className="font-medium text-ink text-sm">
                 Attach Audio File (FLAC, WAV, MP3)
               </p>
-              <p className="text-[11px] text-black/50">
+              <p className="text-[11px] text-ink-60">
                 Automatic audio validation will verify bit depth and generate waveform.
               </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-black/70 font-medium mb-1">Song Title</label>
+                <label className="block text-ink-60 font-medium mb-1">Song Title</label>
                 <input
                   type="text"
                   placeholder="e.g. Sawa Sawa"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full rounded-lg border border-black/20 px-3 py-2 text-black focus:border-orange-600 focus:outline-none"
+                  className="w-full rounded-lg border border-ink-12 px-3 py-2 text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
                 />
               </div>
 
               <div>
-                <label className="block text-black/70 font-medium mb-1">Artist or Band</label>
+                <label className="block text-ink-60 font-medium mb-1">Artist or Band</label>
                 <input
                   type="text"
                   placeholder="e.g. Shirati Jazz Band"
                   value={artistOrBand}
                   onChange={(e) => setArtistOrBand(e.target.value)}
-                  className="w-full rounded-lg border border-black/20 px-3 py-2 text-black focus:border-orange-600 focus:outline-none"
+                  className="w-full rounded-lg border border-ink-12 px-3 py-2 text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
                 />
               </div>
 
               <div>
-                <label className="block text-black/70 font-medium mb-1">Release Year</label>
+                <label className="block text-ink-60 font-medium mb-1">Release Year</label>
                 <input
                   type="number"
                   value={releaseYear}
                   onChange={(e) => setReleaseYear(e.target.value)}
-                  className="w-full rounded-lg border border-black/20 px-3 py-2 text-black focus:border-orange-600 focus:outline-none font-mono"
+                  className="w-full rounded-lg border border-ink-12 px-3 py-2 text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0 font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-black/70 font-medium mb-1">Country</label>
+                <label className="block text-ink-60 font-medium mb-1">Country</label>
                 <input
                   type="text"
                   value={country}
                   onChange={(e) => setCountry(e.target.value)}
-                  className="w-full rounded-lg border border-black/20 px-3 py-2 text-black focus:border-orange-600 focus:outline-none"
+                  className="w-full rounded-lg border border-ink-12 px-3 py-2 text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
                 />
               </div>
             </div>
@@ -255,54 +255,54 @@ export const UploadContributeView: React.FC = () => {
         {step === 2 && (
           <div className="space-y-4 text-xs">
             <div>
-              <h2 className="text-lg font-serif font-medium text-black">
+              <h2 className="text-lg font-serif font-medium text-ink">
                 Step 2: Musicians & Instrument Roles
               </h2>
-              <p className="text-black/50">Credit every instrumentalist and vocalist who performed.</p>
+              <p className="text-ink-60">Credit every instrumentalist and vocalist who performed.</p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-black/70 font-medium mb-1">Composer</label>
+                <label className="block text-ink-60 font-medium mb-1">Composer</label>
                 <input
                   type="text"
                   placeholder="e.g. D.O. Misiani"
                   value={composer}
                   onChange={(e) => setComposer(e.target.value)}
-                  className="w-full rounded-lg border border-black/20 px-3 py-2 text-black focus:border-orange-600 focus:outline-none"
+                  className="w-full rounded-lg border border-ink-12 px-3 py-2 text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
                 />
               </div>
 
               <div>
-                <label className="block text-black/70 font-medium mb-1">Lead Guitarist</label>
+                <label className="block text-ink-60 font-medium mb-1">Lead Guitarist</label>
                 <input
                   type="text"
                   placeholder="e.g. Peter Ochieng"
                   value={leadGuitarist}
                   onChange={(e) => setLeadGuitarist(e.target.value)}
-                  className="w-full rounded-lg border border-black/20 px-3 py-2 text-black focus:border-orange-600 focus:outline-none"
+                  className="w-full rounded-lg border border-ink-12 px-3 py-2 text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
                 />
               </div>
 
               <div>
-                <label className="block text-black/70 font-medium mb-1">Vocalist</label>
+                <label className="block text-ink-60 font-medium mb-1">Vocalist</label>
                 <input
                   type="text"
                   placeholder="e.g. Mary Achieng"
                   value={leadVocalist}
                   onChange={(e) => setLeadVocalist(e.target.value)}
-                  className="w-full rounded-lg border border-black/20 px-3 py-2 text-black focus:border-orange-600 focus:outline-none"
+                  className="w-full rounded-lg border border-ink-12 px-3 py-2 text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
                 />
               </div>
 
               <div>
-                <label className="block text-black/70 font-medium mb-1">Sound Engineer / Studio</label>
+                <label className="block text-ink-60 font-medium mb-1">Sound Engineer / Studio</label>
                 <input
                   type="text"
                   placeholder="e.g. Polygram Industrial Area"
                   value={studio}
                   onChange={(e) => setStudio(e.target.value)}
-                  className="w-full rounded-lg border border-black/20 px-3 py-2 text-black focus:border-orange-600 focus:outline-none"
+                  className="w-full rounded-lg border border-ink-12 px-3 py-2 text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
                 />
               </div>
             </div>
@@ -313,31 +313,31 @@ export const UploadContributeView: React.FC = () => {
         {step === 3 && (
           <div className="space-y-4 text-xs">
             <div>
-              <h2 className="text-lg font-serif font-medium text-black">
+              <h2 className="text-lg font-serif font-medium text-ink">
                 Step 3: Historical Narrative & Citations
               </h2>
-              <p className="text-black/50">Provide the story behind the recording and primary evidence sources.</p>
+              <p className="text-ink-60">Provide the story behind the recording and primary evidence sources.</p>
             </div>
 
             <div>
-              <label className="block text-black/70 font-medium mb-1">Historical Context</label>
+              <label className="block text-ink-60 font-medium mb-1">Historical Context</label>
               <textarea
                 rows={5}
                 placeholder="Describe how the song was composed, the studio session context, social meaning of lyrics..."
                 value={historyNarrative}
                 onChange={(e) => setHistoryNarrative(e.target.value)}
-                className="w-full rounded-lg border border-black/20 p-3 text-black focus:border-orange-600 focus:outline-none leading-relaxed font-serif"
+                className="w-full rounded-lg border border-ink-12 p-3 text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0 leading-relaxed font-serif"
               />
             </div>
 
             <div>
-              <label className="block text-black/70 font-medium mb-1">Primary Sources / References</label>
+              <label className="block text-ink-60 font-medium mb-1">Primary Sources / References</label>
               <input
                 type="text"
                 placeholder="e.g. Vinyl record runout stamp, Kenya Daily Nation article (1978)"
                 value={sourcesProvided}
                 onChange={(e) => setSourcesProvided(e.target.value)}
-                className="w-full rounded-lg border border-black/20 px-3 py-2 text-black focus:border-orange-600 focus:outline-none"
+                className="w-full rounded-lg border border-ink-12 px-3 py-2 text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
               />
             </div>
           </div>
@@ -347,10 +347,10 @@ export const UploadContributeView: React.FC = () => {
         {step === 4 && (
           <div className="space-y-4 text-xs">
             <div>
-              <h2 className="text-lg font-serif font-medium text-black">
+              <h2 className="text-lg font-serif font-medium text-ink">
                 Step 4: Rights & Copyright Declaration
               </h2>
-              <p className="text-black/50">Banjo respects intellectual property and requires verified assertions.</p>
+              <p className="text-ink-60">Banjo respects intellectual property and requires verified assertions.</p>
             </div>
 
             <div className="space-y-2.5">
@@ -359,8 +359,8 @@ export const UploadContributeView: React.FC = () => {
                   key={opt.value}
                   className={`block p-3.5 rounded-xl border cursor-pointer transition-colors ${
                     rightsDeclaration === opt.value
-                      ? 'border-orange-600 bg-orange-50/70'
-                      : 'border-black/10 bg-white hover:bg-black/5'
+                      ? 'border-brand bg-brand/10'
+                      : 'border-ink-12 bg-paper hover:bg-ink-06'
                   }`}
                 >
                   <div className="flex items-start gap-2.5">
@@ -370,11 +370,11 @@ export const UploadContributeView: React.FC = () => {
                       value={opt.value}
                       checked={rightsDeclaration === opt.value}
                       onChange={(e) => setRightsDeclaration(e.target.value)}
-                      className="mt-0.5 text-orange-600 focus:ring-orange-600"
+                      className="mt-0.5 text-ink-60 focus:ring-2 focus:ring-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
                     />
                     <div>
-                      <p className="font-semibold text-black">{opt.value}</p>
-                      <p className="text-black/60 text-[11px] mt-0.5 leading-relaxed">{opt.desc}</p>
+                      <p className="font-semibold text-ink">{opt.value}</p>
+                      <p className="text-ink-60 text-[11px] mt-0.5 leading-relaxed">{opt.desc}</p>
                     </div>
                   </div>
                 </label>
@@ -387,13 +387,13 @@ export const UploadContributeView: React.FC = () => {
         {step === 5 && (
           <div className="space-y-5 text-xs">
             <div>
-              <h2 className="text-lg font-serif font-medium text-black">
+              <h2 className="text-lg font-serif font-medium text-ink">
                 Step 5: Review & Submit
               </h2>
-              <p className="text-black/50">Confirm details before submitting to the archivist queue.</p>
+              <p className="text-ink-60">Confirm details before submitting to the archivist queue.</p>
             </div>
 
-            <div className="p-4 rounded-xl bg-black/5 border border-black/10 space-y-1.5 font-mono text-[11px]">
+            <div className="p-4 rounded-xl bg-ink-06 border border-ink-12 space-y-1.5 font-mono text-[11px]">
               <div><strong>Title:</strong> {title || 'Untitled Archive Track'}</div>
               <div><strong>Artist:</strong> {artistOrBand || 'Traditional Artists'}</div>
               <div><strong>Year:</strong> {releaseYear}</div>
@@ -401,17 +401,17 @@ export const UploadContributeView: React.FC = () => {
             </div>
 
             {uploadStatus !== 'idle' && (
-              <div className="p-4 rounded-xl bg-orange-50 border border-orange-200 space-y-2">
-                <div className="flex justify-between font-mono text-[11px] text-orange-800">
+              <div className="p-4 rounded-xl bg-brand/10 border border-brand space-y-2">
+                <div className="flex justify-between font-mono text-[11px] text-ink-60">
                   <span>Uploading to Cloudflare R2 archive storage...</span>
                   <span className="font-bold">{uploadProgress}%</span>
                 </div>
-                <div className="w-full bg-orange-200 h-2 rounded-full overflow-hidden">
-                  <div className="bg-orange-600 h-full transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
+                <div className="w-full bg-brand/10 h-2 rounded-full overflow-hidden">
+                  <div className="bg-brand h-full transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
                 </div>
                 {uploadStatus === 'completed' && (
-                  <div className="p-2.5 bg-black/5 border border-black/20 rounded-lg text-black flex items-center gap-2">
-                    <Check2Circle className="w-4 h-4 text-black shrink-0" />
+                  <div className="p-2.5 bg-ink-06 border border-ink-12 rounded-lg text-ink flex items-center gap-2">
+                    <Check2Circle className="w-4 h-4 text-ink shrink-0" />
                     <span>Submission confirmed! Sent to Archival Moderation Queue.</span>
                   </div>
                 )}
@@ -422,7 +422,7 @@ export const UploadContributeView: React.FC = () => {
               <button
                 type="button"
                 onClick={handleSimulatedUpload}
-                className="w-full py-3 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-semibold text-xs cursor-pointer shadow-md flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-xl bg-brand hover:bg-brand text-on-orange font-semibold text-xs cursor-pointer flex items-center justify-center gap-2"
               >
                 <CloudArrowUp className="w-4 h-4" />
                 <span>Publish to Archival Review Queue</span>
@@ -432,12 +432,12 @@ export const UploadContributeView: React.FC = () => {
         )}
 
         {/* Navigation Step Buttons */}
-        <div className="flex items-center justify-between pt-4 border-t border-black/10">
+        <div className="flex items-center justify-between pt-4 border-t border-ink-12">
           {step > 1 ? (
             <button
               type="button"
               onClick={() => setStep(step - 1)}
-              className="flex items-center gap-1 text-xs text-black/60 hover:text-black cursor-pointer"
+              className="flex items-center gap-1 text-xs text-ink-60 hover:text-ink cursor-pointer"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Previous</span>
@@ -448,7 +448,7 @@ export const UploadContributeView: React.FC = () => {
             <button
               type="button"
               onClick={() => setStep(step + 1)}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 text-white text-xs font-semibold cursor-pointer"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-brand hover:bg-brand text-on-orange text-xs font-semibold cursor-pointer"
             >
               <span>Next: Step {step + 1}</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -458,7 +458,7 @@ export const UploadContributeView: React.FC = () => {
           {step === 5 && uploadStatus === 'completed' && (
             <button
               onClick={() => navigateTo('profile')}
-              className="px-4 py-2 rounded-lg border border-black/20 bg-white hover:bg-black/5 text-black/80 text-xs font-medium cursor-pointer"
+              className="px-4 py-2 rounded-lg border border-ink-12 bg-paper hover:bg-ink-06 text-ink-60 text-xs font-medium cursor-pointer"
             >
               View in My Contributions <ArrowRight className="w-3 h-3 inline" />
             </button>

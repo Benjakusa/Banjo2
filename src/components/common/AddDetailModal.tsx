@@ -205,20 +205,17 @@ export const AddDetailModal: React.FC = () => {
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 p-0 sm:p-4 animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-ink/60 p-0 sm:p-4 animate-in fade-in duration-200"
     >
-      <div className="relative w-full max-w-2xl max-h-[92vh] flex flex-col rounded-t-2xl sm:rounded-2xl border border-black/10 bg-white shadow-xl overflow-hidden">
+      <div className="relative w-full max-w-2xl max-h-[92vh] flex flex-col rounded-t-2xl sm:rounded-2xl border border-ink-12 bg-paper overflow-hidden">
         {/* Top Header */}
-        <div className="flex items-center justify-between border-b border-black/10 px-5 py-3.5 bg-black/5 shrink-0">
+        <div className="flex items-center justify-between border-b border-ink-12 px-5 py-3.5 bg-ink-06 shrink-0">
           <div className="flex items-center gap-2.5">
-            <span className="flex items-center justify-center w-6 h-6 rounded bg-orange-600 text-white font-serif font-bold text-xs">
-              &#9834;
-            </span>
             <div>
-              <span className="text-[10px] uppercase tracking-wider font-mono text-orange-700 font-bold block">
+              <span className="text-[10px] uppercase tracking-wider font-mono text-ink-60 font-bold block">
                 Banjo · Community Editor
               </span>
-              <h2 className="text-sm sm:text-base font-serif font-bold text-black truncate max-w-sm sm:max-w-md">
+              <h2 className="text-sm sm:text-base font-serif font-bold text-ink truncate max-w-sm sm:max-w-md">
                 Add Details to {entityType === 'musician' ? targetMusician.name : entityType === 'band' ? targetBand.name : targetRecording.title}
               </h2>
             </div>
@@ -226,35 +223,35 @@ export const AddDetailModal: React.FC = () => {
           <button
             onClick={handleClose}
             aria-label="Close"
-            className="p-1 rounded-md text-black/50 hover:text-black hover:bg-black/10 cursor-pointer"
+            className="p-1 rounded-md text-ink-60 hover:text-ink hover:bg-ink-06 cursor-pointer"
           >
             <XLg className="w-4 h-4" />
           </button>
         </div>
 
         {/* Informational Callout */}
-        <div className="bg-orange-50 border-b border-orange-200 px-5 py-2.5 flex items-center justify-between text-xs text-orange-950">
+        <div className="bg-brand/10 border-b border-brand px-5 py-2.5 flex items-center justify-between text-xs text-ink-60">
           <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-orange-600 shrink-0" />
+            <ShieldCheck className="w-4 h-4 text-brand shrink-0" />
             <span className="text-[11px] leading-tight">
               <strong>Open Encyclopedia:</strong> Your additions will be saved directly and recorded as a versioned revision.
             </span>
           </div>
-          <span className="hidden sm:inline-block font-mono text-[10px] bg-orange-200 px-2 py-0.5 rounded text-orange-950 font-semibold">
+          <span className="hidden sm:inline-block font-mono text-[10px] bg-brand/10 px-2 py-0.5 rounded text-ink-60 font-semibold">
             Peer Reviewed
           </span>
         </div>
 
         {/* Tab Navigation Pill Bar */}
-        <div className="flex items-center gap-1 overflow-x-auto border-b border-black/10 px-4 py-2 bg-black/5 text-xs font-mono shrink-0 scrollbar-none">
+        <div className="flex items-center gap-1 overflow-x-auto border-b border-ink-12 px-4 py-2 bg-ink-06 text-xs font-mono shrink-0 scrollbar-none">
           {entityType === 'song' && (
             <>
               <button
                 onClick={() => setCurrentTab('musicians')}
                 className={`px-3 py-1.5 rounded-lg whitespace-nowrap font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
                   currentTab === 'musicians'
-                    ? 'bg-orange-600 text-white font-bold shadow-xs'
-                    : 'text-black/60 hover:bg-black/10 hover:text-black'
+                    ? 'bg-brand text-on-orange font-bold'
+                    : 'text-ink-60 hover:bg-ink-06 hover:text-ink'
                 }`}
               >
                 <People className="w-3.5 h-3.5" />
@@ -265,8 +262,8 @@ export const AddDetailModal: React.FC = () => {
                 onClick={() => setCurrentTab('trivia')}
                 className={`px-3 py-1.5 rounded-lg whitespace-nowrap font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
                   currentTab === 'trivia'
-                    ? 'bg-orange-600 text-white font-bold shadow-xs'
-                    : 'text-black/60 hover:bg-black/10 hover:text-black'
+                    ? 'bg-brand text-on-orange font-bold'
+                    : 'text-ink-60 hover:bg-ink-06 hover:text-ink'
                 }`}
               >
                 <JournalText className="w-3.5 h-3.5" />
@@ -277,8 +274,8 @@ export const AddDetailModal: React.FC = () => {
                 onClick={() => setCurrentTab('sources')}
                 className={`px-3 py-1.5 rounded-lg whitespace-nowrap font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
                   currentTab === 'sources'
-                    ? 'bg-orange-600 text-white font-bold shadow-xs'
-                    : 'text-black/60 hover:bg-black/10 hover:text-black'
+                    ? 'bg-brand text-on-orange font-bold'
+                    : 'text-ink-60 hover:bg-ink-06 hover:text-ink'
                 }`}
               >
                 <FileEarmarkText className="w-3.5 h-3.5" />
@@ -289,8 +286,8 @@ export const AddDetailModal: React.FC = () => {
                 onClick={() => setCurrentTab('lyrics')}
                 className={`px-3 py-1.5 rounded-lg whitespace-nowrap font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
                   currentTab === 'lyrics'
-                    ? 'bg-orange-600 text-white font-bold shadow-xs'
-                    : 'text-black/60 hover:bg-black/10 hover:text-black'
+                    ? 'bg-brand text-on-orange font-bold'
+                    : 'text-ink-60 hover:bg-ink-06 hover:text-ink'
                 }`}
               >
                 <Translate className="w-3.5 h-3.5" />
@@ -301,8 +298,8 @@ export const AddDetailModal: React.FC = () => {
                 onClick={() => setCurrentTab('alternate')}
                 className={`px-3 py-1.5 rounded-lg whitespace-nowrap font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
                   currentTab === 'alternate'
-                    ? 'bg-orange-600 text-white font-bold shadow-xs'
-                    : 'text-black/60 hover:bg-black/10 hover:text-black'
+                    ? 'bg-brand text-on-orange font-bold'
+                    : 'text-ink-60 hover:bg-ink-06 hover:text-ink'
                 }`}
               >
                 <Disc className="w-3.5 h-3.5" />
@@ -314,7 +311,7 @@ export const AddDetailModal: React.FC = () => {
           {entityType === 'musician' && (
             <button
               onClick={() => setCurrentTab('bio')}
-              className="px-3 py-1.5 rounded-lg font-medium bg-orange-600 text-white font-bold shadow-xs flex items-center gap-1.5"
+              className="px-3 py-1.5 rounded-lg font-medium bg-brand text-on-orange font-bold flex items-center gap-1.5"
             >
               <People className="w-3.5 h-3.5" />
               <span>Musician Biography & Instruments</span>
@@ -324,7 +321,7 @@ export const AddDetailModal: React.FC = () => {
           {entityType === 'band' && (
             <button
               onClick={() => setCurrentTab('band_member')}
-              className="px-3 py-1.5 rounded-lg font-medium bg-orange-600 text-white font-bold shadow-xs flex items-center gap-1.5"
+              className="px-3 py-1.5 rounded-lg font-medium bg-brand text-on-orange font-bold flex items-center gap-1.5"
             >
               <People className="w-3.5 h-3.5" />
               <span>Band Lineup & History</span>
@@ -338,17 +335,17 @@ export const AddDetailModal: React.FC = () => {
           {currentTab === 'musicians' && (
             <form onSubmit={handleMusicianSubmit} className="space-y-4 text-xs">
               <div>
-                <h3 className="font-serif font-bold text-black text-base">
+                <h3 className="font-serif font-bold text-ink text-base">
                   Credit a Participating Musician
                 </h3>
-                <p className="text-black/50 text-xs">
+                <p className="text-ink-60 text-xs">
                   Document who played guitar, bass, horns, nyatiti, drums, or sang on this recording.
                 </p>
               </div>
 
               <div>
-                <label className="block text-black/70 font-semibold mb-1">
-                  Musician Name <span className="text-orange-600">*</span>
+                <label className="block text-ink-60 font-semibold mb-1">
+                  Musician Name <span className="text-ink-60">*</span>
                 </label>
                 <input
                   type="text"
@@ -356,19 +353,19 @@ export const AddDetailModal: React.FC = () => {
                   value={musicianName}
                   onChange={(e) => setMusicianName(e.target.value)}
                   required
-                  className="w-full rounded-lg border border-black/20 p-2.5 text-black text-sm focus:border-orange-600 focus:outline-none"
+                  className="w-full rounded-lg border border-ink-12 p-2.5 text-ink text-sm focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-black/70 font-semibold mb-1">
+                  <label className="block text-ink-60 font-semibold mb-1">
                     Role in Session
                   </label>
                   <select
                     value={musicianRole}
                     onChange={(e) => setMusicianRole(e.target.value)}
-                    className="w-full rounded-lg border border-black/20 p-2.5 text-black text-xs bg-white focus:border-orange-600 focus:outline-none"
+                    className="w-full rounded-lg border border-ink-12 p-2.5 text-ink text-xs bg-paper focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
                   >
                     <option value="Lead Guitarist & Soloist">Lead Guitarist & Soloist</option>
                     <option value="Rhythm Guitarist (Seben / Mi-solo)">Rhythm Guitarist (Seben / Mi-solo)</option>
@@ -384,7 +381,7 @@ export const AddDetailModal: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-black/70 font-semibold mb-1">
+                  <label className="block text-ink-60 font-semibold mb-1">
                     Instrument Played
                   </label>
                   <input
@@ -392,22 +389,22 @@ export const AddDetailModal: React.FC = () => {
                     placeholder="e.g. Electric Lead Guitar, Fender Precision Bass, Nyatiti"
                     value={instrument}
                     onChange={(e) => setInstrument(e.target.value)}
-                    className="w-full rounded-lg border border-black/20 p-2.5 text-black text-xs focus:border-orange-600 focus:outline-none"
+                    className="w-full rounded-lg border border-ink-12 p-2.5 text-ink text-xs focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
                   />
                 </div>
               </div>
 
-              <div className="pt-2 flex items-center justify-end gap-2 border-t border-black/10">
+              <div className="pt-2 flex items-center justify-end gap-2 border-t border-ink-12">
                 <button
                   type="button"
                   onClick={handleClose}
-                  className="px-4 py-2 rounded-lg border border-black/20 text-black/70 hover:bg-black/5 font-medium cursor-pointer"
+                  className="px-4 py-2 rounded-lg border border-ink-12 text-ink-60 hover:bg-ink-06 font-medium cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 text-white font-semibold cursor-pointer shadow-xs flex items-center gap-1.5"
+                  className="px-5 py-2 rounded-lg bg-brand hover:bg-brand text-on-orange font-semibold cursor-pointer flex items-center gap-1.5"
                 >
                   <PlusLg className="w-4 h-4" />
                   <span>Publish Musician Credit</span>
@@ -420,17 +417,17 @@ export const AddDetailModal: React.FC = () => {
           {currentTab === 'trivia' && (
             <form onSubmit={handleHistorySubmit} className="space-y-4 text-xs">
               <div>
-                <h3 className="font-serif font-bold text-black text-base">
+                <h3 className="font-serif font-bold text-ink text-base">
                   Add Historical Details or Context
                 </h3>
-                <p className="text-black/50 text-xs">
+                <p className="text-ink-60 text-xs">
                   Document the backstory of how this song was written, recorded, or received in the community.
                 </p>
               </div>
 
               <div>
-                <label className="block text-black/70 font-semibold mb-1">
-                  Historical Narrative / Fact <span className="text-orange-600">*</span>
+                <label className="block text-ink-60 font-semibold mb-1">
+                  Historical Narrative / Fact <span className="text-ink-60">*</span>
                 </label>
                 <textarea
                   rows={4}
@@ -438,12 +435,12 @@ export const AddDetailModal: React.FC = () => {
                   value={historyText}
                   onChange={(e) => setHistoryText(e.target.value)}
                   required
-                  className="w-full rounded-lg border border-black/20 p-2.5 text-black text-xs leading-relaxed focus:border-orange-600 focus:outline-none"
+                  className="w-full rounded-lg border border-ink-12 p-2.5 text-ink text-xs leading-relaxed focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
                 />
               </div>
 
               <div>
-                <label className="block text-black/70 font-semibold mb-1">
+                <label className="block text-ink-60 font-semibold mb-1">
                   Supporting Citation / Source Note
                 </label>
                 <input
@@ -451,21 +448,21 @@ export const AddDetailModal: React.FC = () => {
                   placeholder="e.g. Interview with elder band member, Daily Nation 1978 review, or sleeve notes"
                   value={historyCitation}
                   onChange={(e) => setHistoryCitation(e.target.value)}
-                  className="w-full rounded-lg border border-black/20 p-2.5 text-black text-xs focus:border-orange-600 focus:outline-none"
+                  className="w-full rounded-lg border border-ink-12 p-2.5 text-ink text-xs focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
                 />
               </div>
 
-              <div className="pt-2 flex items-center justify-end gap-2 border-t border-black/10">
+              <div className="pt-2 flex items-center justify-end gap-2 border-t border-ink-12">
                 <button
                   type="button"
                   onClick={handleClose}
-                  className="px-4 py-2 rounded-lg border border-black/20 text-black/70 hover:bg-black/5 font-medium cursor-pointer"
+                  className="px-4 py-2 rounded-lg border border-ink-12 text-ink-60 hover:bg-ink-06 font-medium cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 text-white font-semibold cursor-pointer shadow-xs flex items-center gap-1.5"
+                  className="px-5 py-2 rounded-lg bg-brand hover:bg-brand text-on-orange font-semibold cursor-pointer flex items-center gap-1.5"
                 >
                   <PlusLg className="w-4 h-4" />
                   <span>Publish History Details</span>
@@ -478,17 +475,17 @@ export const AddDetailModal: React.FC = () => {
           {currentTab === 'sources' && (
             <form onSubmit={handleSourceSubmit} className="space-y-4 text-xs">
               <div>
-                <h3 className="font-serif font-bold text-black text-base">
+                <h3 className="font-serif font-bold text-ink text-base">
                   Add a Verifiable Reference Citation
                 </h3>
-                <p className="text-black/50 text-xs">
+                <p className="text-ink-60 text-xs">
                   Citations protect oral tradition from erasure by tying assertions to physical or spoken evidence.
                 </p>
               </div>
 
               <div>
-                <label className="block text-black/70 font-semibold mb-1">
-                  Source Title / Document Name <span className="text-orange-600">*</span>
+                <label className="block text-ink-60 font-semibold mb-1">
+                  Source Title / Document Name <span className="text-ink-60">*</span>
                 </label>
                 <input
                   type="text"
@@ -496,19 +493,19 @@ export const AddDetailModal: React.FC = () => {
                   value={sourceTitle}
                   onChange={(e) => setSourceTitle(e.target.value)}
                   required
-                  className="w-full rounded-lg border border-black/20 p-2.5 text-black text-sm focus:border-orange-600 focus:outline-none"
+                  className="w-full rounded-lg border border-ink-12 p-2.5 text-ink text-sm focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-black/70 font-semibold mb-1">
+                  <label className="block text-ink-60 font-semibold mb-1">
                     Source Category
                   </label>
                   <select
                     value={sourceType}
                     onChange={(e) => setSourceType(e.target.value)}
-                    className="w-full rounded-lg border border-black/20 p-2.5 text-black text-xs bg-white focus:border-orange-600 focus:outline-none"
+                    className="w-full rounded-lg border border-ink-12 p-2.5 text-ink text-xs bg-paper focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
                   >
                     <option value="Original record sleeve">Original record sleeve / liner notes</option>
                     <option value="Studio documentation">Studio log / tape ledger</option>
@@ -522,7 +519,7 @@ export const AddDetailModal: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-black/70 font-semibold mb-1">
+                  <label className="block text-ink-60 font-semibold mb-1">
                     Year of Publication / Recording
                   </label>
                   <input
@@ -530,13 +527,13 @@ export const AddDetailModal: React.FC = () => {
                     placeholder="e.g. 1978"
                     value={sourceYear}
                     onChange={(e) => setSourceYear(e.target.value)}
-                    className="w-full rounded-lg border border-black/20 p-2.5 text-black text-xs font-mono focus:border-orange-600 focus:outline-none"
+                    className="w-full rounded-lg border border-ink-12 p-2.5 text-ink text-xs font-mono focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-black/70 font-semibold mb-1">
+                <label className="block text-ink-60 font-semibold mb-1">
                   Specific Page / Runout Matrix / Archivist Notes
                 </label>
                 <input
@@ -544,21 +541,21 @@ export const AddDetailModal: React.FC = () => {
                   placeholder="e.g. Matrix code stamped AS-1042-A-1 on dead-wax runout"
                   value={sourceNotes}
                   onChange={(e) => setSourceNotes(e.target.value)}
-                  className="w-full rounded-lg border border-black/20 p-2.5 text-black text-xs focus:border-orange-600 focus:outline-none"
+                  className="w-full rounded-lg border border-ink-12 p-2.5 text-ink text-xs focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
                 />
               </div>
 
-              <div className="pt-2 flex items-center justify-end gap-2 border-t border-black/10">
+              <div className="pt-2 flex items-center justify-end gap-2 border-t border-ink-12">
                 <button
                   type="button"
                   onClick={handleClose}
-                  className="px-4 py-2 rounded-lg border border-black/20 text-black/70 hover:bg-black/5 font-medium cursor-pointer"
+                  className="px-4 py-2 rounded-lg border border-ink-12 text-ink-60 hover:bg-ink-06 font-medium cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 text-white font-semibold cursor-pointer shadow-xs flex items-center gap-1.5"
+                  className="px-5 py-2 rounded-lg bg-brand hover:bg-brand text-on-orange font-semibold cursor-pointer flex items-center gap-1.5"
                 >
                   <PlusLg className="w-4 h-4" />
                   <span>Publish Citation</span>
@@ -571,16 +568,16 @@ export const AddDetailModal: React.FC = () => {
           {currentTab === 'lyrics' && (
             <form onSubmit={handleLyricsSubmit} className="space-y-4 text-xs">
               <div>
-                <h3 className="font-serif font-bold text-black text-base">
+                <h3 className="font-serif font-bold text-ink text-base">
                   Document Lyrics & Cultural Translation
                 </h3>
-                <p className="text-black/50 text-xs">
+                <p className="text-ink-60 text-xs">
                   Preserve indigenous language verses and poetic English or Swahili translations for future generations.
                 </p>
               </div>
 
               <div>
-                <label className="block text-black/70 font-semibold mb-1">
+                <label className="block text-ink-60 font-semibold mb-1">
                   Language of Song
                 </label>
                 <input
@@ -588,13 +585,13 @@ export const AddDetailModal: React.FC = () => {
                   placeholder="e.g. Dholuo, Lingala, Swahili, Yoruba, Shona, Kikuyu"
                   value={lyricsLanguage}
                   onChange={(e) => setLyricsLanguage(e.target.value)}
-                  className="w-full rounded-lg border border-black/20 p-2 text-black text-xs focus:border-orange-600 focus:outline-none"
+                  className="w-full rounded-lg border border-ink-12 p-2 text-ink text-xs focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
                 />
               </div>
 
               <div>
-                <label className="block text-black/70 font-semibold mb-1">
-                  Original Language Lyrics <span className="text-orange-600">*</span>
+                <label className="block text-ink-60 font-semibold mb-1">
+                  Original Language Lyrics <span className="text-ink-60">*</span>
                 </label>
                 <textarea
                   rows={4}
@@ -602,12 +599,12 @@ export const AddDetailModal: React.FC = () => {
                   value={lyricsOriginal}
                   onChange={(e) => setLyricsOriginal(e.target.value)}
                   required
-                  className="w-full rounded-lg border border-black/20 p-2.5 text-black text-xs font-serif leading-relaxed focus:border-orange-600 focus:outline-none"
+                  className="w-full rounded-lg border border-ink-12 p-2.5 text-ink text-xs font-serif leading-relaxed focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
                 />
               </div>
 
               <div>
-                <label className="block text-black/70 font-semibold mb-1">
+                <label className="block text-ink-60 font-semibold mb-1">
                   English / Swahili Translation & Cultural Meaning
                 </label>
                 <textarea
@@ -615,21 +612,21 @@ export const AddDetailModal: React.FC = () => {
                   placeholder="Enter poetic or literal translation and cultural metaphors..."
                   value={lyricsTranslation}
                   onChange={(e) => setLyricsTranslation(e.target.value)}
-                  className="w-full rounded-lg border border-black/20 p-2.5 text-black text-xs font-serif leading-relaxed focus:border-orange-600 focus:outline-none"
+                  className="w-full rounded-lg border border-ink-12 p-2.5 text-ink text-xs font-serif leading-relaxed focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
                 />
               </div>
 
-              <div className="pt-2 flex items-center justify-end gap-2 border-t border-black/10">
+              <div className="pt-2 flex items-center justify-end gap-2 border-t border-ink-12">
                 <button
                   type="button"
                   onClick={handleClose}
-                  className="px-4 py-2 rounded-lg border border-black/20 text-black/70 hover:bg-black/5 font-medium cursor-pointer"
+                  className="px-4 py-2 rounded-lg border border-ink-12 text-ink-60 hover:bg-ink-06 font-medium cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 text-white font-semibold cursor-pointer shadow-xs flex items-center gap-1.5"
+                  className="px-5 py-2 rounded-lg bg-brand hover:bg-brand text-on-orange font-semibold cursor-pointer flex items-center gap-1.5"
                 >
                   <PlusLg className="w-4 h-4" />
                   <span>Publish Lyrics</span>
@@ -642,17 +639,17 @@ export const AddDetailModal: React.FC = () => {
           {currentTab === 'alternate' && (
             <form onSubmit={handleAltSubmit} className="space-y-4 text-xs">
               <div>
-                <h3 className="font-serif font-bold text-black text-base">
+                <h3 className="font-serif font-bold text-ink text-base">
                   Document Alternate Recording / Cover / Live Tape
                 </h3>
-                <p className="text-black/50 text-xs">
+                <p className="text-ink-60 text-xs">
                   Many classic African songs have multiple recordings across labels and eras. Track the song's lineage here.
                 </p>
               </div>
 
               <div>
-                <label className="block text-black/70 font-semibold mb-1">
-                  Version Title <span className="text-orange-600">*</span>
+                <label className="block text-ink-60 font-semibold mb-1">
+                  Version Title <span className="text-ink-60">*</span>
                 </label>
                 <input
                   type="text"
@@ -660,13 +657,13 @@ export const AddDetailModal: React.FC = () => {
                   value={altTitle}
                   onChange={(e) => setAltTitle(e.target.value)}
                   required
-                  className="w-full rounded-lg border border-black/20 p-2.5 text-black text-sm focus:border-orange-600 focus:outline-none"
+                  className="w-full rounded-lg border border-ink-12 p-2.5 text-ink text-sm focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-black/70 font-semibold mb-1">
+                  <label className="block text-ink-60 font-semibold mb-1">
                     Performing Band / Artist
                   </label>
                   <input
@@ -674,25 +671,25 @@ export const AddDetailModal: React.FC = () => {
                     placeholder="e.g. Victoria Kings International"
                     value={altBand}
                     onChange={(e) => setAltBand(e.target.value)}
-                    className="w-full rounded-lg border border-black/20 p-2.5 text-black text-xs focus:border-orange-600 focus:outline-none"
+                    className="w-full rounded-lg border border-ink-12 p-2.5 text-ink text-xs focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-black/70 font-semibold mb-1">
+                  <label className="block text-ink-60 font-semibold mb-1">
                     Year Recorded / Released
                   </label>
                   <input
                     type="number"
                     value={altYear}
                     onChange={(e) => setAltYear(e.target.value)}
-                    className="w-full rounded-lg border border-black/20 p-2.5 text-black text-xs font-mono focus:border-orange-600 focus:outline-none"
+                    className="w-full rounded-lg border border-ink-12 p-2.5 text-ink text-xs font-mono focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-black/70 font-semibold mb-1">
+                <label className="block text-ink-60 font-semibold mb-1">
                   Record Label / Tape Format
                 </label>
                 <input
@@ -700,21 +697,21 @@ export const AddDetailModal: React.FC = () => {
                   placeholder="e.g. Chandarana Sound, Cassette Bootleg, Polygram Reissue"
                   value={altLabel}
                   onChange={(e) => setAltLabel(e.target.value)}
-                  className="w-full rounded-lg border border-black/20 p-2.5 text-black text-xs focus:border-orange-600 focus:outline-none"
+                  className="w-full rounded-lg border border-ink-12 p-2.5 text-ink text-xs focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
                 />
               </div>
 
-              <div className="pt-2 flex items-center justify-end gap-2 border-t border-black/10">
+              <div className="pt-2 flex items-center justify-end gap-2 border-t border-ink-12">
                 <button
                   type="button"
                   onClick={handleClose}
-                  className="px-4 py-2 rounded-lg border border-black/20 text-black/70 hover:bg-black/5 font-medium cursor-pointer"
+                  className="px-4 py-2 rounded-lg border border-ink-12 text-ink-60 hover:bg-ink-06 font-medium cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 text-white font-semibold cursor-pointer shadow-xs flex items-center gap-1.5"
+                  className="px-5 py-2 rounded-lg bg-brand hover:bg-brand text-on-orange font-semibold cursor-pointer flex items-center gap-1.5"
                 >
                   <PlusLg className="w-4 h-4" />
                   <span>Publish Alternate Version</span>
@@ -727,16 +724,16 @@ export const AddDetailModal: React.FC = () => {
           {currentTab === 'bio' && (
             <form onSubmit={handleBioSubmit} className="space-y-4 text-xs">
               <div>
-                <h3 className="font-serif font-bold text-black text-base">
+                <h3 className="font-serif font-bold text-ink text-base">
                   Update Musician Biography & Mastery
                 </h3>
-                <p className="text-black/50 text-xs">
+                <p className="text-ink-60 text-xs">
                   Expand {targetMusician.name}'s biography with historical facts, tours, and instruments played.
                 </p>
               </div>
 
               <div>
-                <label className="block text-black/70 font-semibold mb-1">
+                <label className="block text-ink-60 font-semibold mb-1">
                   Biography Narrative
                 </label>
                 <textarea
@@ -744,12 +741,12 @@ export const AddDetailModal: React.FC = () => {
                   value={musicianBio}
                   onChange={(e) => setMusicianBio(e.target.value)}
                   required
-                  className="w-full rounded-lg border border-black/20 p-2.5 text-black text-xs leading-relaxed focus:border-orange-600 focus:outline-none"
+                  className="w-full rounded-lg border border-ink-12 p-2.5 text-ink text-xs leading-relaxed focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
                 />
               </div>
 
               <div>
-                <label className="block text-black/70 font-semibold mb-1">
+                <label className="block text-ink-60 font-semibold mb-1">
                   Add New Instrument Played
                 </label>
                 <input
@@ -757,21 +754,21 @@ export const AddDetailModal: React.FC = () => {
                   placeholder="e.g. Metal Shakers, Nyatiti, 12-string acoustic guitar"
                   value={newInstrument}
                   onChange={(e) => setNewInstrument(e.target.value)}
-                  className="w-full rounded-lg border border-black/20 p-2.5 text-black text-xs focus:border-orange-600 focus:outline-none"
+                  className="w-full rounded-lg border border-ink-12 p-2.5 text-ink text-xs focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
                 />
               </div>
 
-              <div className="pt-2 flex items-center justify-end gap-2 border-t border-black/10">
+              <div className="pt-2 flex items-center justify-end gap-2 border-t border-ink-12">
                 <button
                   type="button"
                   onClick={handleClose}
-                  className="px-4 py-2 rounded-lg border border-black/20 text-black/70 hover:bg-black/5 font-medium cursor-pointer"
+                  className="px-4 py-2 rounded-lg border border-ink-12 text-ink-60 hover:bg-ink-06 font-medium cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 text-white font-semibold cursor-pointer shadow-xs flex items-center gap-1.5"
+                  className="px-5 py-2 rounded-lg bg-brand hover:bg-brand text-on-orange font-semibold cursor-pointer flex items-center gap-1.5"
                 >
                   <PlusLg className="w-4 h-4" />
                   <span>Update Biography</span>
@@ -784,16 +781,16 @@ export const AddDetailModal: React.FC = () => {
           {currentTab === 'band_member' && (
             <form onSubmit={handleBandSubmit} className="space-y-4 text-xs">
               <div>
-                <h3 className="font-serif font-bold text-black text-base">
+                <h3 className="font-serif font-bold text-ink text-base">
                   Update Band History & Lineup
                 </h3>
-                <p className="text-black/50 text-xs">
+                <p className="text-ink-60 text-xs">
                   Document {targetBand.name}'s formation, history, and add band members who played in the group.
                 </p>
               </div>
 
               <div>
-                <label className="block text-black/70 font-semibold mb-1">
+                <label className="block text-ink-60 font-semibold mb-1">
                   Band History Narrative
                 </label>
                 <textarea
@@ -801,59 +798,59 @@ export const AddDetailModal: React.FC = () => {
                   value={bandHistory}
                   onChange={(e) => setBandHistory(e.target.value)}
                   required
-                  className="w-full rounded-lg border border-black/20 p-2.5 text-black text-xs leading-relaxed focus:border-orange-600 focus:outline-none"
+                  className="w-full rounded-lg border border-ink-12 p-2.5 text-ink text-xs leading-relaxed focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
                 />
               </div>
 
-              <div className="border-t border-black/10 pt-3 space-y-3">
-                <span className="font-semibold text-black/80 block">
+              <div className="border-t border-ink-12 pt-3 space-y-3">
+                <span className="font-semibold text-ink-60 block">
                   Add Band Member to Lineup:
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                   <div>
-                    <label className="block text-black/60 text-[11px] mb-1">Member Name</label>
+                    <label className="block text-ink-60 text-[11px] mb-1">Member Name</label>
                     <input
                       type="text"
                       placeholder="e.g. James Ouma"
                       value={bandMemberName}
                       onChange={(e) => setBandMemberName(e.target.value)}
-                      className="w-full rounded-lg border border-black/20 p-2 text-black text-xs focus:border-orange-600 focus:outline-none"
+                      className="w-full rounded-lg border border-ink-12 p-2 text-ink text-xs focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
                     />
                   </div>
                   <div>
-                    <label className="block text-black/60 text-[11px] mb-1">Role / Period</label>
+                    <label className="block text-ink-60 text-[11px] mb-1">Role / Period</label>
                     <input
                       type="text"
                       placeholder="e.g. Bassist (1975–1983)"
                       value={bandMemberRole}
                       onChange={(e) => setBandMemberRole(e.target.value)}
-                      className="w-full rounded-lg border border-black/20 p-2 text-black text-xs focus:border-orange-600 focus:outline-none"
+                      className="w-full rounded-lg border border-ink-12 p-2 text-ink text-xs focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
                     />
                   </div>
                   <div>
-                    <label className="block text-black/60 text-[11px] mb-1">Instrument</label>
+                    <label className="block text-ink-60 text-[11px] mb-1">Instrument</label>
                     <input
                       type="text"
                       placeholder="e.g. Bass Guitar"
                       value={bandMemberInst}
                       onChange={(e) => setBandMemberInst(e.target.value)}
-                      className="w-full rounded-lg border border-black/20 p-2 text-black text-xs focus:border-orange-600 focus:outline-none"
+                      className="w-full rounded-lg border border-ink-12 p-2 text-ink text-xs focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="pt-2 flex items-center justify-end gap-2 border-t border-black/10">
+              <div className="pt-2 flex items-center justify-end gap-2 border-t border-ink-12">
                 <button
                   type="button"
                   onClick={handleClose}
-                  className="px-4 py-2 rounded-lg border border-black/20 text-black/70 hover:bg-black/5 font-medium cursor-pointer"
+                  className="px-4 py-2 rounded-lg border border-ink-12 text-ink-60 hover:bg-ink-06 font-medium cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 text-white font-semibold cursor-pointer shadow-xs flex items-center gap-1.5"
+                  className="px-5 py-2 rounded-lg bg-brand hover:bg-brand text-on-orange font-semibold cursor-pointer flex items-center gap-1.5"
                 >
                   <PlusLg className="w-4 h-4" />
                   <span>Update Band Article</span>

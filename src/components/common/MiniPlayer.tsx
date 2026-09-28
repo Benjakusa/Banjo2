@@ -70,7 +70,7 @@ export const MiniPlayer: React.FC = () => {
   return (
     <aside
       aria-label="Now playing"
-      className="fixed inset-x-0 bottom-14 z-40 border-t border-[var(--banjo-line)] bg-[var(--banjo-bg)]/95 backdrop-blur sm:bottom-0 sm:z-30 min-[1000px]:left-[220px]"
+      className="fixed inset-x-0 bottom-14 z-40 border-t border-ink-12 bg-paper/95 backdrop-blur sm:bottom-0 sm:z-30 min-[1000px]:left-[max(220px,calc((100vw-1800px)/2+220px))]"
     >
       <div
         onClick={handleBarClick}
@@ -84,10 +84,10 @@ export const MiniPlayer: React.FC = () => {
           if (e.key === 'ArrowRight') seek(Math.min(total, currentTime + 5));
           if (e.key === 'ArrowLeft') seek(Math.max(0, currentTime - 5));
         }}
-        className="relative h-1 w-full cursor-pointer bg-[var(--banjo-chip)]"
+        className="relative h-1 w-full cursor-pointer bg-ink-06"
       >
         <div
-          className="h-full bg-[var(--banjo-text)]"
+          className="h-full bg-ink"
           style={{ width: `${progressPercent}%` }}
         />
         {soloSegments.map((seg, i) => (
@@ -96,8 +96,8 @@ export const MiniPlayer: React.FC = () => {
             title={`${seg.name} — ${formatSeconds(seg.start)} to ${formatSeconds(seg.end)}`}
             className={`absolute inset-y-0 ${
               currentTime >= seg.start && currentTime <= seg.end
-                ? 'bg-[var(--banjo-accent)]'
-                : 'bg-[var(--banjo-primary)]'
+                ? 'bg-brand'
+                : 'bg-brand'
             }`}
             style={{
               left: `${(seg.start / total) * 100}%`,
@@ -114,7 +114,7 @@ export const MiniPlayer: React.FC = () => {
           disabled={isOralHistory}
           className="flex min-w-0 flex-1 items-center gap-2 text-left sm:flex-none sm:max-w-xs"
         >
-          <span className="relative h-8 w-8 shrink-0 overflow-hidden rounded bg-[var(--banjo-chip)]">
+          <span className="relative h-8 w-8 shrink-0 overflow-hidden rounded bg-ink-06">
             <img
               src={currentRecording.coverImage}
               alt=""
@@ -122,18 +122,18 @@ export const MiniPlayer: React.FC = () => {
               className="h-full w-full object-cover"
             />
             {isPlaying && (
-              <span className="absolute inset-0 flex items-center justify-center bg-black/40">
-                <MusicNoteBeamed className="h-3.5 w-3.5 text-[var(--banjo-accent)]" />
+              <span className="absolute inset-0 flex items-center justify-center bg-ink/40">
+                <MusicNoteBeamed className="h-3.5 w-3.5 text-brand" />
               </span>
             )}
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block truncate text-xs font-semibold leading-tight text-[var(--banjo-text)] sm:text-sm">
+            <span className="block truncate text-xs font-semibold leading-tight text-ink sm:text-sm">
               {currentRecording.title}
             </span>
-            <span className="mt-0.5 block truncate text-[11px] text-[var(--banjo-muted)]">
+            <span className="mt-0.5 block truncate text-[11px] text-ink-60">
               {soloSegments.length > 0 ? (
-                <span className="text-[var(--banjo-primary)]">
+                <span className="text-ink-60">
                   {soloSegments.length} solo{soloSegments.length === 1 ? '' : 's'} credited
                 </span>
               ) : (
@@ -148,7 +148,7 @@ export const MiniPlayer: React.FC = () => {
             type="button"
             onClick={prevTrack}
             aria-label="Previous track"
-            className="hidden h-8 w-8 items-center justify-center rounded-full text-[var(--banjo-text)] transition-colors hover:bg-[var(--banjo-chip)] sm:flex"
+            className="hidden h-8 w-8 items-center justify-center rounded-full text-ink transition-colors hover:bg-ink-06 sm:flex"
           >
             <SkipStartFill className="h-4 w-4" />
           </button>
@@ -157,7 +157,7 @@ export const MiniPlayer: React.FC = () => {
             type="button"
             onClick={togglePlay}
             aria-label={isPlaying ? 'Pause' : 'Play'}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--banjo-text)] text-[var(--banjo-bg)] transition-opacity hover:opacity-85"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-ink text-paper transition-opacity hover:opacity-85"
           >
             {isPlaying ? <PauseFill className="h-4 w-4" /> : <PlayFill className="ml-0.5 h-4 w-4" />}
           </button>
@@ -166,7 +166,7 @@ export const MiniPlayer: React.FC = () => {
             type="button"
             onClick={nextTrack}
             aria-label="Next track"
-            className="hidden h-8 w-8 items-center justify-center rounded-full text-[var(--banjo-text)] transition-colors hover:bg-[var(--banjo-chip)] sm:flex"
+            className="hidden h-8 w-8 items-center justify-center rounded-full text-ink transition-colors hover:bg-ink-06 sm:flex"
           >
             <SkipForwardFill className="h-4 w-4" />
           </button>
@@ -175,22 +175,22 @@ export const MiniPlayer: React.FC = () => {
             type="button"
             onClick={nextTrack}
             aria-label="Queue"
-            className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--banjo-text)] transition-colors hover:bg-[var(--banjo-chip)] sm:hidden"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-ink transition-colors hover:bg-ink-06 sm:hidden"
           >
             <MusicNoteList className="h-4 w-4" />
           </button>
 
           <span className="ml-1 hidden items-center gap-1.5 sm:flex">
-            <VolumeUpFill className="h-4 w-4 text-[var(--banjo-muted)]" />
+            <VolumeUpFill className="h-4 w-4 text-ink-60" />
             <span
               aria-hidden="true"
-              className="h-1 w-14 overflow-hidden rounded-full bg-[var(--banjo-chip)]"
+              className="h-1 w-14 overflow-hidden rounded-full bg-ink-06"
             >
-              <span className="block h-full w-2/3 bg-[var(--banjo-muted)]" />
+              <span className="block h-full w-2/3 bg-ink-60" />
             </span>
           </span>
 
-          <span className="ml-1 hidden font-mono text-[11px] tabular-nums text-[var(--banjo-muted)] lg:inline">
+          <span className="ml-1 hidden font-mono text-[11px] tabular-nums text-ink-60 lg:inline">
             {formatSeconds(currentTime)} / {formatSeconds(total)}
           </span>
 
@@ -199,7 +199,7 @@ export const MiniPlayer: React.FC = () => {
             onClick={() => setIsFullPlayerOpen(true)}
             aria-label="Open full player"
             title="Open full player"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[var(--banjo-text)] transition-colors hover:bg-[var(--banjo-chip)]"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ink transition-colors hover:bg-ink-06"
           >
             <img
               src={currentRecording.coverImage}

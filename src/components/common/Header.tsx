@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useBanjo } from '../../context/BanjoContext';
+import { Wordmark } from './Wordmark';
 import {
   Search,
   MicFill,
@@ -121,7 +122,7 @@ export const Header: React.FC<{ onOpenNav?: () => void }> = ({ onOpenNav }) => {
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full border-b border-[var(--banjo-line)] bg-[var(--banjo-bg)]/90 backdrop-blur">
+      <header className="sticky top-0 z-40 w-full border-b border-ink-12 bg-paper/90 backdrop-blur">
         <div className="flex h-14 items-center gap-2 px-2 sm:gap-4 sm:px-6">
           <button
             type="button"
@@ -129,24 +130,21 @@ export const Header: React.FC<{ onOpenNav?: () => void }> = ({ onOpenNav }) => {
             className="flex shrink-0 items-center gap-1.5"
             aria-label="Banjo home"
           >
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--banjo-primary)] font-serif text-sm font-bold text-white">
-              &#9834;
-            </span>
-            <span className="hidden text-lg font-bold tracking-tight text-[var(--banjo-text)] sm:inline">Banjo</span>
+            <Wordmark className="text-[22px] leading-none" />
           </button>
 
           <button
             type="button"
             onClick={onOpenNav}
             aria-label="Open navigation"
-            className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--banjo-text)] transition-colors hover:bg-[var(--banjo-chip)] min-[640px]:flex"
+            className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink transition-colors hover:bg-ink-06 min-[640px]:flex"
           >
             <List className="h-5 w-5" />
           </button>
 
           <div className="relative hidden min-w-0 flex-1 justify-center md:flex">
             <form onSubmit={handleSubmit} className="w-full max-w-[640px]">
-              <Search className="pointer-events-none absolute left-4 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-[var(--banjo-muted)]" />
+              <Search className="pointer-events-none absolute left-4 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-ink-60" />
               <input
                 type="text"
                 value={draft}
@@ -155,19 +153,19 @@ export const Header: React.FC<{ onOpenNav?: () => void }> = ({ onOpenNav }) => {
                 onBlur={() => window.setTimeout(() => setIsSearchFocused(false), 150)}
                 placeholder="Search songs, guitarists, bands, studios, years"
                 aria-label="Search Banjo"
-                className="h-10 w-full rounded-full border border-[var(--banjo-line)] bg-[var(--banjo-surface)] pl-11 pr-24 text-sm text-[var(--banjo-text)] outline-none transition-colors placeholder:text-[var(--banjo-muted)] focus:border-[var(--banjo-link)]"
+                className="h-10 w-full rounded-full border border-ink-12 bg-ink-06 pl-11 pr-32 text-sm text-ink outline-none transition-colors placeholder:text-ink-60 focus:border-link"
               />
-              <div className="absolute right-1.5 top-1/2 z-10 flex -translate-y-1/2 items-center gap-1">
+              <div className="absolute right-2 top-1/2 z-10 flex -translate-y-1/2 items-center gap-2.5">
                 <button
                   type="button"
                   aria-label="Search by voice"
-                  className="flex h-7 w-7 items-center justify-center rounded-full text-[var(--banjo-muted)] transition-colors hover:bg-[var(--banjo-hover)] hover:text-[var(--banjo-text)]"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ink-60 transition-colors hover:bg-ink-12 hover:text-ink"
                 >
                   <MicFill className="h-4 w-4" />
                 </button>
                 <button
                   type="submit"
-                  className="flex h-8 items-center gap-1 rounded-full bg-[var(--banjo-chip)] px-3 text-xs font-semibold text-[var(--banjo-text)] transition-colors hover:bg-[var(--banjo-hover)]"
+                  className="flex h-8 shrink-0 items-center gap-1 rounded-full border border-ink-12 bg-paper px-3.5 text-xs font-semibold text-ink transition-colors hover:bg-ink-06"
                 >
                   Search
                 </button>
@@ -175,9 +173,9 @@ export const Header: React.FC<{ onOpenNav?: () => void }> = ({ onOpenNav }) => {
             </form>
 
             {showDesktopSuggestions && (
-              <ul className="absolute left-1/2 top-12 z-50 w-full max-w-[640px] -translate-x-1/2 overflow-hidden rounded-xl border border-[var(--banjo-line)] bg-[var(--banjo-bg)] py-1 shadow-xl">
+              <ul className="absolute left-1/2 top-12 z-50 w-full max-w-[640px] -translate-x-1/2 overflow-hidden rounded-xl border border-ink-12 bg-paper py-1">
                 {suggestions.length === 0 && (
-                  <li className="px-4 py-3 text-sm text-[var(--banjo-muted)]">No matches for “{draft}”</li>
+                  <li className="px-4 py-3 text-sm text-ink-60">No matches for “{draft}”</li>
                 )}
                 {suggestions.map((s) => (
                   <li key={`${s.kind}-${s.id}`}>
@@ -185,14 +183,14 @@ export const Header: React.FC<{ onOpenNav?: () => void }> = ({ onOpenNav }) => {
                       type="button"
                       onMouseDown={(e) => e.preventDefault()}
                       onClick={() => handleSelectSuggestion(s.id)}
-                      className="flex w-full items-center gap-3 px-4 py-2 text-left transition-colors hover:bg-[var(--banjo-chip)]"
+                      className="flex w-full items-center gap-3 px-4 py-2 text-left transition-colors hover:bg-ink-06"
                     >
-                      <Search className="h-4 w-4 shrink-0 text-[var(--banjo-muted)]" />
+                      <Search className="h-4 w-4 shrink-0 text-ink-60" />
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm text-[var(--banjo-text)]">{s.title}</span>
-                        <span className="block truncate text-xs text-[var(--banjo-muted)]">{s.meta}</span>
+                        <span className="block truncate text-sm text-ink">{s.title}</span>
+                        <span className="block truncate text-xs text-ink-60">{s.meta}</span>
                       </span>
-                      <span className="shrink-0 font-mono text-[11px] text-[var(--banjo-muted)]">
+                      <span className="shrink-0 font-mono text-[11px] text-ink-60">
                         {s.kind === 'Recording' ? formatDuration(s.seconds) : s.kind}
                       </span>
                     </button>
@@ -207,7 +205,7 @@ export const Header: React.FC<{ onOpenNav?: () => void }> = ({ onOpenNav }) => {
               type="button"
               onClick={() => setIsSearchOpen(true)}
               aria-label="Open search"
-              className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--banjo-text)] transition-colors hover:bg-[var(--banjo-chip)] md:hidden"
+              className="flex h-9 w-9 items-center justify-center rounded-full text-ink transition-colors hover:bg-ink-06 md:hidden"
             >
               <Search className="h-5 w-5" />
             </button>
@@ -215,7 +213,7 @@ export const Header: React.FC<{ onOpenNav?: () => void }> = ({ onOpenNav }) => {
             <button
               type="button"
               onClick={handleAddDetailsClick}
-              className="flex items-center gap-1.5 rounded-full bg-[var(--banjo-primary)] px-3 py-2 text-xs font-semibold text-white transition-opacity hover:opacity-90 sm:px-4 sm:text-sm"
+              className="flex items-center gap-1.5 rounded-full bg-brand px-3 py-2 text-xs font-semibold text-on-orange transition-opacity hover:opacity-90 sm:px-4 sm:text-sm"
             >
               <PlusLg className="h-4 w-4" />
               <span className="hidden sm:inline">Add</span>
@@ -224,7 +222,7 @@ export const Header: React.FC<{ onOpenNav?: () => void }> = ({ onOpenNav }) => {
             <button
               type="button"
               aria-label="Notifications"
-              className="hidden h-9 w-9 items-center justify-center rounded-full text-[var(--banjo-text)] transition-colors hover:bg-[var(--banjo-chip)] sm:flex"
+              className="hidden h-9 w-9 items-center justify-center rounded-full text-ink transition-colors hover:bg-ink-06 sm:flex"
             >
               <Bell className="h-5 w-5" />
             </button>
@@ -235,7 +233,7 @@ export const Header: React.FC<{ onOpenNav?: () => void }> = ({ onOpenNav }) => {
                 onClick={() => setIsProfileOpen((v) => !v)}
                 aria-expanded={isProfileOpen}
                 aria-haspopup="menu"
-                className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-[var(--banjo-chip)] sm:h-9 sm:w-9"
+                className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-ink-06 sm:h-9 sm:w-9"
               >
                 {userProfile.avatarUrl ? (
                   <img
@@ -244,7 +242,7 @@ export const Header: React.FC<{ onOpenNav?: () => void }> = ({ onOpenNav }) => {
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  <span className="text-xs font-bold text-[var(--banjo-text)]">
+                  <span className="text-xs font-bold text-ink">
                     {(userProfile.displayName || 'A').charAt(0).toUpperCase()}
                   </span>
                 )}
@@ -253,19 +251,19 @@ export const Header: React.FC<{ onOpenNav?: () => void }> = ({ onOpenNav }) => {
               {isProfileOpen && (
                 <div
                   role="menu"
-                  className="absolute right-0 top-11 w-64 overflow-hidden rounded-xl border border-[var(--banjo-line)] bg-[var(--banjo-bg)] shadow-xl"
+                  className="absolute right-0 top-11 w-64 overflow-hidden rounded-xl border border-ink-12 bg-paper"
                 >
-                  <div className="border-b border-[var(--banjo-line)] px-4 py-3">
-                    <p className="truncate text-sm font-semibold text-[var(--banjo-text)]">
+                  <div className="border-b border-ink-12 px-4 py-3">
+                    <p className="truncate text-sm font-semibold text-ink">
                       {userProfile.displayName}
                     </p>
-                    <p className="truncate text-xs text-[var(--banjo-muted)]">
+                    <p className="truncate text-xs text-ink-60">
                       {userProfile.contributionsCount} contributions
                     </p>
                   </div>
 
-                  <div className="border-b border-[var(--banjo-line)] px-4 py-3">
-                    <p className="mb-2 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-[var(--banjo-muted)]">
+                  <div className="border-b border-ink-12 px-4 py-3">
+                    <p className="mb-2 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-ink-60">
                       <Gear className="h-3.5 w-3.5" />
                       Settings
                     </p>
@@ -273,7 +271,7 @@ export const Header: React.FC<{ onOpenNav?: () => void }> = ({ onOpenNav }) => {
                       <button
                         type="button"
                         onClick={toggleTheme}
-                        className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-sm text-[var(--banjo-text)] transition-colors hover:bg-[var(--banjo-chip)]"
+                        className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-sm text-ink transition-colors hover:bg-ink-06"
                       >
                         <span className="flex items-center gap-2">
                           {theme === 'dark' ? (
@@ -283,12 +281,12 @@ export const Header: React.FC<{ onOpenNav?: () => void }> = ({ onOpenNav }) => {
                           )}
                           Appearance
                         </span>
-                        <span className="font-mono text-[11px] text-[var(--banjo-muted)]">{theme}</span>
+                        <span className="font-mono text-[11px] text-ink-60">{theme}</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => setDataSaver(!isDataSaver)}
-                        className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-sm text-[var(--banjo-text)] transition-colors hover:bg-[var(--banjo-chip)]"
+                        className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-sm text-ink transition-colors hover:bg-ink-06"
                       >
                         <span className="flex items-center gap-2">
                           {isDataSaver ? (
@@ -300,7 +298,7 @@ export const Header: React.FC<{ onOpenNav?: () => void }> = ({ onOpenNav }) => {
                         </span>
                         <span
                           className={`font-mono text-[11px] ${
-                            isDataSaver ? 'text-[var(--banjo-primary)]' : 'text-[var(--banjo-muted)]'
+                            isDataSaver ? 'text-brand' : 'text-ink-60'
                           }`}
                         >
                           {isDataSaver ? 'on' : 'off'}
@@ -315,7 +313,7 @@ export const Header: React.FC<{ onOpenNav?: () => void }> = ({ onOpenNav }) => {
                       setIsProfileOpen(false);
                       navigateTo('profile');
                     }}
-                    className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm text-[var(--banjo-text)] transition-colors hover:bg-[var(--banjo-chip)]"
+                    className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm text-ink transition-colors hover:bg-ink-06"
                   >
                     <Clock className="h-4 w-4" />
                     Your contributions
@@ -328,9 +326,9 @@ export const Header: React.FC<{ onOpenNav?: () => void }> = ({ onOpenNav }) => {
       </header>
 
       {isSearchOpen && (
-        <div className="fixed inset-0 z-50 flex flex-col bg-[var(--banjo-bg)] md:hidden">
-          <div className="flex h-14 items-center gap-2 border-b border-[var(--banjo-line)] px-2">
-            <Search className="ml-1 h-5 w-5 shrink-0 text-[var(--banjo-muted)]" />
+        <div className="fixed inset-0 z-50 flex flex-col bg-paper md:hidden">
+          <div className="flex h-14 items-center gap-2 border-b border-ink-12 px-2">
+            <Search className="ml-1 h-5 w-5 shrink-0 text-ink-60" />
             <form onSubmit={handleSubmit} className="min-w-0 flex-1">
               <input
                 ref={inputRef}
@@ -339,7 +337,7 @@ export const Header: React.FC<{ onOpenNav?: () => void }> = ({ onOpenNav }) => {
                 onChange={(e) => setDraft(e.target.value)}
                 placeholder="Search Banjo"
                 aria-label="Search Banjo"
-                className="h-10 w-full bg-transparent text-base text-[var(--banjo-text)] outline-none placeholder:text-[var(--banjo-muted)]"
+                className="h-10 w-full bg-transparent text-base text-ink outline-none placeholder:text-ink-60"
               />
             </form>
             <button
@@ -349,14 +347,14 @@ export const Header: React.FC<{ onOpenNav?: () => void }> = ({ onOpenNav }) => {
                 setDraft('');
               }}
               aria-label="Close search"
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--banjo-text)]"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink"
             >
               <X className="h-5 w-5" />
             </button>
           </div>
 
           <div className="flex-1 overflow-y-auto px-3 py-3">
-            <p className="mb-2 px-1 text-[11px] font-bold uppercase tracking-wide text-[var(--banjo-muted)]">
+            <p className="mb-2 px-1 text-[11px] font-bold uppercase tracking-wide text-ink-60">
               {draft.trim() ? 'Results' : 'Recent'}
             </p>
             <ul className="space-y-1">
@@ -365,16 +363,16 @@ export const Header: React.FC<{ onOpenNav?: () => void }> = ({ onOpenNav }) => {
                   <button
                     type="button"
                     onClick={() => handleSelectSuggestion(s.id)}
-                    className="flex w-full items-center gap-3 rounded-xl px-2 py-2.5 text-left transition-colors hover:bg-[var(--banjo-chip)]"
+                    className="flex w-full items-center gap-3 rounded-xl px-2 py-2.5 text-left transition-colors hover:bg-ink-06"
                   >
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--banjo-chip)] text-[var(--banjo-muted)]">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-ink-06 text-ink-60">
                       <Search className="h-4 w-4" />
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-medium text-[var(--banjo-text)]">{s.title}</span>
-                      <span className="block truncate text-xs text-[var(--banjo-muted)]">{s.meta}</span>
+                      <span className="block truncate text-sm font-medium text-ink">{s.title}</span>
+                      <span className="block truncate text-xs text-ink-60">{s.meta}</span>
                     </span>
-                    <span className="shrink-0 font-mono text-[11px] text-[var(--banjo-muted)]">
+                    <span className="shrink-0 font-mono text-[11px] text-ink-60">
                       {s.kind === 'Recording' ? formatDuration(s.seconds) : s.kind}
                     </span>
                   </button>

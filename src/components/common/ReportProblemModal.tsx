@@ -39,35 +39,35 @@ export const ReportProblemModal: React.FC = () => {
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 p-4"
     >
-      <div className="relative w-full max-w-md rounded-2xl border border-black/10 bg-white p-6 shadow-xl space-y-4">
-        <div className="flex items-center justify-between border-b border-black/10 pb-3">
-          <div className="flex items-center gap-2 text-orange-600">
+      <div className="relative w-full max-w-md rounded-2xl border border-ink-12 bg-paper p-6 space-y-4">
+        <div className="flex items-center justify-between border-b border-ink-12 pb-3">
+          <div className="flex items-center gap-2 text-ink-60">
             <ExclamationTriangleFill className="w-5 h-5" />
-            <h2 className="text-base font-serif font-bold text-black">
+            <h2 className="text-base font-serif font-bold text-ink">
               Report Archival Issue or Rights Concern
             </h2>
           </div>
           <button
             onClick={() => setIsReportModalOpen(false)}
-            className="p-1 rounded text-black/40 hover:text-black/70 cursor-pointer"
+            className="p-1 rounded text-ink-60 hover:text-ink-60 cursor-pointer"
           >
             <XLg className="w-4 h-4" />
           </button>
         </div>
 
-        <p className="text-xs text-black/60">
-          Article: <strong className="text-black">{currentRecording.title}</strong>
+        <p className="text-xs text-ink-60">
+          Article: <strong className="text-ink">{currentRecording.title}</strong>
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
           <div>
-            <label className="block text-black/70 font-medium mb-1">Reason for Report</label>
+            <label className="block text-ink-60 font-medium mb-1">Reason for Report</label>
             <select
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              className="w-full rounded-lg border border-black/20 p-2 text-black focus:border-orange-600 focus:outline-none"
+              className="w-full rounded-lg border border-ink-12 p-2 text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
             >
               {reasons.map((r) => (
                 <option key={r} value={r}>
@@ -78,40 +78,40 @@ export const ReportProblemModal: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-black/70 font-medium mb-1">Your Email</label>
+            <label className="block text-ink-60 font-medium mb-1">Your Email</label>
             <input
               type="email"
               required
               placeholder="e.g. rights@label.com or researcher@archive.org"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-lg border border-black/20 p-2 text-black focus:border-orange-600 focus:outline-none font-mono"
+              className="w-full rounded-lg border border-ink-12 p-2 text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0 font-mono"
             />
           </div>
 
           <div>
-            <label className="block text-black/70 font-medium mb-1">Evidence / Detailed Explanation</label>
+            <label className="block text-ink-60 font-medium mb-1">Evidence / Detailed Explanation</label>
             <textarea
               rows={4}
               required
               placeholder="Provide catalog references, contract details, or specific corrections..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full rounded-lg border border-black/20 p-2 text-black focus:border-orange-600 focus:outline-none leading-relaxed"
+              className="w-full rounded-lg border border-ink-12 p-2 text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0 leading-relaxed"
             />
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-black/10">
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-ink-12">
             <button
               type="button"
               onClick={() => setIsReportModalOpen(false)}
-              className="px-4 py-2 text-xs font-medium text-black/60 hover:text-black cursor-pointer"
+              className="px-4 py-2 text-xs font-medium text-ink-60 hover:text-ink cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 text-xs font-semibold text-white bg-black hover:bg-black rounded-lg transition-colors cursor-pointer"
+              className="px-4 py-2 text-xs font-semibold text-paper bg-ink hover:bg-ink rounded-lg transition-colors cursor-pointer"
             >
               Submit Report
             </button>

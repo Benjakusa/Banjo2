@@ -60,17 +60,16 @@ export const QuickAddDetailModal: React.FC = () => {
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-150"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 backdrop-blur-sm p-4 animate-in fade-in duration-150"
     >
-      <div className="relative w-full max-w-lg rounded-2xl border border-black/10 bg-white p-6 shadow-2xl space-y-5">
-        <div className="flex items-center justify-between border-b border-black/10 pb-3">
+      <div className="relative w-full max-w-lg rounded-2xl border border-ink-12 bg-paper p-6 space-y-5">
+        <div className="flex items-center justify-between border-b border-ink-12 pb-3">
           <div className="flex items-center gap-2">
-            <span className="flex items-center justify-center w-6 h-6 rounded bg-orange-600 text-white font-serif font-bold text-xs">&#9834;</span>
             <div>
-              <span className="text-[10px] uppercase tracking-widest font-mono text-orange-600 font-bold block">
+              <span className="text-[10px] uppercase tracking-widest font-mono text-ink-60 font-bold block">
                 Banjo Contribution
               </span>
-              <h2 className="text-lg font-serif font-medium text-black">
+              <h2 className="text-lg font-serif font-medium text-ink">
                 {quickEditTarget.section === 'musicians' && 'Add Musician or Performer'}
                 {quickEditTarget.section === 'sources' && 'Add Archival Source / Citation'}
                 {quickEditTarget.section === 'history' && 'Add Details to Historical Narrative'}
@@ -79,38 +78,38 @@ export const QuickAddDetailModal: React.FC = () => {
           </div>
           <button
             onClick={closeQuickEdit}
-            className="p-1 rounded-md text-black/40 hover:text-black/70 hover:bg-black/5 cursor-pointer"
+            className="p-1 rounded-md text-ink-60 hover:text-ink-60 hover:bg-ink-06 cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <p className="text-xs text-black/50">
-          Adding details to: <strong className="text-black/80">{currentRecording.title}</strong>
+        <p className="text-xs text-ink-60">
+          Adding details to: <strong className="text-ink-60">{currentRecording.title}</strong>
         </p>
 
         {/* 1. Add Musician Form */}
         {quickEditTarget.section === 'musicians' && (
           <form onSubmit={handleMusicianSubmit} className="space-y-4 text-xs">
             <div>
-              <label className="block text-black/70 font-medium mb-1">Musician Full Name</label>
+              <label className="block text-ink-60 font-medium mb-1">Musician Full Name</label>
               <input
                 type="text"
                 required
                 placeholder="e.g. Gabriel Omolo, David Amunga, Joseph Kamaru"
                 value={musicianName}
                 onChange={(e) => setMusicianName(e.target.value)}
-                className="w-full rounded-lg border border-black/20 px-3 py-2 text-black focus:border-orange-600 focus:outline-none focus:ring-1 focus:ring-orange-600 font-sans"
+                className="w-full rounded-lg border border-ink-12 px-3 py-2 text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0 focus:ring-1 focus:ring-2 focus:ring-focus focus:outline-2 focus:outline-focus focus:outline-offset-0 font-sans"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-black/70 font-medium mb-1">Instrument Played</label>
+                <label className="block text-ink-60 font-medium mb-1">Instrument Played</label>
                 <select
                   value={instrument}
                   onChange={(e) => setInstrument(e.target.value)}
-                  className="w-full rounded-lg border border-black/20 px-2.5 py-2 text-black focus:border-orange-600 focus:outline-none"
+                  className="w-full rounded-lg border border-ink-12 px-2.5 py-2 text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
                 >
                   <option value="Lead Guitar">Lead Guitar</option>
                   <option value="Rhythm Guitar">Rhythm Guitar</option>
@@ -126,28 +125,28 @@ export const QuickAddDetailModal: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-black/70 font-medium mb-1">Role / Contribution</label>
+                <label className="block text-ink-60 font-medium mb-1">Role / Contribution</label>
                 <input
                   type="text"
                   placeholder="e.g. Lead Vocals, Mi-Solo"
                   value={musicianRole}
                   onChange={(e) => setMusicianRole(e.target.value)}
-                  className="w-full rounded-lg border border-black/20 px-3 py-2 text-black focus:border-orange-600 focus:outline-none"
+                  className="w-full rounded-lg border border-ink-12 px-3 py-2 text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
                 />
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-black/10">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-ink-12">
               <button
                 type="button"
                 onClick={closeQuickEdit}
-                className="px-4 py-2 text-xs font-medium text-black/60 hover:text-black cursor-pointer"
+                className="px-4 py-2 text-xs font-medium text-ink-60 hover:text-ink cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-orange-600 hover:bg-orange-700 rounded-lg transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-on-orange bg-brand hover:bg-brand rounded-lg transition-colors cursor-pointer"
               >
                 <PlusLg className="w-3.5 h-3.5" />
                 <span>Publish to Roster</span>
@@ -160,23 +159,23 @@ export const QuickAddDetailModal: React.FC = () => {
         {quickEditTarget.section === 'sources' && (
           <form onSubmit={handleSourceSubmit} className="space-y-4 text-xs">
             <div>
-              <label className="block text-black/70 font-medium mb-1">Source Title / Evidence Description</label>
+              <label className="block text-ink-60 font-medium mb-1">Source Title / Evidence Description</label>
               <input
                 type="text"
                 required
                 placeholder="e.g. Polydor AS 1042 vinyl label stamp, Kenya Daily Nation article (1978)"
                 value={sourceTitle}
                 onChange={(e) => setSourceTitle(e.target.value)}
-                className="w-full rounded-lg border border-black/20 px-3 py-2 text-black focus:border-orange-600 focus:outline-none"
+                className="w-full rounded-lg border border-ink-12 px-3 py-2 text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
               />
             </div>
 
             <div>
-              <label className="block text-black/70 font-medium mb-1">Source Type</label>
+              <label className="block text-ink-60 font-medium mb-1">Source Type</label>
               <select
                 value={sourceType}
                 onChange={(e) => setSourceType(e.target.value)}
-                className="w-full rounded-lg border border-black/20 px-2.5 py-2 text-black focus:border-orange-600 focus:outline-none"
+                className="w-full rounded-lg border border-ink-12 px-2.5 py-2 text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
               >
                 <option value="Original record sleeve">Original record sleeve</option>
                 <option value="Studio documentation">Studio documentation / Tape log</option>
@@ -190,27 +189,27 @@ export const QuickAddDetailModal: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-black/70 font-medium mb-1">Archival Notes / Catalog Number</label>
+              <label className="block text-ink-60 font-medium mb-1">Archival Notes / Catalog Number</label>
               <input
                 type="text"
                 placeholder="e.g. Matrix runout: AS-1042-B, recorded in Nairobi Industrial Area"
                 value={sourceNotes}
                 onChange={(e) => setSourceNotes(e.target.value)}
-                className="w-full rounded-lg border border-black/20 px-3 py-2 text-black focus:border-orange-600 focus:outline-none"
+                className="w-full rounded-lg border border-ink-12 px-3 py-2 text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
               />
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-black/10">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-ink-12">
               <button
                 type="button"
                 onClick={closeQuickEdit}
-                className="px-4 py-2 text-xs font-medium text-black/60 hover:text-black cursor-pointer"
+                className="px-4 py-2 text-xs font-medium text-ink-60 hover:text-ink cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-orange-600 hover:bg-orange-700 rounded-lg transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-on-orange bg-brand hover:bg-brand rounded-lg transition-colors cursor-pointer"
               >
                 <Book className="w-3.5 h-3.5" />
                 <span>Add Citation [Reference]</span>
@@ -223,7 +222,7 @@ export const QuickAddDetailModal: React.FC = () => {
         {quickEditTarget.section === 'history' && (
           <form onSubmit={handleParagraphSubmit} className="space-y-4 text-xs">
             <div>
-              <label className="block text-black/70 font-medium mb-1">
+              <label className="block text-ink-60 font-medium mb-1">
                 Add Historical Details or Studio Context
               </label>
               <textarea
@@ -232,12 +231,12 @@ export const QuickAddDetailModal: React.FC = () => {
                 placeholder="Write verifiable historical facts about the recording, the instruments used, composer background, or social reception..."
                 value={paragraphText}
                 onChange={(e) => setParagraphText(e.target.value)}
-                className="w-full rounded-lg border border-black/20 p-3 text-black focus:border-orange-600 focus:outline-none leading-relaxed font-serif text-sm"
+                className="w-full rounded-lg border border-ink-12 p-3 text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0 leading-relaxed font-serif text-sm"
               />
             </div>
 
             <div>
-              <label className="block text-black/70 font-medium mb-1">
+              <label className="block text-ink-60 font-medium mb-1">
                 Supporting Citation / Source
               </label>
               <input
@@ -245,21 +244,21 @@ export const QuickAddDetailModal: React.FC = () => {
                 placeholder="e.g. As told by producer David Amunga in Kenya Sound Archives, 1984"
                 value={paragraphCitation}
                 onChange={(e) => setParagraphCitation(e.target.value)}
-                className="w-full rounded-lg border border-black/20 px-3 py-2 text-black focus:border-orange-600 focus:outline-none"
+                className="w-full rounded-lg border border-ink-12 px-3 py-2 text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
               />
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-black/10">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-ink-12">
               <button
                 type="button"
                 onClick={closeQuickEdit}
-                className="px-4 py-2 text-xs font-medium text-black/60 hover:text-black cursor-pointer"
+                className="px-4 py-2 text-xs font-medium text-ink-60 hover:text-ink cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-orange-600 hover:bg-orange-700 rounded-lg transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-on-orange bg-brand hover:bg-brand rounded-lg transition-colors cursor-pointer"
               >
                 <Stars className="w-3.5 h-3.5" />
                 <span>Append to Article</span>

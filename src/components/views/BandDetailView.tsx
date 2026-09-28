@@ -39,11 +39,11 @@ export const BandDetailView: React.FC = () => {
   return (
     <div className="mx-auto max-w-4xl px-4 sm:px-6 py-6 space-y-6 pb-36">
       {/* Top back & edit */}
-      <div className="flex items-center justify-between border-b border-black/10 pb-3">
+      <div className="flex items-center justify-between border-b border-ink-12 pb-3">
         <button
           onClick={goBack}
           disabled={!canGoBack}
-          className="flex items-center gap-1.5 text-xs text-black/60 hover:text-black disabled:opacity-40 transition-colors cursor-pointer"
+          className="flex items-center gap-1.5 text-xs text-ink-60 hover:text-ink disabled:opacity-40 transition-colors cursor-pointer"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Back to Archive</span>
@@ -51,7 +51,7 @@ export const BandDetailView: React.FC = () => {
 
         <button
           onClick={() => openQuickEdit(band.id, 'band_member')}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-orange-600 hover:bg-orange-700 rounded-lg transition-colors cursor-pointer"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-on-orange bg-brand hover:bg-brand rounded-lg transition-colors cursor-pointer"
         >
           <PencilSquare className="w-3.5 h-3.5" />
           <span>Edit Band Article & Lineup</span>
@@ -60,27 +60,27 @@ export const BandDetailView: React.FC = () => {
 
       {/* Title */}
       <div>
-        <h1 className="text-3xl sm:text-4xl font-serif font-medium text-black leading-tight">
+        <h1 className="text-3xl sm:text-4xl font-serif font-medium text-ink leading-tight">
           {band.name}
         </h1>
-        <p className="text-sm font-medium text-orange-700 mt-1">
+        <p className="text-sm font-medium text-ink-60 mt-1">
           {band.genre} ensemble from {band.country} ({band.region})
         </p>
       </div>
 
       {/* Banjo Infobox */}
-      <aside className="border border-black/20 rounded-xl bg-black/5 p-4 space-y-3 sm:float-right sm:w-68 sm:ml-6 sm:mb-4 shadow-xs text-xs">
-        <div className="flex items-center justify-between border-b border-black/10 pb-1.5">
-          <span className="font-serif font-bold text-black">{band.name}</span>
+      <aside className="border border-ink-12 rounded-xl bg-ink-06 p-4 space-y-3 sm:float-right sm:w-68 sm:ml-6 sm:mb-4 text-xs">
+        <div className="flex items-center justify-between border-b border-ink-12 pb-1.5">
+          <span className="font-serif font-bold text-ink">{band.name}</span>
           <button
             onClick={() => openQuickEdit(band.id, 'band_member')}
-            className="text-[10px] text-blue-700 hover:underline cursor-pointer"
+            className="text-[10px] text-link hover:underline cursor-pointer"
           >
             [edit info]
           </button>
         </div>
 
-        <div className="aspect-video sm:aspect-square rounded-lg overflow-hidden border border-black/10 bg-black/10">
+        <div className="aspect-video sm:aspect-square rounded-lg overflow-hidden border border-ink-12 bg-ink-06">
           <img
             src={band.photoUrl}
             alt={band.name}
@@ -89,28 +89,28 @@ export const BandDetailView: React.FC = () => {
           />
         </div>
 
-        <dl className="divide-y divide-black/10 text-[11px]">
+        <dl className="divide-y divide-ink-12 text-[11px]">
           <div className="py-1.5 flex justify-between">
-            <dt className="text-black/50">Formed</dt>
-            <dd className="font-mono text-black font-semibold">{band.formationYear}</dd>
+            <dt className="text-ink-60">Formed</dt>
+            <dd className="font-mono text-ink font-semibold">{band.formationYear}</dd>
           </div>
           {band.disbandYear && (
             <div className="py-1.5 flex justify-between">
-              <dt className="text-black/50">Disbanded</dt>
-              <dd className="font-mono text-black">{band.disbandYear}</dd>
+              <dt className="text-ink-60">Disbanded</dt>
+              <dd className="font-mono text-ink">{band.disbandYear}</dd>
             </div>
           )}
           <div className="py-1.5 flex justify-between">
-            <dt className="text-black/50">Origin</dt>
-            <dd className="text-black text-right">{band.region}, {band.country}</dd>
+            <dt className="text-ink-60">Origin</dt>
+            <dd className="text-ink text-right">{band.region}, {band.country}</dd>
           </div>
           <div className="py-1.5 flex justify-between">
-            <dt className="text-black/50">Genre</dt>
-            <dd className="text-black">{band.genre}</dd>
+            <dt className="text-ink-60">Genre</dt>
+            <dd className="text-ink">{band.genre}</dd>
           </div>
           <div className="py-1.5 flex justify-between">
-            <dt className="text-black/50">Key Members</dt>
-            <dd className="text-black text-right font-medium">
+            <dt className="text-ink-60">Key Members</dt>
+            <dd className="text-ink text-right font-medium">
               {band.membersTimeline.slice(0, 3).map((m) => m.musicianName).join(', ')}
             </dd>
           </div>
@@ -119,26 +119,26 @@ export const BandDetailView: React.FC = () => {
 
       {/* History */}
       <section className="space-y-3">
-        <div className="flex items-center justify-between border-b border-black/10 pb-1.5">
-          <h2 className="text-xl font-serif font-medium text-black flex items-center gap-2">
+        <div className="flex items-center justify-between border-b border-ink-12 pb-1.5">
+          <h2 className="text-xl font-serif font-medium text-ink flex items-center gap-2">
             <span>Band History & Origins</span>
             <button
               onClick={() => openQuickEdit(band.id, 'band_member')}
-              className="text-xs font-mono text-blue-700 font-normal hover:underline cursor-pointer"
+              className="text-xs font-mono text-link font-normal hover:underline cursor-pointer"
             >
               [edit]
             </button>
           </h2>
           <button
             onClick={() => openQuickEdit(band.id, 'band_member')}
-            className="text-xs text-orange-600 hover:underline flex items-center gap-1 cursor-pointer font-medium"
+            className="text-xs text-ink-60 hover:underline flex items-center gap-1 cursor-pointer font-medium"
           >
             <PencilSquare className="w-3.5 h-3.5" />
             <span>Add History / Lineup</span>
           </button>
         </div>
 
-        <div className="prose max-w-none text-sm text-black/80 leading-relaxed space-y-4">
+        <div className="prose max-w-none text-sm text-ink-60 leading-relaxed space-y-4">
           {band.history.split('\n\n').map((p, i) => (
             <p key={i}>{p}</p>
           ))}
@@ -147,19 +147,19 @@ export const BandDetailView: React.FC = () => {
 
       {/* Historical Membership Timeline (Section 16: 1971-1975 John - Guitar, 1975-1982 Peter - Guitar) */}
       <section className="space-y-3 pt-4">
-        <div className="flex items-center justify-between border-b border-black/10 pb-1.5">
-          <h2 className="text-xl font-serif font-medium text-black flex items-center gap-2">
+        <div className="flex items-center justify-between border-b border-ink-12 pb-1.5">
+          <h2 className="text-xl font-serif font-medium text-ink flex items-center gap-2">
             <span>Membership Timeline</span>
             <button
               onClick={() => openQuickEdit(band.id, 'band_member')}
-              className="text-xs font-mono text-blue-700 font-normal hover:underline cursor-pointer"
+              className="text-xs font-mono text-link font-normal hover:underline cursor-pointer"
             >
               [edit lineup]
             </button>
           </h2>
           <button
             onClick={() => openQuickEdit(band.id, 'band_member')}
-            className="text-xs text-orange-600 hover:underline flex items-center gap-1 cursor-pointer font-medium"
+            className="text-xs text-ink-60 hover:underline flex items-center gap-1 cursor-pointer font-medium"
           >
             <PencilSquare className="w-3.5 h-3.5" />
             <span>Add Band Member</span>
@@ -171,22 +171,22 @@ export const BandDetailView: React.FC = () => {
             <div
               key={idx}
               onClick={() => navigateTo('musician_detail', { musicianId: mem.musicianId })}
-              className="p-3 rounded-xl border border-black/10 bg-white hover:border-orange-600 hover:shadow-xs transition-all cursor-pointer flex items-center justify-between text-xs"
+              className="p-3 rounded-xl border border-ink-12 bg-paper hover:border-brand hover: transition-all cursor-pointer flex items-center justify-between text-xs"
             >
               <div className="flex items-center gap-3">
-                <span className="font-mono text-xs font-bold text-orange-700 w-24">
+                <span className="font-mono text-xs font-bold text-ink-60 w-24">
                   {mem.period}
                 </span>
-                <span className="font-serif text-sm font-semibold text-black hover:text-orange-700">
+                <span className="font-serif text-sm font-semibold text-ink hover:text-link">
                   {mem.musicianName}
                 </span>
                 {mem.isFounder && (
-                  <span className="text-[10px] font-mono text-black bg-black/5 border border-black/20 px-1.5 py-0.5 rounded">
+                  <span className="text-[10px] font-mono text-ink bg-ink-06 border border-ink-12 px-1.5 py-0.5 rounded">
                     Founder
                   </span>
                 )}
               </div>
-              <span className="font-mono text-black/60 bg-black/5 px-2 py-0.5 rounded border border-black/10">
+              <span className="font-mono text-ink-60 bg-ink-06 px-2 py-0.5 rounded border border-ink-12">
                 {mem.instrument}
               </span>
             </div>
@@ -196,10 +196,10 @@ export const BandDetailView: React.FC = () => {
 
       {/* Discography */}
       <section className="space-y-3 pt-4">
-        <div className="flex items-center justify-between border-b border-black/10 pb-1.5">
-          <h2 className="text-xl font-serif font-medium text-black flex items-center gap-2">
+        <div className="flex items-center justify-between border-b border-ink-12 pb-1.5">
+          <h2 className="text-xl font-serif font-medium text-ink flex items-center gap-2">
             <span>Discography</span>
-            <span className="text-xs text-black/50 font-mono">({bandRecordings.length} songs)</span>
+            <span className="text-xs text-ink-60 font-mono">({bandRecordings.length} songs)</span>
           </h2>
         </div>
 
@@ -207,23 +207,23 @@ export const BandDetailView: React.FC = () => {
           {bandRecordings.map((rec) => (
             <div
               key={rec.id}
-              className="p-3 rounded-xl border border-black/10 bg-white hover:border-orange-600 hover:shadow-xs transition-all flex items-center justify-between gap-3 text-xs"
+              className="p-3 rounded-xl border border-ink-12 bg-paper hover:border-brand hover: transition-all flex items-center justify-between gap-3 text-xs"
             >
               <div className="flex items-center gap-3 min-w-0">
                 <img
                   src={rec.coverImage}
                   alt={rec.title}
                   referrerPolicy="no-referrer"
-                  className="w-10 h-10 rounded object-cover border border-black/10 shrink-0"
+                  className="w-10 h-10 rounded object-cover border border-ink-12 shrink-0"
                 />
                 <div className="min-w-0">
                   <h3
                     onClick={() => navigateTo('song_detail', { songId: rec.id })}
-                    className="font-serif text-sm font-semibold text-blue-700 hover:underline cursor-pointer truncate"
+                    className="font-serif text-sm font-semibold text-link hover:underline cursor-pointer truncate"
                   >
                     {rec.title}
                   </h3>
-                  <p className="text-black/50 text-[11px]">
+                  <p className="text-ink-60 text-[11px]">
                     Released: {rec.releaseYear} · Studio: {rec.studio}
                   </p>
                 </div>
@@ -231,7 +231,7 @@ export const BandDetailView: React.FC = () => {
 
               <button
                 onClick={() => playSong(rec)}
-                className="p-2 rounded-full bg-orange-600 text-white hover:bg-orange-700 cursor-pointer shrink-0"
+                className="p-2 rounded-full bg-brand text-on-orange hover:bg-brand cursor-pointer shrink-0"
               >
                 <PlayFill className="w-3.5 h-3.5 fill-current ml-0.5" />
               </button>

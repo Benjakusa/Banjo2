@@ -11,6 +11,7 @@ import { DiffViewerModal } from './components/common/DiffViewerModal';
 import { AddDetailModal } from './components/common/AddDetailModal';
 import { CreateArticleModal } from './components/common/CreateArticleModal';
 import { MobileBottomNav } from './components/common/MobileBottomNav';
+import { Wordmark } from './components/common/Wordmark';
 
 import { HomeView } from './components/views/HomeView';
 import { SongDetailView } from './components/views/SongDetailView';
@@ -72,7 +73,7 @@ const AppContent: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[var(--banjo-primary)] text-[var(--banjo-text)]">
+    <div className="min-h-screen bg-paper text-ink">
       <Header onOpenNav={() => setIsSidebarOpen(true)} />
 
       <div className="mx-auto flex w-full max-w-[1800px]">
@@ -81,17 +82,12 @@ const AppContent: React.FC = () => {
         <main className="min-w-0 flex-1 pb-40 sm:pb-24 min-[1000px]:pb-8">{renderActiveView()}</main>
       </div>
 
-      <footer className="border-t border-[var(--banjo-line)] bg-[var(--banjo-surface)]-2 px-4 py-8 text-xs text-[var(--banjo-muted)] sm:px-6">
+      <footer className="border-t border-ink-12 bg-ink-06 px-4 py-8 text-xs text-ink-60 sm:px-6">
         <div className="mx-auto flex max-w-[1800px] flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-1.5">
-            <div className="flex items-center gap-2">
-              <span className="flex h-6 w-6 items-center justify-center rounded bg-[var(--banjo-primary)] font-serif text-xs font-bold text-white">
-                &#9834;
-              </span>
-              <span className="text-base font-bold tracking-tight text-[var(--banjo-text)]">Banjo</span>
-            </div>
+            <Wordmark className="text-lg leading-none" />
             <p className="max-w-md leading-relaxed">
-              The free encyclopedia of African music that anyone can edit. Every recording, credit,
+              The free encyclopedia of African music. Every recording, credit,
               lyric, and claim here is community-submitted, sourced, and versioned.
             </p>
           </div>
@@ -100,28 +96,28 @@ const AppContent: React.FC = () => {
             <button
               type="button"
               onClick={() => navigateTo('home')}
-              className="transition-colors hover:text-[var(--banjo-text)]"
+              className="transition-colors hover:text-ink"
             >
               Home
             </button>
             <button
               type="button"
               onClick={() => navigateTo('explore')}
-              className="transition-colors hover:text-[var(--banjo-text)]"
+              className="transition-colors hover:text-ink"
             >
               Explore
             </button>
             <button
               type="button"
               onClick={() => navigateTo('timeline')}
-              className="transition-colors hover:text-[var(--banjo-text)]"
+              className="transition-colors hover:text-ink"
             >
               Timeline
             </button>
             <button
               type="button"
               onClick={() => navigateTo('upload')}
-              className="transition-colors hover:text-[var(--banjo-text)]"
+              className="transition-colors hover:text-ink"
             >
               Contribute
             </button>
@@ -129,7 +125,7 @@ const AppContent: React.FC = () => {
               <button
                 type="button"
                 onClick={() => navigateTo('admin')}
-                className="font-semibold text-[var(--banjo-primary)] transition-opacity hover:opacity-80"
+                className="font-semibold text-ink-60 transition-opacity hover:opacity-80"
               >
                 Archivist tools
               </button>
@@ -153,9 +149,9 @@ const AppContent: React.FC = () => {
         <div
           role="status"
           aria-live="polite"
-          className="fixed bottom-24 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-full bg-[var(--banjo-text)] px-4 py-2.5 text-xs text-[var(--banjo-bg)] shadow-xl sm:bottom-6"
+          className="fixed bottom-24 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-full bg-ink px-4 py-2.5 text-xs text-paper sm:bottom-6"
         >
-          <span className="h-2 w-2 rounded-full bg-[var(--banjo-accent)]" />
+          <span className="h-2 w-2 rounded-full bg-brand" />
           <span>{toastMessage}</span>
         </div>
       )}

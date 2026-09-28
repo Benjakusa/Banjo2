@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useBanjo } from '../../context/BanjoContext';
+import { VerificationBadge } from '../common/VerificationBadge';
 import type { LyricLine, LyricsVersion, MusicianCredit, Recording } from '../../types';
 import {
   Play,
@@ -9,7 +10,6 @@ import {
   PencilSquare,
   ExclamationTriangle,
   ClockHistory,
-  ShieldCheck,
   GeoAlt,
   InfoCircle,
   PlusLg,
@@ -69,7 +69,7 @@ const SectionHeader: React.FC<{
         <button
           type="button"
           onClick={onAdd}
-          className="inline-flex items-center gap-1 rounded-full bg-[var(--banjo-primary)] px-3 py-1 text-xs font-semibold text-white transition-opacity hover:opacity-90"
+          className="inline-flex items-center gap-1 rounded-full bg-brand px-3 py-1 text-xs font-semibold text-on-orange transition-opacity hover:opacity-90"
         >
           <PlusLg className="h-3 w-3" />
           {addLabel || 'Add'}
@@ -88,7 +88,7 @@ const CompactRecordingCard: React.FC<{
     onClick={onSelect}
     className="group flex w-full items-center gap-3 rounded-xl p-1.5 text-left transition-colors hover:bg-current/5"
   >
-    <span className="relative h-[68px] w-[120px] shrink-0 overflow-hidden rounded-lg bg-neutral-200 dark:bg-neutral-800">
+    <span className="relative h-[68px] w-[120px] shrink-0 overflow-hidden rounded-lg bg-ink-06 dark:bg-ink-06">
       <img
         src={recording.coverImage}
         alt=""
@@ -96,10 +96,10 @@ const CompactRecordingCard: React.FC<{
         referrerPolicy="no-referrer"
         className="h-full w-full object-cover"
       />
-      <span className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-opacity group-hover:bg-black/35 group-hover:opacity-100">
-        <PlayCircleFill className="h-8 w-8 text-white" />
+      <span className="absolute inset-0 flex items-center justify-center bg-transparent opacity-0 transition-opacity group-hover:bg-ink/35 group-hover:opacity-100">
+        <PlayCircleFill className="h-8 w-8 text-paper" />
       </span>
-      <span className="absolute bottom-1 right-1 rounded bg-black/75 px-1 py-px font-mono text-[10px] text-white">
+      <span className="absolute bottom-1 right-1 rounded bg-ink/75 px-1 py-px font-mono text-[10px] text-paper">
         {formatTime(recording.duration)}
       </span>
     </span>
@@ -125,7 +125,7 @@ const WaveformPlayer: React.FC<{
   const progress = recording.duration > 0 ? currentTime / recording.duration : 0;
 
   return (
-    <div className="relative aspect-video w-full overflow-hidden rounded-none bg-neutral-900 sm:rounded-2xl">
+    <div className="relative aspect-video w-full overflow-hidden rounded-none bg-ink sm:rounded-2xl">
       <img
         src={recording.coverImage}
         alt=""
@@ -138,7 +138,7 @@ const WaveformPlayer: React.FC<{
           type="button"
           onClick={onTogglePlay}
           aria-label={isPlayingThis ? 'Pause recording' : 'Play recording'}
-          className="flex h-16 w-16 items-center justify-center rounded-full bg-white/95 text-neutral-900 shadow-lg transition-transform hover:scale-105 active:scale-95 sm:h-20 sm:w-20"
+          className="flex h-16 w-16 items-center justify-center rounded-full bg-paper/95 text-ink transition-transform hover:scale-105 active:scale-95 sm:h-20 sm:w-20"
         >
           {isPlayingThis ? (
             <PauseFill className="h-8 w-8 fill-current" />
@@ -157,7 +157,7 @@ const WaveformPlayer: React.FC<{
                 aria-hidden="true"
                 onClick={() => onSeek(((i + 0.5) / peaks.length) * recording.duration)}
                 className={`flex-1 rounded-full transition-colors ${
-                  played ? 'bg-white' : 'bg-white/30'
+                  played ? 'bg-paper' : 'bg-paper/30'
                 }`}
                 style={{ height: `${Math.max(8, (peak / max) * 100)}%` }}
               />
@@ -165,12 +165,12 @@ const WaveformPlayer: React.FC<{
           })}
         </div>
       </div>
-      <div className="absolute left-4 top-4 flex items-center gap-2 rounded-full bg-black/60 px-2.5 py-1 font-mono text-[11px] text-white/90">
+      <div className="absolute left-4 top-4 flex items-center gap-2 rounded-full bg-ink/60 px-2.5 py-1 font-mono text-[11px] text-paper/90">
         <VolumeUpFill className="h-3 w-3" />
         {recording.audioQuality}
       </div>
       {recording.musicians.some((m) => m.isSoloist) && (
-        <div className="absolute right-4 top-4 rounded-full bg-[var(--banjo-primary)] px-2.5 py-1 text-[11px] font-semibold text-white">
+        <div className="absolute right-4 top-4 rounded-full bg-brand px-2.5 py-1 text-[11px] font-semibold text-on-orange">
           {recording.musicians.filter((m) => m.isSoloist).length} soloist
           {recording.musicians.filter((m) => m.isSoloist).length === 1 ? '' : 's'} credited
         </div>
@@ -195,12 +195,12 @@ const SoloTimeline: React.FC<{
   return (
     <div className="rounded-xl border border-current/10 p-3">
       <div className="mb-2 flex items-center gap-2 text-xs font-semibold text-current">
-        <MusicNoteBeamed className="h-4 w-4 text-[var(--banjo-accent)]" />
+        <MusicNoteBeamed className="h-4 w-4 text-brand" />
         Solo map
       </div>
       <div className="relative h-9 w-full overflow-hidden rounded-full bg-current/5">
         <div
-          className="absolute inset-y-0 left-0 bg-[var(--banjo-primary)]/25"
+          className="absolute inset-y-0 left-0 bg-brand/25"
           style={{ width: `${Math.min(100, (currentTime / (recording.duration || 1)) * 100)}%` }}
         />
         {segments.map(({ credit, span }, i) => {
@@ -215,7 +215,7 @@ const SoloTimeline: React.FC<{
               onClick={() => onSeek(span.startSec || 0)}
               title={`${credit.musicianName} — ${formatTime(span.startSec || 0)} to ${formatTime(span.endSec || 0)}`}
               className={`absolute inset-y-0.5 rounded-full transition-all ${
-                active ? 'bg-[var(--banjo-primary)] ring-2 ring-white' : 'bg-[var(--banjo-primary)]/70 hover:bg-[var(--banjo-primary)]'
+                active ? 'bg-brand ring-2 ring-paper' : 'bg-brand/70 hover:bg-brand'
               }`}
               style={{ left: `${start * 100}%`, width: `${Math.max(1.5, width * 100)}%` }}
             >
@@ -229,7 +229,7 @@ const SoloTimeline: React.FC<{
       <ul className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-current/60">
         {segments.map(({ credit, span }, i) => (
           <li key={i} className="inline-flex items-center gap-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--banjo-primary)]" />
+            <span className="h-1.5 w-1.5 rounded-full bg-brand" />
             {credit.musicianName}
             <span className="font-mono text-current/40">
               {formatTime(span.startSec || 0)}–{formatTime(span.endSec || 0)}
@@ -280,7 +280,7 @@ const LyricsBlock: React.FC<{
         sections.map((group, gi) => (
           <div key={gi}>
             {group.name && (
-              <h4 className="mb-1.5 font-mono text-[11px] font-bold uppercase tracking-wider text-[var(--banjo-primary)]">
+              <h4 className="mb-1.5 font-mono text-[11px] font-bold uppercase tracking-wider text-ink-60">
                 {group.name}
               </h4>
             )}
@@ -297,7 +297,7 @@ const LyricsBlock: React.FC<{
                     onClick={() => clickable && onSeek(line.startSec as number)}
                     className={`block w-full rounded-md px-2.5 py-1.5 text-left text-sm leading-relaxed transition-colors ${
                       active
-                        ? 'bg-[var(--banjo-primary)] font-semibold text-white'
+                        ? 'bg-brand font-semibold text-on-orange'
                         : clickable
                           ? 'text-current/75 hover:bg-current/5'
                           : 'cursor-default text-current/75'
@@ -531,7 +531,7 @@ export const SongDetailView: React.FC = () => {
                 disabled={!recording.bandId && !recording.artistId}
                 className="group inline-flex min-w-0 items-center gap-2 text-left"
               >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--banjo-primary)] font-serif text-sm font-bold text-white">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ink-06 text-sm font-bold text-ink">
                   {recording.artistOrBand.charAt(0).toUpperCase()}
                 </span>
                 <span className="min-w-0">
@@ -541,9 +541,10 @@ export const SongDetailView: React.FC = () => {
                   <span className="mt-0.5 flex items-center gap-1 truncate text-[11px] text-current/60">
                     <GeoAlt className="h-3 w-3" />
                     {recording.country} · {recording.genre}
-                    {recording.verificationStatus !== 'unverified' && (
-                      <ShieldCheck className="h-3.5 w-3.5 text-[var(--banjo-accent)]" />
-                    )}
+                    <VerificationBadge
+                      status={recording.verificationStatus}
+                      className="h-3 w-3"
+                    />
                   </span>
                 </span>
               </button>
@@ -552,7 +553,7 @@ export const SongDetailView: React.FC = () => {
                 <button
                   type="button"
                   onClick={handlePlayRecording}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-neutral-900 px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-85 dark:bg-white dark:text-neutral-900"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-ink px-4 py-2 text-sm font-semibold text-paper transition-opacity hover:opacity-85 dark:bg-paper dark:text-ink"
                 >
                   {isPlayingThis ? (
                     <PauseFill className="h-4 w-4 fill-current" />
@@ -584,7 +585,7 @@ export const SongDetailView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsEditModalOpen(true)}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-[var(--banjo-primary)] px-3.5 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-brand px-3.5 py-2 text-sm font-semibold text-on-orange transition-opacity hover:opacity-90"
                 >
                   <PencilSquare className="h-4 w-4" />
                   Edit
@@ -684,7 +685,7 @@ export const SongDetailView: React.FC = () => {
                         </span>
                       )}
                       {tab.id === 'personnel' && soloists.length > 0 && (
-                        <span className="ml-1.5 rounded-full bg-[var(--banjo-primary)] px-1.5 py-px font-mono text-[10px] text-white">
+                        <span className="ml-1.5 rounded-full bg-brand px-1.5 py-px font-mono text-[10px] text-on-orange">
                           {soloists.length}
                         </span>
                       )}
@@ -744,7 +745,7 @@ export const SongDetailView: React.FC = () => {
                     <ol className="space-y-3 border-l-2 border-current/10 pl-4 text-sm text-current/75">
                       {recording.recordingHistory.map((entry, i) => (
                         <li key={i} className="relative">
-                          <span className="absolute -left-[21px] top-1.5 h-2 w-2 rounded-full bg-[var(--banjo-primary)]" />
+                          <span className="absolute -left-[21px] top-1.5 h-2 w-2 rounded-full bg-brand" />
                           {entry}
                         </li>
                       ))}
@@ -764,7 +765,7 @@ export const SongDetailView: React.FC = () => {
                             key={`${credit.musicianId}-${credit.instrument}-${credit.soloOrder}`}
                             className="flex items-start gap-3 rounded-xl border border-current/10 p-3"
                           >
-                            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--banjo-primary)] font-mono text-[11px] font-bold text-white">
+                            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand font-mono text-[11px] font-bold text-on-orange">
                               {credit.soloOrder ?? '–'}
                             </span>
                             <div className="min-w-0 flex-1">
@@ -840,23 +841,23 @@ export const SongDetailView: React.FC = () => {
                   )}
 
                   {recording.disputedClaims && recording.disputedClaims.length > 0 && (
-                    <section className="rounded-xl border border-[var(--banjo-primary)]/30 bg-[var(--banjo-primary)]/5 p-4">
+                    <section className="rounded-xl border border-brand/30 bg-brand/5 p-4">
                       <div className="mb-2 flex items-center gap-2 text-sm font-bold text-current">
-                        <InfoCircle className="h-4 w-4 text-[var(--banjo-primary)]" />
+                        <InfoCircle className="h-4 w-4 text-brand" />
                         Disputed claims
                       </div>
                       {recording.disputedClaims.map((claim, i) => (
                         <div key={i} className="space-y-2 text-sm">
                           <p className="font-semibold text-current">{claim.title}</p>
                           <div className="grid gap-2 sm:grid-cols-2">
-                            <div className="rounded-lg border border-current/10 bg-white/50 p-3 dark:bg-white/5">
+                            <div className="rounded-lg border border-current/10 bg-paper/50 p-3 dark:bg-paper/5">
                               <p className="text-[11px] font-semibold uppercase tracking-wide text-current/45">
                                 Account A
                               </p>
                               <p className="mt-1 text-current/80">{claim.claimA.text}</p>
                               <p className="mt-1 text-[11px] text-current/50">{claim.claimA.source}</p>
                             </div>
-                            <div className="rounded-lg border border-current/10 bg-white/50 p-3 dark:bg-white/5">
+                            <div className="rounded-lg border border-current/10 bg-paper/50 p-3 dark:bg-paper/5">
                               <p className="text-[11px] font-semibold uppercase tracking-wide text-current/45">
                                 Account B
                               </p>
@@ -890,7 +891,7 @@ export const SongDetailView: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => openQuickEdit(recording.id, 'musicians')}
-                          className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-[var(--banjo-primary)] px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                          className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-brand px-4 py-2 text-sm font-semibold text-on-orange transition-opacity hover:opacity-90"
                         >
                           <PlusLg className="h-4 w-4" />
                           Credit a soloist
@@ -912,7 +913,7 @@ export const SongDetailView: React.FC = () => {
                               key={`${credit.musicianId}-${credit.instrument}-${credit.soloOrder}`}
                               className="flex flex-wrap items-center gap-3 rounded-xl border border-current/10 p-3"
                             >
-                              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--banjo-primary)] font-mono text-xs font-bold text-white">
+                              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand font-mono text-xs font-bold text-on-orange">
                                 {credit.soloOrder ?? '–'}
                               </span>
                               <button
@@ -935,7 +936,7 @@ export const SongDetailView: React.FC = () => {
                                       type="button"
                                       disabled={typeof span.startSec !== 'number'}
                                       onClick={() => handleSeek(span.startSec || 0)}
-                                      className="inline-flex items-center gap-1 rounded-full border border-current/15 px-2.5 py-1 font-mono text-[11px] text-current/70 transition-colors hover:border-[var(--banjo-primary)] hover:text-[var(--banjo-primary)]"
+                                      className="inline-flex items-center gap-1 rounded-full border border-current/15 px-2.5 py-1 font-mono text-[11px] text-current/70 transition-colors hover:border-brand hover:text-link"
                                     >
                                       <ClockFill className="h-3 w-3" />
                                       {span.label || 'Solo'} {formatTime(span.startSec || 0)}–
@@ -1024,7 +1025,7 @@ export const SongDetailView: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => openQuickEdit(recording.id, 'lyrics')}
-                        className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-[var(--banjo-primary)] px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                        className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-brand px-4 py-2 text-sm font-semibold text-on-orange transition-opacity hover:opacity-90"
                       >
                         <PlusLg className="h-4 w-4" />
                         Transcribe lyrics
@@ -1040,7 +1041,7 @@ export const SongDetailView: React.FC = () => {
                             onClick={() => setActiveLyricsId(version.id)}
                             className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-semibold transition-colors ${
                               activeLyrics?.id === version.id
-                                ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900'
+                                ? 'bg-ink text-paper dark:bg-paper dark:text-ink'
                                 : 'bg-current/5 text-current hover:bg-current/10'
                             }`}
                           >
@@ -1063,7 +1064,7 @@ export const SongDetailView: React.FC = () => {
                           }}
                           className={`ml-auto inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-semibold transition-colors ${
                             isCompareMode
-                              ? 'bg-[var(--banjo-primary)] text-white'
+                              ? 'bg-brand text-on-orange'
                               : 'bg-current/5 text-current hover:bg-current/10'
                           }`}
                         >
@@ -1118,7 +1119,7 @@ export const SongDetailView: React.FC = () => {
                                   onClick={() => setCompareLyricsId(version.id)}
                                   className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
                                     compareLyrics?.id === version.id
-                                      ? 'bg-[var(--banjo-primary)] text-white'
+                                      ? 'bg-brand text-on-orange'
                                       : 'bg-current/5 text-current hover:bg-current/10'
                                   }`}
                                 >
@@ -1142,7 +1143,7 @@ export const SongDetailView: React.FC = () => {
                                 )}
                               </div>
                               <div className="sm:border-l sm:border-current/10 sm:pl-4">
-                                <h4 className="mb-2 font-mono text-[11px] font-bold uppercase tracking-wider text-[var(--banjo-primary)]">
+                                <h4 className="mb-2 font-mono text-[11px] font-bold uppercase tracking-wider text-ink-60">
                                   {compareLyrics.language}
                                 </h4>
                                 <LyricsBlock
@@ -1227,7 +1228,7 @@ export const SongDetailView: React.FC = () => {
                       >
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2 text-xs text-current/55">
-                            <span className="inline-flex items-center gap-1 font-mono font-bold text-[var(--banjo-primary)]">
+                            <span className="inline-flex items-center gap-1 font-mono font-bold text-ink-60">
                               <ClockHistory className="h-3.5 w-3.5" />v{rev.version}.0
                             </span>
                             <span>{rev.date}</span>
@@ -1286,7 +1287,7 @@ export const SongDetailView: React.FC = () => {
                           onChange={(e) => setTalkTopic(e.target.value)}
                           required
                           placeholder="What should archivists discuss about this recording?"
-                          className="w-full rounded-lg border border-current/20 bg-transparent px-3 py-2 text-sm text-current outline-none focus:border-[var(--banjo-primary)]"
+                          className="w-full rounded-lg border border-current/20 bg-transparent px-3 py-2 text-sm text-current outline-none focus:border-brand"
                         />
                       </div>
                       <div>
@@ -1299,7 +1300,7 @@ export const SongDetailView: React.FC = () => {
                           onChange={(e) => setTalkCommentText(e.target.value)}
                           required
                           placeholder="Share evidence, sources, or corrections."
-                          className="w-full rounded-lg border border-current/20 bg-transparent px-3 py-2 text-sm text-current outline-none focus:border-[var(--banjo-primary)]"
+                          className="w-full rounded-lg border border-current/20 bg-transparent px-3 py-2 text-sm text-current outline-none focus:border-brand"
                         />
                       </div>
                       <div className="flex justify-end gap-2">
@@ -1312,7 +1313,7 @@ export const SongDetailView: React.FC = () => {
                         </button>
                         <button
                           type="submit"
-                          className="rounded-full bg-[var(--banjo-primary)] px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                          className="rounded-full bg-brand px-4 py-2 text-sm font-semibold text-on-orange transition-opacity hover:opacity-90"
                         >
                           Post
                         </button>
@@ -1405,7 +1406,7 @@ export const SongDetailView: React.FC = () => {
               <section className="rounded-xl border border-current/10 p-3 text-xs text-current/60">
                 <h2 className="mb-1 text-sm font-bold text-current">About this archive</h2>
                 <p>
-                  Banjo is the free encyclopedia of African music that anyone can edit. Every claim,
+                  Banjo is the free encyclopedia of African music. Every claim,
                   credit, and lyric here is community-submitted, sourced, and versioned.
                 </p>
                 <button

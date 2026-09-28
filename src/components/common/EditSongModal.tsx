@@ -32,31 +32,30 @@ export const EditSongModal: React.FC = () => {
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 p-4"
     >
-      <div className="relative w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-2xl border border-black/10 bg-white p-6 shadow-xl space-y-4">
-        <div className="flex items-center justify-between border-b border-black/10 pb-3">
+      <div className="relative w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-2xl border border-ink-12 bg-paper p-6 space-y-4">
+        <div className="flex items-center justify-between border-b border-ink-12 pb-3">
           <div className="flex items-center gap-2">
-            <span className="flex items-center justify-center w-6 h-6 rounded bg-orange-600 text-white font-serif font-bold text-xs">&#9834;</span>
             <div>
-              <span className="text-[10px] uppercase tracking-widest font-mono text-orange-700 font-bold block">
+              <span className="text-[10px] uppercase tracking-widest font-mono text-ink-60 font-bold block">
                 Banjo Editor
               </span>
-              <h2 className="text-lg font-serif font-medium text-black">
+              <h2 className="text-lg font-serif font-medium text-ink">
                 Edit page: {currentRecording.title}
               </h2>
             </div>
           </div>
           <button
             onClick={() => setIsEditModalOpen(false)}
-            className="p-1 rounded-md text-black/40 hover:text-black/70 hover:bg-black/5 cursor-pointer"
+            className="p-1 rounded-md text-ink-60 hover:text-ink-60 hover:bg-ink-06 cursor-pointer"
           >
             <XLg className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="bg-orange-50 border border-orange-200 rounded-xl p-3 text-xs text-orange-950 leading-relaxed flex items-start gap-2">
-          <ShieldExclamation className="w-4 h-4 text-orange-600 shrink-0 mt-0.5" />
+        <div className="bg-brand/10 border border-brand rounded-xl p-3 text-xs text-ink-60 leading-relaxed flex items-start gap-2">
+          <ShieldExclamation className="w-4 h-4 text-brand shrink-0 mt-0.5" />
           <span>
             <strong>Traceable Revisions:</strong> Every change creates a versioned revision with your explanation and supporting citations. No historical facts are silently overwritten.
           </span>
@@ -64,83 +63,83 @@ export const EditSongModal: React.FC = () => {
 
         <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
           <div>
-            <label className="block text-black/70 font-medium mb-1">Article / Song Title</label>
+            <label className="block text-ink-60 font-medium mb-1">Article / Song Title</label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
-              className="w-full rounded-lg border border-black/20 p-2 text-black focus:border-orange-600 focus:outline-none"
+              className="w-full rounded-lg border border-ink-12 p-2 text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-black/70 font-medium mb-1">Release Year</label>
+              <label className="block text-ink-60 font-medium mb-1">Release Year</label>
               <input
                 type="number"
                 value={year}
                 onChange={(e) => setYear(e.target.value)}
                 required
-                className="w-full rounded-lg border border-black/20 p-2 text-black focus:border-orange-600 focus:outline-none font-mono"
+                className="w-full rounded-lg border border-ink-12 p-2 text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0 font-mono"
               />
             </div>
             <div>
-              <label className="block text-black/70 font-medium mb-1">Composer / Arranger</label>
+              <label className="block text-ink-60 font-medium mb-1">Composer / Arranger</label>
               <input
                 type="text"
                 value={composer}
                 onChange={(e) => setComposer(e.target.value)}
                 required
-                className="w-full rounded-lg border border-black/20 p-2 text-black focus:border-orange-600 focus:outline-none"
+                className="w-full rounded-lg border border-ink-12 p-2 text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-black/70 font-medium mb-1">Historical Narrative (Body Text)</label>
+            <label className="block text-ink-60 font-medium mb-1">Historical Narrative (Body Text)</label>
             <textarea
               rows={4}
               value={history}
               onChange={(e) => setHistory(e.target.value)}
-              className="w-full rounded-lg border border-black/20 p-2 text-black focus:border-orange-600 focus:outline-none font-serif leading-relaxed"
+              className="w-full rounded-lg border border-ink-12 p-2 text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0 font-serif leading-relaxed"
             />
           </div>
 
           <div>
-            <label className="block text-black/70 font-medium mb-1">Supporting Sources / Citations</label>
+            <label className="block text-ink-60 font-medium mb-1">Supporting Sources / Citations</label>
             <input
               type="text"
               placeholder="e.g. Polydor AS 1042 vinyl runout, Voice of Kenya 1983 broadcast"
               value={sources}
               onChange={(e) => setSources(e.target.value)}
-              className="w-full rounded-lg border border-black/20 p-2 text-black focus:border-orange-600 focus:outline-none"
+              className="w-full rounded-lg border border-ink-12 p-2 text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
             />
           </div>
 
           <div>
-            <label className="block text-black/70 font-medium mb-1">Edit Summary (Briefly describe your changes)</label>
+            <label className="block text-ink-60 font-medium mb-1">Edit Summary (Briefly describe your changes)</label>
             <input
               type="text"
               required
               placeholder="e.g. Added guitar solo credits and verified 1978 release date from sleeve stamp"
               value={explanation}
               onChange={(e) => setExplanation(e.target.value)}
-              className="w-full rounded-lg border border-black/20 p-2 text-black focus:border-orange-600 focus:outline-none"
+              className="w-full rounded-lg border border-ink-12 p-2 text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
             />
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-black/10">
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-ink-12">
             <button
               type="button"
               onClick={() => setIsEditModalOpen(false)}
-              className="px-4 py-2 text-xs font-medium text-black/60 hover:text-black cursor-pointer"
+              className="px-4 py-2 text-xs font-medium text-ink-60 hover:text-ink cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-orange-600 hover:bg-orange-700 rounded-lg transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-on-orange bg-brand hover:bg-brand rounded-lg transition-colors cursor-pointer"
             >
               <SendFill className="w-3.5 h-3.5" />
               <span>Publish Changes</span>

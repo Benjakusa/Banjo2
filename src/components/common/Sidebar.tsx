@@ -77,7 +77,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     if (visible.length === 0) return null;
     return (
       <div className="px-3 pb-4">
-        <p className="mb-1.5 px-3 text-[11px] font-bold uppercase tracking-wide text-[var(--banjo-muted)]">
+        <p className="mb-1.5 px-3 text-[11px] font-bold uppercase tracking-wide text-ink-60">
           {title}
         </p>
         <ul className="space-y-0.5">
@@ -91,8 +91,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                   aria-current={isActive ? 'page' : undefined}
                   className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
                     isActive
-                      ? 'bg-[var(--banjo-chip)] font-semibold text-[var(--banjo-text)]'
-                      : 'text-[var(--banjo-text)]/75 hover:bg-[var(--banjo-chip)]'
+                      ? 'bg-ink-06 font-semibold text-ink'
+                      : 'text-ink/75 hover:bg-ink-06'
                   }`}
                 >
                   <Icon className="h-[18px] w-[18px] shrink-0" />
@@ -113,25 +113,25 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           type="button"
           aria-label="Close navigation"
           onClick={onClose}
-          className="fixed inset-0 z-30 bg-black/40 min-[1000px]:hidden"
+          className="fixed inset-0 z-30 bg-ink/40 min-[1000px]:hidden"
         />
       )}
 
       <aside
         aria-label="Main navigation"
-        className={`fixed inset-y-0 left-0 z-40 hidden w-[220px] flex-col border-r border-[var(--banjo-line)] bg-[var(--banjo-bg)] transition-transform duration-200 min-[640px]:flex min-[1000px]:translate-x-0 ${
-          isOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
-        }`}
+        className={`fixed inset-y-0 left-0 z-40 hidden w-[220px] shrink-0 self-start flex-col border-r border-ink-12 bg-paper transition-transform duration-200 min-[640px]:flex ${
+          isOpen ? 'translate-x-0' : '-translate-x-full'
+        } min-[1000px]:sticky min-[1000px]:top-14 min-[1000px]:z-auto min-[1000px]:inset-y-auto min-[1000px]:h-[calc(100dvh-3.5rem)] min-[1000px]:translate-x-0`}
       >
         <div className="flex items-center justify-between px-4 py-3">
-          <span className="text-[11px] font-bold uppercase tracking-wide text-[var(--banjo-muted)]">
+          <span className="text-[11px] font-bold uppercase tracking-wide text-ink-60">
             Browse
           </span>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close navigation"
-            className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--banjo-muted)] transition-colors hover:bg-[var(--banjo-chip)] hover:text-[var(--banjo-text)] min-[1000px]:hidden"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-ink-60 transition-colors hover:bg-ink-06 hover:text-ink min-[1000px]:hidden"
           >
             <X className="h-4 w-4" />
           </button>
@@ -144,7 +144,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               setIsCreateArticleModalOpen(true);
               onClose();
             }}
-            className="flex w-full items-center gap-2 rounded-full bg-[var(--banjo-primary)] px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+            className="flex w-full items-center gap-2 rounded-full bg-brand px-4 py-2.5 text-sm font-semibold text-on-orange transition-opacity hover:opacity-90"
           >
             <PlusLg className="h-4 w-4" />
             Record submission

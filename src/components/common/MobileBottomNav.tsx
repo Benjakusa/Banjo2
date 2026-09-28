@@ -114,7 +114,7 @@ export const MobileBottomNav: React.FC = () => {
       onClick={onClick}
       aria-current={isActive ? 'page' : undefined}
       className={`flex flex-1 flex-col items-center justify-center gap-0.5 py-1.5 transition-colors ${
-        isActive ? 'text-[var(--banjo-text)]' : 'text-[var(--banjo-muted)]'
+        isActive ? 'text-ink' : 'text-ink-60'
       }`}
     >
       <Icon className="h-5 w-5" />
@@ -126,7 +126,7 @@ export const MobileBottomNav: React.FC = () => {
     <>
       <nav
         aria-label="Primary"
-        className="fixed inset-x-0 bottom-0 z-40 flex border-t border-[var(--banjo-line)] bg-[var(--banjo-bg)]/95 pb-[env(safe-area-inset-bottom)] backdrop-blur sm:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 flex border-t border-ink-12 bg-paper/95 pb-[env(safe-area-inset-bottom)] backdrop-blur sm:hidden"
       >
         {tabButton('Home', House, activeTab === 'home', () => navigateTo('home'))}
         {tabButton('Explore', Compass, activeTab === 'explore', () => navigateTo('explore'))}
@@ -135,7 +135,7 @@ export const MobileBottomNav: React.FC = () => {
           type="button"
           onClick={() => setIsSearchOpen(true)}
           aria-label="Search"
-          className="flex flex-1 flex-col items-center justify-center gap-0.5 py-1.5 text-[var(--banjo-muted)] transition-colors"
+          className="flex flex-1 flex-col items-center justify-center gap-0.5 py-1.5 text-ink-60 transition-colors"
         >
           <Search className="h-5 w-5" />
           <span className="text-[10px] font-medium tracking-tight">Search</span>
@@ -145,9 +145,9 @@ export const MobileBottomNav: React.FC = () => {
           type="button"
           onClick={() => setIsSheetOpen(true)}
           aria-label="Contribute"
-          className="flex flex-1 flex-col items-center justify-center gap-0.5 py-1.5 text-[var(--banjo-primary)] transition-opacity hover:opacity-80"
+          className="flex flex-1 flex-col items-center justify-center gap-0.5 py-1.5 text-ink-60 transition-opacity hover:opacity-80"
         >
-          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--banjo-primary)] text-white">
+          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand text-on-orange">
             <PlusLg className="h-3.5 w-3.5" />
           </span>
           <span className="text-[10px] font-semibold tracking-tight">Add</span>
@@ -157,9 +157,9 @@ export const MobileBottomNav: React.FC = () => {
       </nav>
 
       {isSearchOpen && (
-        <div className="fixed inset-0 z-50 flex flex-col bg-[var(--banjo-bg)] sm:hidden">
-          <div className="flex h-14 items-center gap-2 border-b border-[var(--banjo-line)] px-2">
-            <Search className="ml-1 h-5 w-5 shrink-0 text-[var(--banjo-muted)]" />
+        <div className="fixed inset-0 z-50 flex flex-col bg-paper sm:hidden">
+          <div className="flex h-14 items-center gap-2 border-b border-ink-12 px-2">
+            <Search className="ml-1 h-5 w-5 shrink-0 text-ink-60" />
             <input
               ref={inputRef}
               type="text"
@@ -167,7 +167,7 @@ export const MobileBottomNav: React.FC = () => {
               onChange={(e) => setDraft(e.target.value)}
               placeholder="Search Banjo"
               aria-label="Search Banjo"
-              className="h-10 min-w-0 flex-1 bg-transparent text-base text-[var(--banjo-text)] outline-none placeholder:text-[var(--banjo-muted)]"
+              className="h-10 min-w-0 flex-1 bg-transparent text-base text-ink outline-none placeholder:text-ink-60"
             />
             <button
               type="button"
@@ -176,7 +176,7 @@ export const MobileBottomNav: React.FC = () => {
                 setIsSearchOpen(false);
                 navigateTo('search');
               }}
-              className="shrink-0 rounded-full bg-[var(--banjo-chip)] px-3 py-1.5 text-xs font-semibold text-[var(--banjo-text)]"
+              className="shrink-0 rounded-full bg-ink-06 px-3 py-1.5 text-xs font-semibold text-ink"
             >
               Go
             </button>
@@ -184,18 +184,18 @@ export const MobileBottomNav: React.FC = () => {
               type="button"
               onClick={() => setIsSearchOpen(false)}
               aria-label="Close search"
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--banjo-text)]"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink"
             >
               <X className="h-5 w-5" />
             </button>
           </div>
 
           <div className="flex-1 overflow-y-auto px-3 py-3 pb-24">
-            <p className="mb-2 px-1 text-[11px] font-bold uppercase tracking-wide text-[var(--banjo-muted)]">
+            <p className="mb-2 px-1 text-[11px] font-bold uppercase tracking-wide text-ink-60">
               {draft.trim() ? 'Results' : 'Recent recordings'}
             </p>
             {suggestions.length === 0 ? (
-              <p className="px-1 text-sm text-[var(--banjo-muted)]">No matches for “{draft}”.</p>
+              <p className="px-1 text-sm text-ink-60">No matches for “{draft}”.</p>
             ) : (
               <ul className="space-y-1">
                 {suggestions.map((s) => (
@@ -211,19 +211,19 @@ export const MobileBottomNav: React.FC = () => {
                           navigateTo('search');
                         }
                       }}
-                      className="flex w-full items-center gap-3 rounded-xl px-2 py-2.5 text-left transition-colors hover:bg-[var(--banjo-chip)]"
+                      className="flex w-full items-center gap-3 rounded-xl px-2 py-2.5 text-left transition-colors hover:bg-ink-06"
                     >
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--banjo-chip)] text-[var(--banjo-muted)]">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-ink-06 text-ink-60">
                         <Search className="h-4 w-4" />
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-medium text-[var(--banjo-text)]">
+                        <span className="block truncate text-sm font-medium text-ink">
                           {s.title}
                         </span>
-                        <span className="block truncate text-xs text-[var(--banjo-muted)]">{s.meta}</span>
+                        <span className="block truncate text-xs text-ink-60">{s.meta}</span>
                       </span>
                       {s.isRecording && (
-                        <span className="shrink-0 font-mono text-[11px] text-[var(--banjo-muted)]">
+                        <span className="shrink-0 font-mono text-[11px] text-ink-60">
                           {formatDuration(s.seconds)}
                         </span>
                       )}
@@ -237,22 +237,22 @@ export const MobileBottomNav: React.FC = () => {
       )}
 
       {isSheetOpen && (
-        <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/50 sm:hidden">
+        <div className="fixed inset-0 z-50 flex flex-col justify-end bg-ink/50 sm:hidden">
           <button
             type="button"
             aria-label="Close contribution sheet"
             onClick={() => setIsSheetOpen(false)}
             className="flex-1"
           />
-          <div className="rounded-t-2xl border-t border-[var(--banjo-line)] bg-[var(--banjo-bg)] px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3">
-            <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-[var(--banjo-line)]" />
+          <div className="rounded-t-2xl border-t border-ink-12 bg-paper px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3">
+            <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-ink-12" />
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-base font-bold text-[var(--banjo-text)]">Contribute to Banjo</h2>
+              <h2 className="text-base font-bold text-ink">Contribute to Banjo</h2>
               <button
                 type="button"
                 onClick={() => setIsSheetOpen(false)}
                 aria-label="Close"
-                className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--banjo-muted)]"
+                className="flex h-8 w-8 items-center justify-center rounded-full text-ink-60"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -263,14 +263,14 @@ export const MobileBottomNav: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleAddDetail}
-                  className="flex w-full items-center gap-3 rounded-xl bg-[var(--banjo-primary)]/10 p-3 text-left"
+                  className="flex w-full items-center gap-3 rounded-xl bg-brand/10 p-3 text-left"
                 >
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--banjo-primary)] text-white">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand text-on-orange">
                     <PencilSquare className="h-4 w-4" />
                   </span>
                   <span>
-                    <span className="block text-sm font-semibold text-[var(--banjo-text)]">Add details</span>
-                    <span className="block text-xs text-[var(--banjo-muted)]">
+                    <span className="block text-sm font-semibold text-ink">Add details</span>
+                    <span className="block text-xs text-ink-60">
                       Credit a soloist, transcribe lyrics, or cite a source on this page
                     </span>
                   </span>
@@ -283,16 +283,16 @@ export const MobileBottomNav: React.FC = () => {
                     setIsSheetOpen(false);
                     navigateTo('upload');
                   }}
-                  className="flex w-full items-center gap-3 rounded-xl bg-[var(--banjo-chip)] p-3 text-left"
+                  className="flex w-full items-center gap-3 rounded-xl bg-ink-06 p-3 text-left"
                 >
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--banjo-text)] text-[var(--banjo-bg)]">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-ink text-paper">
                     <CloudArrowUp className="h-4 w-4" />
                   </span>
                   <span>
-                    <span className="block text-sm font-semibold text-[var(--banjo-text)]">
+                    <span className="block text-sm font-semibold text-ink">
                       Upload a recording
                     </span>
-                    <span className="block text-xs text-[var(--banjo-muted)]">
+                    <span className="block text-xs text-ink-60">
                       Submit a digitized tape, record, or oral interview
                     </span>
                   </span>
@@ -305,14 +305,14 @@ export const MobileBottomNav: React.FC = () => {
                     setIsSheetOpen(false);
                     setIsCreateArticleModalOpen(true);
                   }}
-                  className="flex w-full items-center gap-3 rounded-xl bg-[var(--banjo-chip)] p-3 text-left"
+                  className="flex w-full items-center gap-3 rounded-xl bg-ink-06 p-3 text-left"
                 >
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--banjo-text)] text-[var(--banjo-bg)]">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-ink text-paper">
                     <FileEarmarkPlus className="h-4 w-4" />
                   </span>
                   <span>
-                    <span className="block text-sm font-semibold text-[var(--banjo-text)]">Create a page</span>
-                    <span className="block text-xs text-[var(--banjo-muted)]">
+                    <span className="block text-sm font-semibold text-ink">Create a page</span>
+                    <span className="block text-xs text-ink-60">
                       Start a new musician, band, or recording page
                     </span>
                   </span>
