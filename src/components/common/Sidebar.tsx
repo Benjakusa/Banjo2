@@ -18,6 +18,8 @@ import {
   PlusLg,
   MoonStars,
   Sun,
+  UniversalAccess,
+  ChevronDown,
   X,
 } from 'react-bootstrap-icons';
 
@@ -49,6 +51,16 @@ const readHighContrast = (): boolean => {
   }
 };
 
+const readBooleanPreference = (key: string, systemDefault = false): boolean => {
+  try {
+    const saved = window.localStorage.getItem(key);
+    if (saved !== null) return saved === 'true';
+    return systemDefault;
+  } catch {
+    return systemDefault;
+  }
+};
+
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
@@ -65,6 +77,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const { activeTab, navigateTo, isAuthenticated, activeRole, theme, toggleTheme } = useBanjo();
   const [textSize, setTextSize] = useState<AccessibilityTextSize>(readTextSize);
   const [highContrast, setHighContrast] = useState(readHighContrast);
+  const [underlineLinks, setUnderlineLinks] = useState(() => readBooleanPreference('banjo.accessibility.underline-links'));
+  const [reduceMotion, setReduceMotion] = useState(() => readBooleanPreference(
+    'banjo.accessibility.reduce-motion',
+    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
+  ));
+  const [isAccessibilityOpen, setIsAccessibilityOpen] = useState(false);
 
   useEffect(() => {
     document.documentElement.dataset.accessibilityTextSize = textSize;
@@ -83,6 +101,24 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       return;
     }
   }, [highContrast]);
+
+  useEffect(() => {
+    document.documentElement.dataset.underlineLinks = String(underlineLinks);
+    try {
+      window.localStorage.setItem('banjo.accessibility.underline-links', String(underlineLinks));
+    } catch {
+      return;
+    }
+  }, [underlineLinks]);
+
+  useEffect(() => {
+    document.documentElement.dataset.reducedMotion = String(reduceMotion);
+    try {
+      window.localStorage.setItem('banjo.accessibility.reduce-motion', String(reduceMotion));
+    } catch {
+      return;
+    }
+  }, [reduceMotion]);
 
   // Archivist tooling follows the signed-in session, never a profile fixture.
   const isArchivist = isAuthenticated && isElevated(activeRole);
@@ -202,57 +238,93 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               Appearance & accessibility
             </h2>
             <div className="space-y-2">
-              <button
-                type="button"
-                onClick={toggleTheme}
-                aria-pressed={theme === 'dark'}
-                aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-                className="flex w-full items-center justify-between gap-2 rounded-lg px-2 py-2 text-left text-sm text-ink transition-colors hover:bg-ink-06"
-              >
-                <span className="flex items-center gap-2">
-                  {theme === 'dark' ? <MoonStars aria-hidden="true" className="h-4 w-4" /> : <Sun aria-hidden="true" className="h-4 w-4" />}
-                  <span>{theme === 'dark' ? 'Dark mode' : 'Light mode'}</span>
-                </span>
-                <span className="text-xs text-ink-60">Change</span>
-              </button>
-
-              <div className="space-y-2 rounded-lg px-2 py-2">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-sm text-ink">Text size</span>
-                  <span aria-live="polite" className="text-xs text-ink-60">{TEXT_SIZE_LABELS[textSize]}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    aria-label="Decrease text size"
-                    disabled={textSize === 'standard'}
-                    onClick={() => setTextSize((current) => TEXT_SIZE_STEPS[Math.max(0, TEXT_SIZE_STEPS.indexOf(current) - 1)])}
-                    className="flex h-9 flex-1 items-center justify-center rounded-lg border border-ink-12 text-sm font-semibold text-ink hover:bg-ink-06 disabled:opacity-40"
-                  >
-                    A−
-                  </button>
-                  <button
-                    type="button"
-                    aria-label="Increase text size"
-                    disabled={textSize === 'largest'}
-                    onClick={() => setTextSize((current) => TEXT_SIZE_STEPS[Math.min(TEXT_SIZE_STEPS.length - 1, TEXT_SIZE_STEPS.indexOf(current) + 1)])}
-                    className="flex h-9 flex-1 items-center justify-center rounded-lg border border-ink-12 text-lg font-semibold text-ink hover:bg-ink-06 disabled:opacity-40"
-                  >
-                    A+
-                  </button>
-                </div>
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={toggleTheme}
+                  aria-pressed={theme === 'dark'}
+                  aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+                  title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+                  className="flex h-10 w-10 items-center justify-center rounded-lg text-ink transition-colors hover:bg-ink-06 focus-visible:outline-2 focus-visible:outline-focus"
+                >
+                  {theme === 'dark' ? <MoonStars aria-hidden="true" className="h-5 w-5" /> : <Sun aria-hidden="true" className="h-5 w-5" />}
+                </button>
               </div>
 
               <button
                 type="button"
-                onClick={() => setHighContrast((enabled) => !enabled)}
-                aria-pressed={highContrast}
-                aria-label={`${highContrast ? 'Disable' : 'Enable'} high contrast`}
-                className="flex w-full items-center justify-between gap-2 rounded-lg px-2 py-2 text-left text-sm text-ink transition-colors hover:bg-ink-06"
+                onClick={() => setIsAccessibilityOpen((open) => !open)}
+                aria-expanded={isAccessibilityOpen}
+                aria-controls="sidebar-accessibility-controls"
+                className="flex w-full items-center justify-between gap-2 rounded-lg px-2 py-2 text-left text-sm text-ink transition-colors hover:bg-ink-06 focus-visible:outline-2 focus-visible:outline-focus"
               >
-                <span>High contrast</span>
-                <span className="text-xs text-ink-60">{highContrast ? 'On' : 'Off'}</span>
+                <span className="flex items-center gap-2">
+                  <UniversalAccess aria-hidden="true" className="h-5 w-5" />
+                  <span>Accessibility</span>
+                </span>
+                <ChevronDown aria-hidden="true" className={`h-4 w-4 transition-transform ${isAccessibilityOpen ? 'rotate-180' : ''}`} />
               </button>
+
+              {isAccessibilityOpen && (
+                <div id="sidebar-accessibility-controls" className="space-y-3 rounded-lg border border-ink-12 bg-ink-06 p-3">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-sm text-ink">Text size</span>
+                      <span aria-live="polite" className="text-xs text-ink-60">{TEXT_SIZE_LABELS[textSize]}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        aria-label="Decrease text size"
+                        disabled={textSize === 'standard'}
+                        onClick={() => setTextSize((current) => TEXT_SIZE_STEPS[Math.max(0, TEXT_SIZE_STEPS.indexOf(current) - 1)])}
+                        className="flex h-9 flex-1 items-center justify-center rounded-lg border border-ink-12 text-sm font-semibold text-ink hover:bg-paper disabled:opacity-40"
+                      >
+                        A−
+                      </button>
+                      <button
+                        type="button"
+                        aria-label="Increase text size"
+                        disabled={textSize === 'largest'}
+                        onClick={() => setTextSize((current) => TEXT_SIZE_STEPS[Math.min(TEXT_SIZE_STEPS.length - 1, TEXT_SIZE_STEPS.indexOf(current) + 1)])}
+                        className="flex h-9 flex-1 items-center justify-center rounded-lg border border-ink-12 text-lg font-semibold text-ink hover:bg-paper disabled:opacity-40"
+                      >
+                        A+
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setHighContrast((enabled) => !enabled)}
+                    aria-pressed={highContrast}
+                    className="flex w-full items-center justify-between gap-2 rounded-lg text-left text-sm text-ink focus-visible:outline-2 focus-visible:outline-focus"
+                  >
+                    <span>High contrast</span>
+                    <span className="text-xs text-ink-60">{highContrast ? 'On' : 'Off'}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setUnderlineLinks((enabled) => !enabled)}
+                    aria-pressed={underlineLinks}
+                    className="flex w-full items-center justify-between gap-2 rounded-lg text-left text-sm text-ink focus-visible:outline-2 focus-visible:outline-focus"
+                  >
+                    <span>Underline links</span>
+                    <span className="text-xs text-ink-60">{underlineLinks ? 'On' : 'Off'}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setReduceMotion((enabled) => !enabled)}
+                    aria-pressed={reduceMotion}
+                    className="flex w-full items-center justify-between gap-2 rounded-lg text-left text-sm text-ink focus-visible:outline-2 focus-visible:outline-focus"
+                  >
+                    <span>Reduce motion</span>
+                    <span className="text-xs text-ink-60">{reduceMotion ? 'On' : 'Off'}</span>
+                  </button>
+                </div>
+              )}
             </div>
           </section>
         </nav>

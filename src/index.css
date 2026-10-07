@@ -149,6 +149,20 @@ a:focus-visible {
   text-decoration: underline;
 }
 
+:root[data-underline-links="true"] a {
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+:root[data-reduced-motion="true"] *,
+:root[data-reduced-motion="true"] *::before,
+:root[data-reduced-motion="true"] *::after {
+  scroll-behavior: auto !important;
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
 button:focus-visible,
 a:focus-visible,
 input:focus-visible,

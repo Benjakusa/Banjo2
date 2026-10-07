@@ -83,14 +83,12 @@ export const UploadContributeView: React.FC = () => {
   const coverImage = thumbnailPreview || (title.trim() ? generateThumbnail(title) : '');
   const isAutoCover = !thumbnailPreview && Boolean(coverImage);
   const parsedYear = Number(releaseYear);
-  const validReleaseYear = Number.isInteger(parsedYear) && parsedYear >= 1850 && parsedYear <= new Date().getFullYear();
+  const yearWasEntered = releaseYear.trim().length > 0;
+  const validReleaseYear = !yearWasEntered || (Number.isInteger(parsedYear) && parsedYear >= 1850 && parsedYear <= new Date().getFullYear());
   const metadataOnly = rightsDeclaration === METADATA_ONLY_DECLARATION;
   const submissionIssues = [
     (isOfflineMode || !isBackendConnected) ? 'Archive backend is unavailable. Check Vercel Supabase environment variables and database setup.' : '',
-    !title.trim() ? 'Add a recording title.' : '',
-    !artistOrBand.trim() ? 'Add an artist or band.' : '',
-    !country.trim() ? 'Add a country.' : '',
-    !validReleaseYear ? 'Enter a valid release year between 1850 and the current year.' : '',
+    !validReleaseYear ? 'Enter a valid release year between 1850 and the current year, or leave it blank.' : '',
     !audioFile && !metadataOnly ? 'Attach an audio file, or choose metadata-only submission.' : '',
     !metadataOnly && audioError ? audioError : '',
   ].filter(Boolean);
@@ -143,8 +141,8 @@ export const UploadContributeView: React.FC = () => {
       showToast(isOfflineMode || !isBackendConnected ? 'Connect the archive backend before submitting a contribution.' : 'Attach a valid audio file or choose metadata-only submission.');
       return;
     }
-    if (!title.trim() || !artistOrBand.trim() || !country.trim() || !validReleaseYear) {
-      showToast('Enter a title, artist, country, and valid release year.');
+    if (!validReleaseYear) {
+      showToast('Enter a valid release year, or leave it blank.');
       return;
     }
     setUploadStatus('uploading');
@@ -172,7 +170,7 @@ export const UploadContributeView: React.FC = () => {
         {
           title: title.trim(),
           artistOrBand: artistOrBand.trim(),
-          releaseYear: parsedYear,
+          releaseYear: yearWasEntered ? parsedYear : undefined,
           albumTitle: albumTitle.trim() || undefined,
           country,
           region,
