@@ -29,6 +29,7 @@ export const ProfileDashboardView: React.FC = () => {
     toggleSaveRecording,
     isAuthenticated,
     authEmail,
+    authUserId,
     isOfflineAuth,
     signOut,
     setAuthMode,
@@ -38,6 +39,11 @@ export const ProfileDashboardView: React.FC = () => {
 
   const savedRecordings = recordings.filter((r) =>
     userProfile.savedRecordingIds.includes(r.id)
+  );
+  const mySubmissions = submissions.filter((submission) =>
+    submission.contributorId
+      ? submission.contributorId === authUserId
+      : submission.contributorEmail.toLowerCase() === (authEmail || '').toLowerCase()
   );
 
   const handleSignOut = async () => {
@@ -194,7 +200,7 @@ export const ProfileDashboardView: React.FC = () => {
       <div className="space-y-4">
         <div className="flex flex-wrap gap-1 border-b border-ink-12 pb-2 text-xs font-mono">
           {[
-            { key: 'contributions', label: `My Submissions (${submissions.length})` },
+            { key: 'contributions', label: `My Submissions (${mySubmissions.length})` },
             { key: 'saved', label: `Saved Articles (${savedRecordings.length})` },
             { key: 'playlists', label: `Playlists (${userProfile.playlists.length})` },
           ].map((tab) => (
@@ -215,7 +221,7 @@ export const ProfileDashboardView: React.FC = () => {
         {/* Submissions List */}
         {activeTab === 'contributions' && (
           <div className="space-y-2.5">
-            {submissions.map((sub) => (
+            {mySubmissions.map((sub) => (
               <div
                 key={sub.id}
                 className="p-3.5 rounded-xl border border-ink-12 bg-paper flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"

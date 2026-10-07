@@ -15,12 +15,20 @@ export const DocumentsView: React.FC = () => {
   const { documents, selectedDocumentId, navigateTo } = useBanjo();
 
   const [activeDocId, setActiveDocId] = useState<string>(
-    selectedDocumentId || documents[0]?.id || 'doc-001'
+    selectedDocumentId || documents[0]?.id || ''
   );
   const [filterType, setFilterType] = useState<string>('all');
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
   const activeDoc = documents.find((d) => d.id === activeDocId) || documents[0];
+
+  if (!activeDoc) {
+    return (
+      <div className="mx-auto max-w-4xl px-4 py-12 text-center text-sm text-ink-60">
+        No archival documents are available yet.
+      </div>
+    );
+  }
 
   const filteredDocs = documents.filter((d) => {
     if (filterType === 'all') return true;

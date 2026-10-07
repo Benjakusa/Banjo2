@@ -316,6 +316,15 @@ const LyricsBlock: React.FC<{
 };
 
 export const SongDetailView: React.FC = () => {
+  const { recordings, selectedSongId, isCatalogueLoading } = useBanjo();
+  const recording = recordings.find((entry) => entry.id === selectedSongId) || recordings[0];
+  if (!recording) {
+    return <div className="mx-auto max-w-4xl px-4 py-12 text-center text-sm text-ink-60">{isCatalogueLoading ? 'Loading archive…' : 'No recordings are available yet.'}</div>;
+  }
+  return <SongDetailContent />;
+};
+
+const SongDetailContent: React.FC = () => {
   const {
     selectedSongId,
     recordings,

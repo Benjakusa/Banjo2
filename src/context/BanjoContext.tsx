@@ -18,6 +18,7 @@ import {
   LyricsVersion,
 } from '../types';
 import { audioEngine } from '../utils/audioEngine';
+import { generateThumbnail } from '../lib/thumbnail';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { DEFAULT_ROLE, canSelfAssign, isElevated } from '../lib/auth';
 import {
@@ -37,6 +38,7 @@ import {
   getPendingAudioPreviewUrl,
   saveArchiveItem,
   saveProfile,
+  setLocalUserScope,
   updateCopyrightCaseStatus,
   updateSubmission,
 } from '../lib/archiveRepo';
@@ -161,6 +163,7 @@ interface BanjoContextType {
   /** True when signing in/up is only simulated because the backend is absent. */
   isOfflineAuth: boolean;
   signIn: (email: string, password: string) => Promise<boolean>;
+  signInWithGoogle: () => Promise<boolean>;
   signUp: (email: string, password: string, displayName: string, requestedRole?: UserRole) => Promise<boolean>;
   signOut: () => Promise<void>;
   clearAuthError: () => void;
@@ -181,7 +184,7 @@ interface BanjoContextType {
   updateMusicianBio: (musicianId: string, biography: string, instrument?: string) => void;
   updateBandHistory: (bandId: string, history: string, newMember?: { name: string; role: string; instrument: string }) => void;
   createArticle: (article: { type: 'song' | 'musician' | 'band'; title: string; country: string; region: string; genre: string; year: number; story: string; composerOrLeader?: string; instruments?: string; citations?: string }) => void;
-  submitNewRecording: (data: Partial<Recording>, rightsDeclaration: string, sources: string, audioFile: File) => Promise<boolean>;
+  submitNewRecording: (data: Partial<Recording>, rightsDeclaration: string, sources: string, audioFile: File | null) => Promise<boolean>;
   submitProblemReport: (data: { targetRecordingId: string; targetTitle: string; reason: string; notes: string; email: string }) => void;
   reviewSubmission: (submissionId: string, decision: 'approve' | 'reject' | 'evidence_requested', note?: string) => Promise<void>;
   getSubmissionAudioPreviewUrl: (path: string) => Promise<string | null>;
@@ -193,6 +196,28 @@ interface BanjoContextType {
 }
 
 const BanjoContext = createContext<BanjoContextType | null>(null);
+
+function musiciansFromSubmission(serialized: string | undefined, submissionId: string): MusicianCredit[] {
+  if (!serialized) return [];
+  try {
+    const candidates: unknown = JSON.parse(serialized);
+    if (!Array.isArray(candidates)) return [];
+    return candidates.flatMap((candidate, index) => {
+      if (!candidate || typeof candidate !== 'object') return [];
+      const credit = candidate as Partial<MusicianCredit>;
+      const musicianName = typeof credit.musicianName === 'string' ? credit.musicianName.trim() : '';
+      if (!musicianName) return [];
+      return [{
+        musicianId: `${submissionId}-credit-${index}`,
+        musicianName,
+        instrument: typeof credit.instrument === 'string' ? credit.instrument : '',
+        role: typeof credit.role === 'string' ? credit.role : 'Performer',
+      }];
+    });
+  } catch {
+    return [];
+  }
+}
 
 export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Navigation stack
@@ -277,6 +302,22 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // The last profile we wrote (or read), so the write-back effect below cannot
   // loop and a freshly loaded profile is not immediately re-saved.
   const savedProfileRef = useRef<string>('');
+  const authUserIdRef = useRef<string | null>(null);
+
+  const setAuthenticatedIdentity = useCallback((userId: string | null, email: string | null) => {
+    if (authUserIdRef.current !== userId) {
+      authUserIdRef.current = userId;
+      savedProfileRef.current = '';
+      setLocalUserScope(userId);
+      setUserProfile(EMPTY_PROFILE);
+      setActiveRoleState(DEFAULT_ROLE);
+      setSubmissions([]);
+      setAuditLogs([]);
+      setCopyrightCases([]);
+    }
+    setAuthUserId(userId);
+    setAuthEmail(email);
+  }, []);
 
   /** The only way the profile changes: counters, library and edits alike. */
   const updateProfile = useCallback((patch: Partial<UserProfile>) => {
@@ -309,6 +350,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     if (!isSupabaseConfigured) {
       setAuthStatus('signed_out');
+      setLocalUserScope(null);
       return;
     }
 
@@ -317,15 +359,13 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     supabase.auth.getSession().then(({ data }) => {
       if (!active) return;
       const user = data.session?.user;
-      setAuthEmail(user?.email ?? null);
-      setAuthUserId(user?.id ?? null);
+      setAuthenticatedIdentity(user?.id ?? null, user?.email ?? null);
       setAuthStatus(user ? 'signed_in' : 'signed_out');
     });
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
       const user = session?.user;
-      setAuthEmail(user?.email ?? null);
-      setAuthUserId(user?.id ?? null);
+      setAuthenticatedIdentity(user?.id ?? null, user?.email ?? null);
       setAuthStatus(user ? 'signed_in' : 'signed_out');
     });
 
@@ -333,7 +373,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       active = false;
       sub.subscription.unsubscribe();
     };
-  }, []);
+  }, [setAuthenticatedIdentity]);
 
   // A signed-in account gets its own profile row; a missing one is created on
   // first sight. This is the only place a profile is attached to an account, so
@@ -377,8 +417,8 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       // Offline fallback so the flows stay usable without a backend. This is
       // a local-only session and grants no real access.
       setIsOfflineAuth(true);
-      setAuthEmail(email.trim().toLowerCase());
-      setAuthUserId('local-session');
+      const normalizedEmail = email.trim().toLowerCase();
+      setAuthenticatedIdentity(`local:${encodeURIComponent(normalizedEmail)}`, normalizedEmail);
       setAuthStatus('signed_in');
       return true;
     }
@@ -397,10 +437,35 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       return false;
     }
 
-    setAuthEmail(data.user?.email ?? null);
-    setAuthUserId(data.user?.id ?? null);
+    setAuthenticatedIdentity(data.user?.id ?? null, data.user?.email ?? null);
     setAuthStatus('signed_in');
     return true;
+  }, [setAuthenticatedIdentity]);
+
+  const signInWithGoogle = useCallback(async () => {
+    setAuthError(null);
+
+    if (!isSupabaseConfigured) {
+      setAuthError('Google sign-in requires a configured archive backend.');
+      return false;
+    }
+
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: window.location.origin },
+      });
+
+      if (error) {
+        setAuthError(error.message);
+        return false;
+      }
+
+      return true;
+    } catch {
+      setAuthError('Google sign-in could not be started. Please try again.');
+      return false;
+    }
   }, []);
 
   // The role chosen at sign-up travels with the account as metadata and becomes
@@ -418,8 +483,8 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
       if (!isSupabaseConfigured) {
         setIsOfflineAuth(true);
-        setAuthEmail(email.trim().toLowerCase());
-        setAuthUserId('local-session');
+        const normalizedEmail = email.trim().toLowerCase();
+        setAuthenticatedIdentity(`local:${encodeURIComponent(normalizedEmail)}`, normalizedEmail);
         setAuthStatus('signed_in');
         return true;
       }
@@ -452,12 +517,11 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         return false;
       }
 
-      setAuthEmail(data.user?.email ?? null);
-      setAuthUserId(data.user?.id ?? null);
+      setAuthenticatedIdentity(data.user?.id ?? null, data.user?.email ?? null);
       setAuthStatus('signed_in');
       return true;
     },
-    []
+    [setAuthenticatedIdentity]
   );
 
   const signOut = useCallback(async () => {
@@ -465,13 +529,9 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (isSupabaseConfigured) {
       await supabase.auth.signOut();
     }
-    setAuthEmail(null);
-    setAuthUserId(null);
+    setAuthenticatedIdentity(null, null);
     setAuthStatus('signed_out');
-    setActiveRoleState(DEFAULT_ROLE);
-    setUserProfile(EMPTY_PROFILE);
-    savedProfileRef.current = '';
-  }, []);
+  }, [setAuthenticatedIdentity]);
 
   // Load the archive on mount: the catalogue is public, the moderation
   // workspace needs an account (and simply comes back empty without one).
@@ -735,7 +795,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       studio: 'Field Recording Unit',
       recordingLocation: oralHistory.location,
       duration: 360,
-      audioQuality: 'FLAC Master',
+      audioQuality: 'Unknown',
       audioSampleType: oralHistory.audioSampleType,
       audioUrl: oralHistory.audioUrl,
       rightsStatus: 'permission_granted',
@@ -860,6 +920,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
       const newSubmission: Submission = {
         id: `sub-${Date.now()}`,
+        contributorId: authUserId || undefined,
         type: 'edit',
         title: `Suggested edit for ${targetRecording.title}`,
         targetId: recordingId,
@@ -1494,62 +1555,55 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const newSongComp: SongComposition = {
           id: `comp-${Date.now()}`,
           title: data.title,
-          composer: data.composerOrLeader || 'Traditional / Community',
-          lyricist: data.composerOrLeader || 'Traditional',
+          composer: data.composerOrLeader || '',
+          lyricist: '',
           originYear: data.year,
           country: data.country,
           region: data.region,
-          language: 'Local African Dialect',
+          language: '',
           genre: data.genre,
-          summary: data.story.slice(0, 180) + '...',
+          summary: data.story.slice(0, 180),
           recordingsCount: 1,
           primaryRecordingId: generatedId,
         };
 
         const instList = data.instruments
           ? data.instruments.split(',').map((s) => s.trim())
-          : ['Guitar', 'Percussion'];
+          : [];
 
         const newRec: Recording = {
           id: generatedId,
           songId: newSongComp.id,
-          title: `${data.title} (${data.year})`,
-          recordingTitle: `${data.title} — Original Recording`,
-          artistOrBand: data.composerOrLeader || 'African Master Ensemble',
+          title: data.title,
+          recordingTitle: data.title,
+          artistOrBand: data.composerOrLeader || '',
           releaseYear: data.year,
           country: data.country,
           region: data.region,
-          language: 'Local African Dialect',
+          language: '',
           genre: data.genre,
-          label: 'Independent Cultural Archive Pressing',
-          composer: data.composerOrLeader || 'Traditional',
-          lyricist: data.composerOrLeader || 'Traditional',
-          producer: 'Community Documented',
-          studio: `${data.region} Historical Recording Session`,
+          label: '',
+          composer: data.composerOrLeader || '',
+          lyricist: '',
+          producer: '',
+          studio: '',
           recordingLocation: `${data.region}, ${data.country}`,
-          duration: 240,
-          audioQuality: 'FLAC Master',
+          duration: 0,
+          audioQuality: 'Unknown',
           audioSampleType: 'benga_fast',
-          rightsStatus: 'public_domain',
-          rightsDeclaration: 'Documented under Banjo Open Cultural Heritage Preservation.',
+          rightsStatus: 'rights_unknown',
+          rightsDeclaration: 'No audio master was attached; rights have not been assessed.',
           verificationStatus: 'community_sourced',
-          coverImage: '/src/assets/images/vintage_record_sleeve_1790502822184.jpg',
+          coverImage: generateThumbnail(data.title),
           story: data.story,
-          recordingHistory: [`${data.year}: Original sound recording documented and preserved.`],
-          musicians: [
-            {
-              musicianId: `mus-${Date.now()}`,
-              musicianName: data.composerOrLeader || 'Lead Artist',
-              instrument: instList[0] || 'Guitar',
-              role: 'Lead Performer',
-            },
-          ],
+          recordingHistory: [`${data.year}: Metadata article submitted; no audio master attached.`],
+          musicians: [],
           instruments: instList,
           sources: [
             {
               id: `src-${Date.now()}`,
               type: 'Community submission',
-              title: data.citations || 'Banjo Archival Fieldwork Documentation',
+              title: data.citations || 'Community submission',
               year: data.year,
             },
           ],
@@ -1571,8 +1625,8 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               status: 'approved',
             },
           ],
-          waveformPoints: [18, 30, 45, 60, 80, 95, 70, 50, 40, 65, 85, 90, 75, 55, 35, 20],
-          playsCount: 1,
+          waveformPoints: [],
+          playsCount: 0,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };
@@ -1587,23 +1641,23 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const newMusician: Musician = {
           id: generatedId,
           name: data.title,
-          role: data.composerOrLeader || 'Master Musician',
-          instruments: data.instruments ? data.instruments.split(',').map((s) => s.trim()) : ['Guitar'],
+          role: data.composerOrLeader || '',
+          instruments: data.instruments ? data.instruments.split(',').map((s) => s.trim()).filter(Boolean) : [],
           birthYear: data.year,
-          activeYears: `${data.year}–present`,
+          activeYears: String(data.year),
           country: data.country,
           region: data.region,
           biography: data.story,
           aliases: [],
           bands: [],
-          participatedRecordingsCount: 1,
-          photoUrl: '/src/assets/images/benga_guitarist_vintage_1790502811387.jpg',
+          participatedRecordingsCount: 0,
+          photoUrl: generateThumbnail(data.title),
           verificationStatus: 'community_sourced',
           sources: [
             {
               id: `src-${Date.now()}`,
               type: 'Community submission',
-              title: data.citations || 'Community oral account',
+              title: data.citations || 'Community submission',
               year: data.year,
             },
           ],
@@ -1622,18 +1676,10 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           genre: data.genre,
           overview: data.story.slice(0, 160) + '...',
           history: data.story,
-          membersTimeline: [
-            {
-              period: `${data.year}–present`,
-              musicianId: `mus-${Date.now()}`,
-              musicianName: data.composerOrLeader || 'Founding Musician',
-              instrument: data.instruments || 'Lead Instrument',
-              isFounder: true,
-            },
-          ],
-          photoUrl: '/src/assets/images/benga_guitarist_vintage_1790502811387.jpg',
-          recordingsCount: 1,
-          albumsCount: 1,
+          membersTimeline: [],
+          photoUrl: generateThumbnail(data.title),
+          recordingsCount: 0,
+          albumsCount: 0,
           verificationStatus: 'community_sourced',
           sources: [
             {
@@ -1664,13 +1710,19 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Submit new recording (Screen 24-26)
   const submitNewRecording = useCallback(
-    async (data: Partial<Recording>, rightsDeclaration: string, sourcesProvided: string, audioFile: File) => {
+    async (data: Partial<Recording>, rightsDeclaration: string, sourcesProvided: string, audioFile: File | null) => {
       if (isLocalMode) {
         showToast('Audio contributions require the configured online archive.');
         return false;
       }
-      const audioPath = await uploadPendingAudio(audioFile);
-      if (!audioPath) {
+      let audioPath: string | null = null;
+      try {
+        audioPath = audioFile ? await uploadPendingAudio(audioFile) : null;
+      } catch {
+        showToast('Audio upload failed. Check your connection and archive storage setup.');
+        return false;
+      }
+      if (audioFile && !audioPath) {
         showToast('Audio upload failed. Check your connection and archive storage setup.');
         return false;
       }
@@ -1688,12 +1740,12 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         proposedData: {
           title: data.title || '',
           artistOrBand: data.artistOrBand || '',
-          releaseYear: String(data.releaseYear || 1978),
-          country: data.country || 'Kenya',
-          region: data.region || 'Nyanza',
-          language: data.language || 'Luo',
-          genre: data.genre || 'Benga',
-          studio: data.studio || 'Nairobi Studio',
+          releaseYear: String(data.releaseYear ?? ''),
+          country: data.country || '',
+          region: data.region || '',
+          language: data.language || '',
+          genre: data.genre || '',
+          studio: data.studio || '',
           composer: data.composer || '',
           producer: data.producer || '',
           story: data.story || '',
@@ -1701,15 +1753,22 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           audioFileName: data.audioFileName || '',
           audioMimeType: data.audioMimeType || '',
           audioFileSize: String(data.audioFileSize || 0),
-          audioAttached: 'true',
-          audioStoragePath: audioPath,
+          audioAttached: audioPath ? 'true' : 'false',
+          audioStoragePath: audioPath || '',
+          musicians: JSON.stringify(data.musicians || []),
           rightsDeclaration,
         },
         sourcesProvided,
       };
 
-      if (!(await insertSubmission(newSubmission))) {
-        await removePendingAudio(audioPath);
+      let saved = false;
+      try {
+        saved = await insertSubmission(newSubmission);
+      } catch {
+        saved = false;
+      }
+      if (!saved) {
+        if (audioPath) await removePendingAudio(audioPath);
         showToast('Submission could not be saved. Please try again.');
         return false;
       }
@@ -1859,20 +1918,20 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           songId: `song-${sub.id}`,
           title: data.title || sub.title,
           recordingTitle: data.title || sub.title,
-          artistOrBand: data.artistOrBand || 'Traditional Ensemble',
-          releaseYear: Number(data.releaseYear) || 1978,
-          country: data.country || 'Kenya',
-          region: data.region || 'Nyanza',
-          language: data.language || 'Luo',
-          genre: data.genre || 'Benga',
+          artistOrBand: data.artistOrBand || '',
+          releaseYear: Number(data.releaseYear),
+          country: data.country || '',
+          region: data.region || '',
+          language: data.language || '',
+          genre: data.genre || '',
           label: 'Community Submission',
           composer: data.composer || '',
           lyricist: '',
           producer: data.producer || '',
-          studio: data.studio || 'Nairobi Studio',
+          studio: data.studio || '',
           recordingLocation: data.country || 'Kenya',
           duration: 0,
-          audioQuality: '320kbps MP3',
+          audioQuality: 'Unknown',
           audioSampleType: 'benga_fast',
           audioStoragePath: data.audioStoragePath,
           audioFileName: data.audioFileName || undefined,
@@ -1884,8 +1943,8 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           coverImage: data.coverImage || '',
           story: data.story || '',
           recordingHistory: [`Published after review from ${sub.contributorName}`],
-          musicians: [],
-          instruments: [],
+          musicians: musiciansFromSubmission(data.musicians, sub.id),
+          instruments: Array.from(new Set(musiciansFromSubmission(data.musicians, sub.id).map((credit) => credit.instrument).filter(Boolean))),
           sources: sub.sourcesProvided
             ? [{ id: `src-${sub.id}`, type: 'Community submission', title: sub.sourcesProvided, notes: '' }]
             : [],
@@ -1999,16 +2058,22 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         copyrightCases,
         auditLogs,
         userProfile,
+        updateProfile,
+        saveProfileDetails,
+        isEditProfileOpen,
+        setIsEditProfileOpen,
         activeRole,
         setActiveRole,
         authStatus,
         authEmail,
+        authUserId,
         authError,
         isAuthenticated,
         authMode,
         setAuthMode,
         isOfflineAuth,
         signIn,
+        signInWithGoogle,
         signUp,
         signOut,
         clearAuthError,
@@ -2035,6 +2100,8 @@ toggleSaveRecording,
          resolveCopyrightCase,
 
         isBackendConnected,
+        isCatalogueLoading,
+        isOfflineMode: isLocalMode,
         toastMessage,
         showToast,
       }}

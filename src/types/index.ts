@@ -115,7 +115,7 @@ export interface Recording {
   studio: string;
   recordingLocation: string;
   duration: number; // in seconds
-  audioQuality: 'FLAC Master' | '320kbps MP3' | '128kbps Stream';
+  audioQuality: 'FLAC Master' | '320kbps MP3' | '128kbps Stream' | 'Unknown';
   audioSampleType: 'benga_fast' | 'rhumba_slow' | 'highlife' | 'taarab' | 'soukous';
   /** Playable source for a master stored durably in the media backend. */
   audioUrl?: string;
@@ -282,6 +282,7 @@ export interface TimelineEvent {
 
 export interface Submission {
   id: string;
+  contributorId?: string;
   type: 'recording' | 'edit' | 'document' | 'oral_history' | 'correction';
   title: string;
   contributorName: string;

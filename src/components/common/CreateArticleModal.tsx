@@ -11,14 +11,14 @@ import { X,
 } from 'react-bootstrap-icons';
 
 export const CreateArticleModal: React.FC = () => {
-  const { isCreateArticleModalOpen, setIsCreateArticleModalOpen, createArticle } = useBanjo();
+  const { isCreateArticleModalOpen, setIsCreateArticleModalOpen, createArticle, showToast } = useBanjo();
 
   const [articleType, setArticleType] = useState<'song' | 'musician' | 'band'>('song');
   const [title, setTitle] = useState('');
-  const [country, setCountry] = useState('Kenya');
-  const [region, setRegion] = useState('Nyanza');
-  const [genre, setGenre] = useState('Benga');
-  const [year, setYear] = useState('1978');
+  const [country, setCountry] = useState('');
+  const [region, setRegion] = useState('');
+  const [genre, setGenre] = useState('');
+  const [year, setYear] = useState('');
   const [story, setStory] = useState('');
   const [composerOrLeader, setComposerOrLeader] = useState('');
   const [instruments, setInstruments] = useState('');
@@ -28,7 +28,11 @@ export const CreateArticleModal: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !story.trim()) return;
+    const parsedYear = Number(year);
+    if (!title.trim() || !story.trim() || !country.trim() || !Number.isInteger(parsedYear) || parsedYear < 1850 || parsedYear > new Date().getFullYear()) {
+      showToast('Enter an article title, country, narrative, and valid year.');
+      return;
+    }
 
     createArticle({
       type: articleType,
@@ -36,7 +40,7 @@ export const CreateArticleModal: React.FC = () => {
       country,
       region,
       genre,
-      year: parseInt(year, 10) || 1978,
+      year: parsedYear,
       story: story.trim(),
       composerOrLeader: composerOrLeader.trim() || undefined,
       instruments: instruments.trim() || undefined,
@@ -146,22 +150,14 @@ export const CreateArticleModal: React.FC = () => {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-ink-60 font-semibold mb-1">Country</label>
-              <select
+              <input
+                type="text"
                 value={country}
                 onChange={(e) => setCountry(e.target.value)}
+                placeholder="Country"
+                required
                 className="w-full rounded-lg border border-ink-12 p-2 text-ink text-xs bg-paper focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
-              >
-                <option value="Kenya">Kenya</option>
-                <option value="DR Congo">DR Congo</option>
-                <option value="Nigeria">Nigeria</option>
-                <option value="Tanzania">Tanzania</option>
-                <option value="Ghana">Ghana</option>
-                <option value="Zimbabwe">Zimbabwe</option>
-                <option value="Mali">Mali</option>
-                <option value="Senegal">Senegal</option>
-                <option value="Ethiopia">Ethiopia</option>
-                <option value="Uganda">Uganda</option>
-              </select>
+              />
             </div>
 
             <div>
@@ -179,22 +175,13 @@ export const CreateArticleModal: React.FC = () => {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-ink-60 font-semibold mb-1">Musical Tradition / Genre</label>
-              <select
+              <input
+                type="text"
                 value={genre}
                 onChange={(e) => setGenre(e.target.value)}
+                placeholder="Genre or tradition"
                 className="w-full rounded-lg border border-ink-12 p-2 text-ink text-xs bg-paper focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
-              >
-                <option value="Benga">Benga</option>
-                <option value="Congolese Rhumba">Congolese Rhumba</option>
-                <option value="Afrobeat">Afrobeat</option>
-                <option value="Highlife">Highlife</option>
-                <option value="Kenyan Twist">Kenyan Twist</option>
-                <option value="Taarab">Taarab</option>
-                <option value="Muziki wa Dansi">Muziki wa Dansi (Zilipendwa)</option>
-                <option value="Chimurenga">Chimurenga</option>
-                <option value="Jùjú">Jùjú</option>
-                <option value="Ohangla">Ohangla</option>
-              </select>
+              />
             </div>
 
             <div>

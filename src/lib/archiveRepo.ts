@@ -489,6 +489,7 @@ export async function saveProfile(userId: string, profile: UserProfile): Promise
 function submissionFromRow(row: any): Submission {
   return {
     id: row.id,
+    contributorId: row.contributor_id || undefined,
     type: row.type,
     title: row.title,
     contributorName: row.contributor_name || '',

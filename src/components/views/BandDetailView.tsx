@@ -13,6 +13,15 @@ import {
 } from 'react-bootstrap-icons';
 
 export const BandDetailView: React.FC = () => {
+  const { bands, selectedBandId, isCatalogueLoading } = useBanjo();
+  const band = bands.find((entry) => entry.id === selectedBandId) || bands[0];
+  if (!band) {
+    return <div className="mx-auto max-w-4xl px-4 py-12 text-center text-sm text-ink-60">{isCatalogueLoading ? 'Loading archive…' : 'No band profiles are available yet.'}</div>;
+  }
+  return <BandDetailContent />;
+};
+
+const BandDetailContent: React.FC = () => {
   const {
     selectedBandId,
     bands,

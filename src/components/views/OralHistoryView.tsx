@@ -24,12 +24,20 @@ export const OralHistoryView: React.FC = () => {
   } = useBanjo();
 
   const [activeInterviewId, setActiveInterviewId] = useState<string>(
-    selectedOralHistoryId || oralHistories[0]?.id || 'oral-001'
+    selectedOralHistoryId || oralHistories[0]?.id || ''
   );
   const [langTab, setLangTab] = useState<'en' | 'sw'>('en');
 
   const interview =
     oralHistories.find((h) => h.id === activeInterviewId) || oralHistories[0];
+
+  if (!interview) {
+    return (
+      <div className="mx-auto max-w-4xl px-4 py-12 text-center text-sm text-ink-60">
+        No oral histories are available yet.
+      </div>
+    );
+  }
 
   const isCurrentActive =
     currentRecording?.id === interview.id && isPlaying;

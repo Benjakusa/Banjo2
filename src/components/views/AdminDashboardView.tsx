@@ -169,19 +169,19 @@ export const AdminDashboardView: React.FC = () => {
           </div>
 
           <div className="rounded-xl border border-ink-12 bg-paper p-5 space-y-3 text-xs">
-            <h3 className="font-serif font-bold text-ink text-sm">System Health & Cloudflare R2 Storage</h3>
+            <h3 className="font-serif font-bold text-ink text-sm">Configured Service Status</h3>
             <div className="space-y-2 font-mono text-[11px]">
               <div className="flex justify-between p-2 rounded bg-ink-06 border border-ink-12">
                 <span className="text-ink-60">Database Engine:</span>
-                <span className="text-ink font-bold">PostgreSQL with Row Level Security</span>
+                <span className="text-ink font-bold">{isBackendConnected ? 'Connected' : 'Unavailable'}</span>
               </div>
               <div className="flex justify-between p-2 rounded bg-ink-06 border border-ink-12">
-                <span className="text-ink-60">Archival Audio Storage:</span>
-                <span className="text-ink">Cloudflare R2 (2.41 TB across 18,400 Master FLAC files)</span>
+                <span className="text-ink-60">Audio storage:</span>
+                <span className="text-ink">Private uploads require the media storage SQL setup.</span>
               </div>
               <div className="flex justify-between p-2 rounded bg-ink-06 border border-ink-12">
-                <span className="text-ink-60">Edge Caching CDN:</span>
-                <span className="text-ink font-bold">Optimal (Low latency delivery in East & West Africa)</span>
+                <span className="text-ink-60">CDN:</span>
+                <span className="text-ink font-bold">Not configured by the application.</span>
               </div>
             </div>
           </div>

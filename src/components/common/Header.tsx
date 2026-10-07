@@ -36,7 +36,6 @@ export const Header: React.FC<{ onOpenNav?: () => void }> = ({ onOpenNav }) => {
     authEmail,
     signOut,
     setAuthMode,
-    setIsCreateArticleModalOpen,
     openQuickEdit,
     currentRecording,
     selectedSongId,
@@ -104,7 +103,7 @@ export const Header: React.FC<{ onOpenNav?: () => void }> = ({ onOpenNav }) => {
     } else if (activeTab === 'band_detail') {
       openQuickEdit(selectedBandId || 'band-victoria-stars', 'band_member');
     } else {
-      setIsCreateArticleModalOpen(true);
+      navigateTo('upload');
     }
   };
 

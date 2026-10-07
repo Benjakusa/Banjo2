@@ -35,10 +35,10 @@ export const TimelineView: React.FC = () => {
           Historical Chronology
         </span>
         <h1 className="text-2xl sm:text-3xl font-serif font-medium text-ink mt-0.5">
-          African Music History Timeline (1950–2000s)
+          African Music History Timeline
         </h1>
         <p className="text-xs text-ink-60 mt-1">
-          Chronological record of band formations, landmark recording sessions, album releases, and musical migrations.
+          Chronological view of recordings in the published archive.
         </p>
       </div>
 

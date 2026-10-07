@@ -15,9 +15,11 @@ import {
 } from 'react-bootstrap-icons';
 import { FileDropzone } from '../common/FileDropzone';
 import { generateThumbnail, initialsFromTitle, validateThumbnail } from '../../lib/thumbnail';
+import { MusicianCredit } from '../../types';
 
 const AUDIO_ACCEPT = 'audio/*,.mp3,.wav,.flac,.m4a,.ogg,.aac';
 const AUDIO_MAX_BYTES = 100 * 1024 * 1024;
+const METADATA_ONLY_DECLARATION = 'I am submitting historical information only; Banjo should not host the audio.';
 
 const validateAudio = (file: File): string | null => {
   const looksLikeAudio =
@@ -40,12 +42,12 @@ export const UploadContributeView: React.FC = () => {
   // Form State
   const [title, setTitle] = useState('');
   const [artistOrBand, setArtistOrBand] = useState('');
-  const [releaseYear, setReleaseYear] = useState('1978');
-  const [country, setCountry] = useState('Kenya');
-  const [region, setRegion] = useState('Nyanza');
-  const [genre, setGenre] = useState('Benga');
-  const [language, setLanguage] = useState('Luo');
-  const [studio, setStudio] = useState('Polygram Studios Nairobi');
+  const [releaseYear, setReleaseYear] = useState('');
+  const [country, setCountry] = useState('');
+  const [region, setRegion] = useState('');
+  const [genre, setGenre] = useState('');
+  const [language, setLanguage] = useState('');
+  const [studio, setStudio] = useState('');
 
   // Step 2 Contributors
   const [composer, setComposer] = useState('');
@@ -65,9 +67,7 @@ export const UploadContributeView: React.FC = () => {
   );
 
   // Upload state
-  // Media attached to the submission. The audio file is mandatory: a song
-  // entry with no recording is not a song entry. The thumbnail is not -- when
-  // it is missing the app draws one from the title instead.
+  // Audio can be omitted only when the contributor selects metadata-only rights terms.
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [audioError, setAudioError] = useState<string | null>(null);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
@@ -126,17 +126,23 @@ export const UploadContributeView: React.FC = () => {
   ];
 
   const handleUpload = async () => {
-    if (!audioFile || isOfflineMode) {
-      showToast(isOfflineMode ? 'Connect the archive backend before uploading audio.' : 'Choose a valid audio file first.');
+    const metadataOnly = rightsDeclaration === METADATA_ONLY_DECLARATION;
+    const parsedYear = Number(releaseYear);
+    if ((!audioFile && !metadataOnly) || (!metadataOnly && audioError) || isOfflineMode) {
+      showToast(isOfflineMode ? 'Connect the archive backend before submitting a contribution.' : 'Attach a valid audio file or choose metadata-only submission.');
+      return;
+    }
+    if (!title.trim() || !artistOrBand.trim() || !country.trim() || !Number.isInteger(parsedYear) || parsedYear < 1850 || parsedYear > new Date().getFullYear()) {
+      showToast('Enter a title, artist, country, and valid release year.');
       return;
     }
     setUploadStatus('uploading');
     try {
       const submitted = await submitNewRecording(
         {
-          title: title || 'New Historical Archive Entry',
-          artistOrBand: artistOrBand || 'Traditional Ensemble',
-          releaseYear: parseInt(releaseYear, 10) || 1978,
+          title: title.trim(),
+          artistOrBand: artistOrBand.trim(),
+          releaseYear: parsedYear,
           country,
           region,
           genre,
@@ -146,13 +152,24 @@ export const UploadContributeView: React.FC = () => {
           producer,
           story: historyNarrative || 'Historical details submitted by community contributor.',
           coverImage,
-          audioFileName: audioFile?.name,
-          audioFileSize: audioFile?.size,
-          audioMimeType: audioFile?.type,
+          audioFileName: metadataOnly ? undefined : audioFile?.name,
+          audioFileSize: metadataOnly ? undefined : audioFile?.size,
+          audioMimeType: metadataOnly ? undefined : audioFile?.type,
+          musicians: [
+            { name: leadGuitarist, role: 'Lead Guitarist', instrument: 'Guitar' },
+            { name: leadVocalist, role: 'Lead Vocalist', instrument: 'Vocals' },
+            { name: bassist, role: 'Bassist', instrument: 'Bass guitar' },
+            { name: drummer, role: 'Drummer', instrument: 'Drums' },
+          ].filter((credit) => credit.name.trim()).map((credit, index): MusicianCredit => ({
+            musicianId: `submission-credit-${index}-${credit.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
+            musicianName: credit.name.trim(),
+            role: credit.role,
+            instrument: credit.instrument,
+          })),
         },
         rightsDeclaration,
         sourcesProvided,
-        audioFile
+        metadataOnly ? null : audioFile
       );
       setUploadStatus(submitted ? 'completed' : 'idle');
     } catch {
@@ -244,14 +261,14 @@ export const UploadContributeView: React.FC = () => {
 
             <FileDropzone
               accept={AUDIO_ACCEPT}
-              label="Upload music file"
-              cta="Choose a music file"
+              label="Audio file"
+              cta="Choose audio file"
               hint="MP3, WAV, FLAC, M4A, OGG or AAC, up to 100 MB."
               icon="audio"
               file={audioFile}
               onFile={handleAudioFile}
               error={audioError}
-              required
+              required={rightsDeclaration !== METADATA_ONLY_DECLARATION}
             />
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto] sm:items-start">
@@ -486,11 +503,11 @@ export const UploadContributeView: React.FC = () => {
 
             {uploadStatus !== 'idle' && (
               <div className="p-4 rounded-xl bg-brand/10 border border-brand space-y-2">
-                {uploadStatus === 'uploading' && <p className="text-xs text-ink-60">Uploading audio and submitting for review…</p>}
+                {uploadStatus === 'uploading' && <p className="text-xs text-ink-60">{rightsDeclaration === METADATA_ONLY_DECLARATION ? 'Submitting metadata for review…' : 'Uploading audio and submitting for review…'}</p>}
                 {uploadStatus === 'completed' && (
                   <div className="p-2.5 bg-ink-06 border border-ink-12 rounded-lg text-ink flex items-center gap-2">
                     <Check2Circle className="w-4 h-4 text-ink shrink-0" />
-                    <span>Audio and metadata submitted for archival review.</span>
+                    <span>{rightsDeclaration === METADATA_ONLY_DECLARATION ? 'Metadata submitted for archival review; no audio was stored.' : 'Audio submitted privately with metadata for archival review.'}</span>
                   </div>
                 )}
               </div>
@@ -498,7 +515,7 @@ export const UploadContributeView: React.FC = () => {
 
             {uploadStatus === 'idle' && (
               <>
-                {!audioFile && (
+                {!audioFile && rightsDeclaration !== METADATA_ONLY_DECLARATION && (
                   <p className="rounded-xl border border-ink-12 bg-ink-06 px-3 py-2 text-ink-60">
                     A song entry needs its recording. Go back to step 1 and attach an
                     audio file before publishing.
@@ -507,11 +524,11 @@ export const UploadContributeView: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleUpload}
-                  disabled={!audioFile || Boolean(audioError) || isOfflineMode || uploadStatus === 'uploading'}
+                  disabled={(!audioFile && rightsDeclaration !== METADATA_ONLY_DECLARATION) || (rightsDeclaration !== METADATA_ONLY_DECLARATION && Boolean(audioError)) || isOfflineMode || !title.trim() || !artistOrBand.trim()}
                   className="w-full py-3 rounded-xl bg-brand text-on-orange font-semibold text-xs cursor-pointer flex items-center justify-center gap-2 transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <CloudArrowUp className="w-4 h-4" />
-                  <span>{uploadStatus === 'uploading' ? 'Uploading…' : 'Submit to Archival Review Queue'}</span>
+                  <span>Submit to Archival Review Queue</span>
                 </button>
               </>
             )}

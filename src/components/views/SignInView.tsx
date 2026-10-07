@@ -12,7 +12,7 @@ const fieldClass =
   'outline-none transition-colors placeholder:text-ink-60 focus:border-focus';
 
 export const SignInView: React.FC = () => {
-  const { signIn, signUp, authError, clearAuthError, isOfflineAuth, navigateTo, authMode, setAuthMode } = useBanjo();
+  const { signIn, signInWithGoogle, signUp, authError, clearAuthError, isOfflineAuth, navigateTo, authMode, setAuthMode } = useBanjo();
 
   const [mode, setMode] = useState<Mode>(authMode);
   const [email, setEmail] = useState('');
@@ -65,6 +65,12 @@ export const SignInView: React.FC = () => {
     if (ok) navigateTo('profile');
   };
 
+  const handleGoogleSignIn = async () => {
+    setBusy(true);
+    const ok = await signInWithGoogle();
+    if (!ok) setBusy(false);
+  };
+
   return (
     <div className="w-full max-w-md space-y-6 rounded-2xl border border-ink-12 bg-paper p-6 sm:p-8">
       <button
@@ -87,6 +93,25 @@ export const SignInView: React.FC = () => {
             : 'An account lets you propose edits, upload recordings, and track your contributions.'}
         </p>
       </div>
+
+      {mode === 'signin' && (
+        <>
+          <button
+            type="button"
+            onClick={handleGoogleSignIn}
+            disabled={busy}
+            className="flex w-full items-center justify-center gap-2 rounded-full border border-ink-12 bg-paper px-4 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-ink-06 disabled:opacity-60"
+          >
+            <span aria-hidden="true" className="font-bold text-base">G</span>
+            {busy ? 'Connecting…' : 'Continue with Google'}
+          </button>
+          <div className="flex items-center gap-3 text-xs text-ink-60" aria-hidden="true">
+            <span className="h-px flex-1 bg-ink-12" />
+            or use email
+            <span className="h-px flex-1 bg-ink-12" />
+          </div>
+        </>
+      )}
 
       <form onSubmit={handleSubmit} noValidate className="space-y-4">
         {mode === 'signup' && (

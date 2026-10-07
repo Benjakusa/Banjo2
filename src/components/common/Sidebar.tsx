@@ -32,7 +32,7 @@ interface NavEntry {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
-  const { activeTab, navigateTo, isAuthenticated, activeRole, setIsCreateArticleModalOpen } = useBanjo();
+  const { activeTab, navigateTo, isAuthenticated, activeRole } = useBanjo();
 
   // Archivist tooling follows the signed-in session, never a profile fixture.
   const isArchivist = isAuthenticated && isElevated(activeRole);
@@ -132,7 +132,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           <button
             type="button"
             onClick={() => {
-              setIsCreateArticleModalOpen(true);
+              navigateTo('upload');
               onClose();
             }}
             className="flex w-full items-center gap-2 rounded-full bg-brand px-4 py-2.5 text-sm font-semibold text-on-orange transition-opacity hover:opacity-90"

@@ -43,6 +43,21 @@ export const SearchView: React.FC = () => {
   const [startYear, setStartYear] = useState<string>('');
   const [endYear, setEndYear] = useState<string>('');
 
+  const countryOptions = Array.from(new Set([
+    ...recordings.map((recording) => recording.country),
+    ...musicians.map((musician) => musician.country),
+    ...bands.map((band) => band.country),
+  ].map((value) => value.trim()).filter(Boolean))).sort();
+  const genreOptions = Array.from(new Set([
+    ...recordings.map((recording) => recording.genre),
+    ...bands.map((band) => band.genre),
+  ].map((value) => value.trim()).filter(Boolean))).sort();
+  const languageOptions = Array.from(new Set(recordings.map((recording) => recording.language.trim()).filter(Boolean))).sort();
+  const instrumentOptions = Array.from(new Set([
+    ...recordings.flatMap((recording) => recording.instruments),
+    ...musicians.flatMap((musician) => musician.instruments),
+  ].map((value) => value.trim()).filter(Boolean))).sort();
+
   const queryClean = searchQuery.toLowerCase().trim();
 
   const filteredRecordings = useMemo(() => {
@@ -174,7 +189,7 @@ export const SearchView: React.FC = () => {
         {/* Advanced Filters */}
         {showAdvanced && (
           <div className="p-4 rounded-xl border border-ink-12 bg-ink-06 space-y-3 text-xs">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               <div>
                 <label className="block text-ink-60 font-medium mb-1">Country</label>
                 <select
@@ -183,10 +198,7 @@ export const SearchView: React.FC = () => {
                   className="w-full rounded-lg border border-ink-12 bg-paper p-2 text-xs text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
                 >
                   <option value="">All Countries</option>
-                  <option value="Kenya">Kenya</option>
-                  <option value="DR Congo">DR Congo</option>
-                  <option value="Nigeria">Nigeria</option>
-                  <option value="Tanzania">Tanzania</option>
+                  {countryOptions.map((country) => <option key={country} value={country}>{country}</option>)}
                 </select>
               </div>
 
@@ -198,10 +210,23 @@ export const SearchView: React.FC = () => {
                   className="w-full rounded-lg border border-ink-12 bg-paper p-2 text-xs text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
                 >
                   <option value="">All Genres</option>
-                  <option value="Benga">Benga</option>
-                  <option value="Rhumba">Congolese Rhumba</option>
-                  <option value="Afrobeat">Afrobeat</option>
-                  <option value="Twist">Kenyan Twist</option>
+                  {genreOptions.map((genre) => <option key={genre} value={genre}>{genre}</option>)}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-ink-60 font-medium mb-1">Language</label>
+                <select value={languageFilter} onChange={(event) => setLanguageFilter(event.target.value)} className="w-full rounded-lg border border-ink-12 bg-paper p-2 text-xs text-ink">
+                  <option value="">All Languages</option>
+                  {languageOptions.map((language) => <option key={language} value={language}>{language}</option>)}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-ink-60 font-medium mb-1">Instrument</label>
+                <select value={instrumentFilter} onChange={(event) => setInstrumentFilter(event.target.value)} className="w-full rounded-lg border border-ink-12 bg-paper p-2 text-xs text-ink">
+                  <option value="">All Instruments</option>
+                  {instrumentOptions.map((instrument) => <option key={instrument} value={instrument}>{instrument}</option>)}
                 </select>
               </div>
 
