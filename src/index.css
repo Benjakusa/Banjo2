@@ -120,11 +120,16 @@ pre {
   overflow-wrap: anywhere;
 }
 
-h2,
 h3 {
   font-family: Roboto, system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   font-weight: 800;
   letter-spacing: -0.02em;
+}
+
+h2 {
+  font-family: "Kaushan Script", cursive;
+  font-weight: 400;
+  letter-spacing: normal;
 }
 
 h1 {
@@ -134,7 +139,8 @@ h1 {
   overflow-wrap: anywhere;
 }
 
-h1[class] {
+h1[class],
+h2[class] {
   font-family: "Kaushan Script", cursive;
 }
 

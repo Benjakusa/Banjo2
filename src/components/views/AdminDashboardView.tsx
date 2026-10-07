@@ -17,6 +17,19 @@ import {
 } from 'react-bootstrap-icons';
 import { roleLabel } from '../../lib/auth';
 
+const formatSubmissionData = (data: Record<string, string>) => {
+  const displayData: Record<string, unknown> = { ...data };
+  if (data.coverImage) displayData.coverImage = 'Cover image attached';
+  if (data.musicians) {
+    try {
+      displayData.musicians = JSON.parse(data.musicians);
+    } catch {
+      displayData.musicians = 'Contributor credits attached';
+    }
+  }
+  return JSON.stringify(displayData, null, 2);
+};
+
 export const AdminDashboardView: React.FC = () => {
   const {
     recordings,
@@ -258,15 +271,17 @@ export const AdminDashboardView: React.FC = () => {
               <div className="p-3 rounded-lg bg-ink-06 border border-ink-12 space-y-1">
                 <span className="font-mono text-[10px] uppercase text-ink-60 font-bold block">Current Entry</span>
                 <pre className="text-[11px] text-ink-60 whitespace-pre-wrap font-sans">
-                  {JSON.stringify(currentSub.currentData, null, 2)}
+                  {formatSubmissionData(currentSub.currentData)}
                 </pre>
+                {currentSub.currentData.coverImage && <img src={currentSub.currentData.coverImage} alt="Current cover art" className="mt-2 h-24 w-24 rounded-lg border border-ink-12 object-cover" />}
               </div>
             )}
             <div className="p-3 rounded-lg bg-brand/10 border border-brand space-y-1">
               <span className="font-mono text-[10px] uppercase text-ink-60 font-bold block">Proposed Additions</span>
               <pre className="text-[11px] text-ink whitespace-pre-wrap font-sans font-medium">
-                {JSON.stringify(currentSub.proposedData, null, 2)}
+                {formatSubmissionData(currentSub.proposedData)}
               </pre>
+              {currentSub.proposedData.coverImage && <img src={currentSub.proposedData.coverImage} alt="Proposed cover art" className="mt-2 h-24 w-24 rounded-lg border border-ink-12 object-cover" />}
             </div>
           </div>
 

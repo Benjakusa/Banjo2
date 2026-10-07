@@ -172,7 +172,11 @@ interface BanjoContextType {
 
   // Actions
   toggleSaveRecording: (recordingId: string) => void;
-  submitSongEdit: (recordingId: string, form: { title: string; year: string; composer: string; history: string; sources: string; explanation: string }) => void;
+  submitSongEdit: (recordingId: string, form: {
+    title: string; artistOrBand: string; albumTitle: string; year: string; country: string;
+    region: string; genre: string; language: string; studio: string; composer: string;
+    history: string; musicians: MusicianCredit[]; sources: string; coverImage: string; explanation: string;
+  }) => void;
   addMusicianToRecording: (recordingId: string, musicianName: string, role: string, instrument: string) => void;
   addSoloistToRecording: (recordingId: string, musicianName: string, role: string, instrument: string, isSoloist: boolean, soloOrder: number, solos?: { startSec: number; endSec: number; label?: string }[], notes?: string, sourceId?: string) => void;
   updateMusicianCredit: (recordingId: string, musicianId: string, updates: Partial<MusicianCredit>) => void;
@@ -922,7 +926,11 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Submit edit suggestion
   const submitSongEdit = useCallback(
-    (recordingId: string, form: { title: string; year: string; composer: string; history: string; sources: string; explanation: string }) => {
+    (recordingId: string, form: {
+      title: string; artistOrBand: string; albumTitle: string; year: string; country: string;
+      region: string; genre: string; language: string; studio: string; composer: string;
+      history: string; musicians: MusicianCredit[]; sources: string; coverImage: string; explanation: string;
+    }) => {
       const targetRecording = recordings.find((r) => r.id === recordingId);
       if (!targetRecording) return;
 
@@ -941,15 +949,35 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         rightsDeclaration: 'Historical contributor verification assertion under Banjo Contributor Guidelines.',
         currentData: {
           title: targetRecording.title,
-          releaseYear: String(targetRecording.releaseYear),
+          artistOrBand: targetRecording.artistOrBand,
+          albumTitle: targetRecording.albumTitle || '',
+          releaseYear: targetRecording.releaseYear == null ? '' : String(targetRecording.releaseYear),
+          country: targetRecording.country,
+          region: targetRecording.region,
+          genre: targetRecording.genre,
+          language: targetRecording.language,
+          studio: targetRecording.studio,
           composer: targetRecording.composer,
-          story: targetRecording.story.slice(0, 150) + '...',
+          story: targetRecording.story,
+          musicians: JSON.stringify(targetRecording.musicians || []),
+          sources: targetRecording.sources?.map((source) => source.title).filter(Boolean).join('; ') || '',
+          coverImage: targetRecording.coverImage,
         },
         proposedData: {
           title: form.title,
+          artistOrBand: form.artistOrBand,
+          albumTitle: form.albumTitle,
           releaseYear: form.year,
+          country: form.country,
+          region: form.region,
+          genre: form.genre,
+          language: form.language,
+          studio: form.studio,
           composer: form.composer,
           story: form.history,
+          musicians: JSON.stringify(form.musicians),
+          sources: form.sources,
+          coverImage: form.coverImage,
         },
         sourcesProvided: form.sources,
         reviewNotes: form.explanation,
@@ -1914,6 +1942,22 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (decision === 'approve' && sub.type === 'edit') {
         const targetId = sub.targetId;
         if (targetId) markCatalogueChanged('recording', targetId);
+        let proposedMusicians: MusicianCredit[] | undefined;
+        try {
+          proposedMusicians = sub.proposedData.musicians ? JSON.parse(sub.proposedData.musicians) as MusicianCredit[] : undefined;
+        } catch {
+          proposedMusicians = undefined;
+        }
+        const proposedSources = sub.proposedData.sources
+          ?.split(';')
+          .map((source) => source.trim())
+          .filter(Boolean)
+          .map((title, index) => ({
+            id: `src-${sub.id}-${index}`,
+            type: 'Community submission' as const,
+            title,
+            notes: '',
+          }));
         setRecordings((prev) =>
           prev.map((rec) => {
             if (targetId ? rec.id === targetId : rec.title === sub.currentData?.title) {
@@ -1926,20 +1970,39 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 summary: `Approved edit: ${sub.title}`,
                 changes: Object.entries(sub.proposedData).map(([field, val]) => ({
                   field,
-                  previous: (sub.currentData && sub.currentData[field]) || 'Previous value',
-                  proposed: val,
+                  previous: field === 'coverImage'
+                    ? (sub.currentData?.[field] ? 'Cover image' : 'No cover image')
+                    : sub.currentData?.[field] ?? 'Previous value',
+                  proposed: field === 'coverImage' ? 'Updated cover image' : val,
                 })),
                 status: 'approved',
               };
 
               return {
                 ...rec,
-                title: sub.proposedData.title || rec.title,
-                composer: sub.proposedData.composer || rec.composer,
-                story: sub.proposedData.story || rec.story,
+                title: sub.proposedData.title ?? rec.title,
+                recordingTitle: sub.proposedData.title ?? rec.recordingTitle,
+                artistOrBand: sub.proposedData.artistOrBand ?? rec.artistOrBand,
+                albumTitle: sub.proposedData.albumTitle ?? rec.albumTitle,
+                composer: sub.proposedData.composer ?? rec.composer,
+                story: sub.proposedData.story ?? rec.story,
                 releaseYear: sub.proposedData.releaseYear && Number.isInteger(Number(sub.proposedData.releaseYear))
                   ? Number(sub.proposedData.releaseYear)
-                  : rec.releaseYear,
+                  : sub.proposedData.releaseYear === '' ? null : rec.releaseYear,
+                country: sub.proposedData.country ?? rec.country,
+                region: sub.proposedData.region ?? rec.region,
+                genre: sub.proposedData.genre ?? rec.genre,
+                language: sub.proposedData.language ?? rec.language,
+                studio: sub.proposedData.studio ?? rec.studio,
+                musicians: proposedMusicians ?? rec.musicians,
+                instruments: proposedMusicians
+                  ? Array.from(new Set(proposedMusicians.map((credit) => credit.instrument).filter(Boolean)))
+                  : rec.instruments,
+                coverImage: sub.proposedData.coverImage ?? rec.coverImage,
+                sources: proposedSources ?? rec.sources,
+                recordingHistory: sub.proposedData.sources !== undefined
+                  ? proposedSources?.map((source) => `Contributor source: ${source.title}`) || []
+                  : rec.recordingHistory,
                 revisions: [newRev, ...rec.revisions],
                 updatedAt: new Date().toISOString(),
               };

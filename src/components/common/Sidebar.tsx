@@ -196,7 +196,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
       <aside
         aria-label="Main navigation"
-        className={`fixed inset-y-0 left-0 z-40 flex w-[220px] shrink-0 self-start flex-col overflow-y-auto overscroll-contain border-r border-ink-12 bg-paper transition-transform duration-200 ${
+        className={`fixed inset-y-0 left-0 z-40 flex h-dvh max-h-dvh w-[220px] shrink-0 self-start flex-col overflow-hidden border-r border-ink-12 bg-paper transition-transform duration-200 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         } min-[1000px]:sticky min-[1000px]:top-14 min-[1000px]:z-auto min-[1000px]:inset-y-auto min-[1000px]:h-[calc(100dvh-3.5rem)] min-[1000px]:translate-x-0`}
       >
@@ -228,7 +228,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        <nav className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-4">
+        <nav className="min-h-0 flex-1 touch-pan-y overflow-x-hidden overflow-y-auto overscroll-contain pb-28 min-[1000px]:pb-4">
           {renderSection('Archive', primaryItems)}
           {renderSection('You', youItems)}
           {renderSection('Community', communityItems)}
