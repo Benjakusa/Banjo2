@@ -62,7 +62,7 @@ export const QuickAddDetailModal: React.FC = () => {
       aria-modal="true"
       className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 backdrop-blur-sm p-4 animate-in fade-in duration-150"
     >
-      <div className="relative w-full max-w-lg rounded-2xl border border-ink-12 bg-paper p-6 space-y-5">
+      <div className="relative max-h-[90dvh] w-full max-w-lg overflow-y-auto rounded-2xl border border-ink-12 bg-paper p-4 space-y-5 sm:p-6">
         <div className="flex items-center justify-between border-b border-ink-12 pb-3">
           <div className="flex items-center gap-2">
             <div>

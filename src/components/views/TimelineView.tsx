@@ -76,13 +76,13 @@ export const TimelineView: React.FC = () => {
               </div>
 
               <div className="rounded-2xl border border-ink-12 bg-paper p-4 sm:p-5 space-y-2 hover:border-brand transition-all">
-                <div className="flex items-center justify-between text-xs">
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
                   <span className="font-mono text-lg font-bold text-ink-60">
                     {ev.year}
                   </span>
                   <span className="text-ink-60 font-mono text-[11px] flex items-center gap-1">
                     <GeoAlt className="w-3.5 h-3.5 text-ink-60" />
-                    {ev.country}
+                    <span className="break-words">{ev.country}</span>
                   </span>
                 </div>
 
@@ -94,8 +94,8 @@ export const TimelineView: React.FC = () => {
                   {ev.description}
                 </p>
 
-                <div className="pt-2 border-t border-ink-12 flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2">
+                <div className="flex flex-col gap-2 border-t border-ink-12 pt-2 text-xs sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex flex-wrap items-center gap-2">
                     {ev.relatedBandId && (
                       <button
                         onClick={() => navigateTo('band_detail', { bandId: ev.relatedBandId })}

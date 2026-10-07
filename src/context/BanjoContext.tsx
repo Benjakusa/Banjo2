@@ -1740,6 +1740,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         proposedData: {
           title: data.title || '',
           artistOrBand: data.artistOrBand || '',
+          albumTitle: data.albumTitle || '',
           releaseYear: String(data.releaseYear ?? ''),
           country: data.country || '',
           region: data.region || '',
@@ -1919,6 +1920,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           title: data.title || sub.title,
           recordingTitle: data.title || sub.title,
           artistOrBand: data.artistOrBand || '',
+          albumTitle: data.albumTitle || undefined,
           releaseYear: Number(data.releaseYear),
           country: data.country || '',
           region: data.region || '',

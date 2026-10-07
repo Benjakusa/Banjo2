@@ -61,15 +61,15 @@ export const CreateArticleModal: React.FC = () => {
       aria-modal="true"
       className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 backdrop-blur-xs p-3 sm:p-4 animate-in fade-in duration-200"
     >
-      <div className="relative w-full max-w-xl max-h-[92vh] flex flex-col rounded-2xl border border-ink-12 bg-paper overflow-hidden">
+      <div className="relative flex max-h-[92dvh] w-full max-w-xl flex-col overflow-hidden rounded-2xl border border-ink-12 bg-paper">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-ink-12 px-5 py-3.5 bg-ink-06 shrink-0">
+        <div className="flex shrink-0 items-center justify-between gap-2 border-b border-ink-12 bg-ink-06 px-3 py-3.5 sm:px-5">
           <div className="flex items-center gap-2">
             <div>
               <span className="text-[10px] uppercase tracking-wider font-mono text-ink-60 font-bold block">
                 Create Encyclopedia Article
               </span>
-              <h2 className="text-base font-serif font-bold text-ink">
+              <h2 className="break-words text-sm font-serif font-bold text-ink sm:text-base">
                 New African Music Heritage Article
               </h2>
             </div>
@@ -121,7 +121,7 @@ export const CreateArticleModal: React.FC = () => {
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-3.5 text-xs">
+        <form onSubmit={handleSubmit} className="min-h-0 flex-1 overflow-y-auto p-3 sm:p-6 space-y-3.5 text-xs">
           <div>
             <label className="block text-ink-60 font-semibold mb-1">
               {articleType === 'song'

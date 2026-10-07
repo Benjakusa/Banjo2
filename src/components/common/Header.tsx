@@ -134,7 +134,7 @@ export const Header: React.FC<{ onOpenNav?: () => void }> = ({ onOpenNav }) => {
   return (
     <>
       <header className="sticky top-0 z-40 w-full border-b border-ink-12 bg-paper/90 backdrop-blur">
-        <div className="flex h-14 items-center gap-3 px-2 sm:gap-5 sm:px-6">
+        <div className="flex h-14 min-w-0 items-center gap-1 px-2 sm:gap-5 sm:px-6">
           <button
             type="button"
             onClick={() => navigateTo('home')}
@@ -214,7 +214,7 @@ export const Header: React.FC<{ onOpenNav?: () => void }> = ({ onOpenNav }) => {
             )}
           </div>
 
-          <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2.5">
+          <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2.5">
             <button
               type="button"
               onClick={() => setIsSearchOpen(true)}
@@ -250,10 +250,10 @@ export const Header: React.FC<{ onOpenNav?: () => void }> = ({ onOpenNav }) => {
                   setAuthMode('signin');
                   navigateTo('signin');
                 }}
-                className="flex items-center gap-1.5 rounded-full border border-ink-12 px-3 py-2 text-xs font-semibold text-ink transition-colors hover:bg-ink-06 sm:px-4 sm:text-sm"
-              >
-                <BoxArrowInRight className="h-4 w-4" />
-                Sign in
+              className="flex items-center gap-1.5 rounded-full border border-ink-12 px-2 py-2 text-xs font-semibold text-ink transition-colors hover:bg-ink-06 sm:px-4 sm:text-sm"
+            >
+              <BoxArrowInRight className="h-4 w-4" />
+              <span className="hidden sm:inline">Sign in</span>
               </button>
             )}
 

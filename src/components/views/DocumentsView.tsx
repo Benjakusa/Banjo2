@@ -109,9 +109,9 @@ export const DocumentsView: React.FC = () => {
               </p>
             </div>
 
-            <div className="pt-2 border-t border-ink-12 flex items-center justify-between text-[11px] text-ink-60">
-              <span>{doc.location}</span>
-              <span className="text-link font-medium inline-flex items-center gap-1">Inspect Document <ArrowRight className="w-3 h-3" /></span>
+            <div className="flex flex-col items-start gap-2 border-t border-ink-12 pt-2 text-[11px] text-ink-60 sm:flex-row sm:items-center sm:justify-between">
+              <span className="break-words">{doc.location}</span>
+              <span className="inline-flex items-center gap-1 font-medium text-link">Inspect Document <ArrowRight className="w-3 h-3 shrink-0" /></span>
             </div>
           </div>
         ))}
@@ -124,7 +124,7 @@ export const DocumentsView: React.FC = () => {
           aria-modal="true"
           className="fixed inset-0 z-50 flex items-center justify-center bg-ink/70 backdrop-blur-sm p-4"
         >
-          <div className="relative max-w-2xl w-full rounded-2xl bg-paper p-5 space-y-4">
+          <div className="relative max-h-[90dvh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-paper p-4 space-y-4 sm:p-5">
             <div className="flex items-center justify-between border-b border-ink-12 pb-2">
               <div>
                 <span className="font-mono text-xs text-ink-60 uppercase font-semibold">

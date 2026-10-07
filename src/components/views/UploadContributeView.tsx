@@ -51,11 +51,12 @@ export const UploadContributeView: React.FC = () => {
 
   // Step 2 Contributors
   const [composer, setComposer] = useState('');
-  const [leadGuitarist, setLeadGuitarist] = useState('');
   const [leadVocalist, setLeadVocalist] = useState('');
-  const [bassist, setBassist] = useState('');
-  const [drummer, setDrummer] = useState('');
-  const [producer, setProducer] = useState('');
+  const [otherVocalists, setOtherVocalists] = useState<string[]>([]);
+  const [guitarists, setGuitarists] = useState<Array<{ name: string; guitarType: string }>>([]);
+  const [otherInstrumentalists, setOtherInstrumentalists] = useState<Array<{ name: string; instrument: string }>>([]);
+  const [bandLeader, setBandLeader] = useState('');
+  const [albumTitle, setAlbumTitle] = useState('');
 
   // Step 3 History & Sources
   const [historyNarrative, setHistoryNarrative] = useState('');
@@ -138,34 +139,43 @@ export const UploadContributeView: React.FC = () => {
     }
     setUploadStatus('uploading');
     try {
+      const musicians: MusicianCredit[] = [];
+      const addMusician = (name: string, role: string, instrument: string) => {
+        const musicianName = name.trim();
+        if (!musicianName) return;
+        const musicianId = musicianName.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'contributor';
+        musicians.push({
+          musicianId: `submission-credit-${musicians.length}-${musicianId}`,
+          musicianName,
+          role,
+          instrument,
+        });
+      };
+      addMusician(composer, 'Composer', 'Composition');
+      addMusician(leadVocalist, 'Lead Vocalist', 'Vocals');
+      otherVocalists.forEach((name) => addMusician(name, 'Other Vocalist', 'Vocals'));
+      guitarists.forEach(({ name, guitarType }) => addMusician(name, 'Guitarist', guitarType.trim() || 'Guitar'));
+      otherInstrumentalists.forEach(({ name, instrument }) => addMusician(name, 'Instrumentalist', instrument.trim() || 'Other instrument'));
+      addMusician(bandLeader, 'Band Leader', 'Band leadership');
+
       const submitted = await submitNewRecording(
         {
           title: title.trim(),
           artistOrBand: artistOrBand.trim(),
           releaseYear: parsedYear,
+          albumTitle: albumTitle.trim() || undefined,
           country,
           region,
           genre,
           language,
           studio,
           composer,
-          producer,
           story: historyNarrative || 'Historical details submitted by community contributor.',
           coverImage,
           audioFileName: metadataOnly ? undefined : audioFile?.name,
           audioFileSize: metadataOnly ? undefined : audioFile?.size,
           audioMimeType: metadataOnly ? undefined : audioFile?.type,
-          musicians: [
-            { name: leadGuitarist, role: 'Lead Guitarist', instrument: 'Guitar' },
-            { name: leadVocalist, role: 'Lead Vocalist', instrument: 'Vocals' },
-            { name: bassist, role: 'Bassist', instrument: 'Bass guitar' },
-            { name: drummer, role: 'Drummer', instrument: 'Drums' },
-          ].filter((credit) => credit.name.trim()).map((credit, index): MusicianCredit => ({
-            musicianId: `submission-credit-${index}-${credit.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
-            musicianName: credit.name.trim(),
-            role: credit.role,
-            instrument: credit.instrument,
-          })),
+          musicians,
         },
         rightsDeclaration,
         sourcesProvided,
@@ -354,7 +364,7 @@ export const UploadContributeView: React.FC = () => {
               <p className="text-ink-60">Credit every instrumentalist and vocalist who performed.</p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-4">
               <div>
                 <label className="block text-ink-60 font-medium mb-1">Composer</label>
                 <input
@@ -367,18 +377,7 @@ export const UploadContributeView: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-ink-60 font-medium mb-1">Lead Guitarist</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Peter Ochieng"
-                  value={leadGuitarist}
-                  onChange={(e) => setLeadGuitarist(e.target.value)}
-                  className="w-full rounded-lg border border-ink-12 px-3 py-2 text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
-                />
-              </div>
-
-              <div>
-                <label className="block text-ink-60 font-medium mb-1">Vocalist</label>
+                <label className="block text-ink-60 font-medium mb-1">Lead vocalist</label>
                 <input
                   type="text"
                   placeholder="e.g. Mary Achieng"
@@ -388,15 +387,64 @@ export const UploadContributeView: React.FC = () => {
                 />
               </div>
 
-              <div>
-                <label className="block text-ink-60 font-medium mb-1">Sound Engineer / Studio</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Polygram Industrial Area"
-                  value={studio}
-                  onChange={(e) => setStudio(e.target.value)}
-                  className="w-full rounded-lg border border-ink-12 px-3 py-2 text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
-                />
+              <section className="space-y-2 rounded-xl border border-ink-12 p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="font-semibold text-ink">Other vocalists</h3>
+                  <button type="button" onClick={() => setOtherVocalists((items) => [...items, ''])} className="rounded-full border border-ink-12 px-3 py-1.5 text-[11px] font-semibold text-ink hover:bg-ink-06">Add other vocalist</button>
+                </div>
+                {otherVocalists.map((name, index) => (
+                  <div key={index} className="flex gap-2">
+                    <input type="text" aria-label={`Other vocalist ${index + 1}`} placeholder="Player name" value={name} onChange={(e) => setOtherVocalists((items) => items.map((item, itemIndex) => itemIndex === index ? e.target.value : item))} className="w-full rounded-lg border border-ink-12 px-3 py-2 text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0" />
+                    <button type="button" aria-label={`Remove other vocalist ${index + 1}`} onClick={() => setOtherVocalists((items) => items.filter((_, itemIndex) => itemIndex !== index))} className="rounded-lg border border-ink-12 px-3 text-ink-60 hover:bg-ink-06">Remove</button>
+                  </div>
+                ))}
+              </section>
+
+              <section className="space-y-2 rounded-xl border border-ink-12 p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="font-semibold text-ink">Guitarists</h3>
+                  <button type="button" onClick={() => setGuitarists((items) => [...items, { name: '', guitarType: '' }])} className="rounded-full border border-ink-12 px-3 py-1.5 text-[11px] font-semibold text-ink hover:bg-ink-06">Add guitarist</button>
+                </div>
+                {guitarists.map((guitarist, index) => (
+                  <div key={index} className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_1fr_auto]">
+                    <input type="text" aria-label={`Guitar type ${index + 1}`} placeholder="Guitar type (lead, rhythm, bass…)" value={guitarist.guitarType} onChange={(e) => setGuitarists((items) => items.map((item, itemIndex) => itemIndex === index ? { ...item, guitarType: e.target.value } : item))} className="w-full rounded-lg border border-ink-12 px-3 py-2 text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0" />
+                    <input type="text" aria-label={`Guitarist name ${index + 1}`} placeholder="Player name" value={guitarist.name} onChange={(e) => setGuitarists((items) => items.map((item, itemIndex) => itemIndex === index ? { ...item, name: e.target.value } : item))} className="w-full rounded-lg border border-ink-12 px-3 py-2 text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0" />
+                    <button type="button" aria-label={`Remove guitarist ${index + 1}`} onClick={() => setGuitarists((items) => items.filter((_, itemIndex) => itemIndex !== index))} className="rounded-lg border border-ink-12 px-3 py-2 text-ink-60 hover:bg-ink-06">Remove</button>
+                  </div>
+                ))}
+              </section>
+
+              <section className="space-y-2 rounded-xl border border-ink-12 p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="font-semibold text-ink">Other instruments</h3>
+                  <button type="button" onClick={() => setOtherInstrumentalists((items) => [...items, { name: '', instrument: '' }])} className="rounded-full border border-ink-12 px-3 py-1.5 text-[11px] font-semibold text-ink hover:bg-ink-06">Add instrument</button>
+                </div>
+                {otherInstrumentalists.map((credit, index) => (
+                  <div key={index} className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_1fr_auto]">
+                    <input type="text" aria-label={`Instrument ${index + 1}`} placeholder="Instrument" value={credit.instrument} onChange={(e) => setOtherInstrumentalists((items) => items.map((item, itemIndex) => itemIndex === index ? { ...item, instrument: e.target.value } : item))} className="w-full rounded-lg border border-ink-12 px-3 py-2 text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0" />
+                    <input type="text" aria-label={`Instrument player ${index + 1}`} placeholder="Player name" value={credit.name} onChange={(e) => setOtherInstrumentalists((items) => items.map((item, itemIndex) => itemIndex === index ? { ...item, name: e.target.value } : item))} className="w-full rounded-lg border border-ink-12 px-3 py-2 text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0" />
+                    <button type="button" aria-label={`Remove instrument ${index + 1}`} onClick={() => setOtherInstrumentalists((items) => items.filter((_, itemIndex) => itemIndex !== index))} className="rounded-lg border border-ink-12 px-3 py-2 text-ink-60 hover:bg-ink-06">Remove</button>
+                  </div>
+                ))}
+              </section>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1 block font-medium text-ink-60">Band leader</label>
+                  <input type="text" placeholder="Name of band leader" value={bandLeader} onChange={(e) => setBandLeader(e.target.value)} className="w-full rounded-lg border border-ink-12 px-3 py-2 text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0" />
+                </div>
+                <div>
+                  <label className="mb-1 block font-medium text-ink-60">Album</label>
+                  <input type="text" placeholder="Album title" value={albumTitle} onChange={(e) => setAlbumTitle(e.target.value)} className="w-full rounded-lg border border-ink-12 px-3 py-2 text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0" />
+                </div>
+                <div>
+                  <label className="mb-1 block font-medium text-ink-60">Language</label>
+                  <input type="text" placeholder="Language of the recording" value={language} onChange={(e) => setLanguage(e.target.value)} className="w-full rounded-lg border border-ink-12 px-3 py-2 text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0" />
+                </div>
+                <div>
+                  <label className="mb-1 block font-medium text-ink-60">Sound Engineer / Studio</label>
+                  <input type="text" placeholder="Studio or sound engineer" value={studio} onChange={(e) => setStudio(e.target.value)} className="w-full rounded-lg border border-ink-12 px-3 py-2 text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0" />
+                </div>
               </div>
             </div>
           </div>

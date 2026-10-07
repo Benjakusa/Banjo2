@@ -237,8 +237,8 @@ export const AdminDashboardView: React.FC = () => {
 
       {/* REVIEW WORKSPACE */}
       {activeSection === 'review' && currentSub && (
-        <div className="rounded-2xl border border-ink-12 bg-paper p-6 space-y-5 text-xs">
-          <div className="flex items-center justify-between border-b border-ink-12 pb-3">
+        <div className="rounded-2xl border border-ink-12 bg-paper p-3 space-y-5 text-xs sm:p-6">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ink-12 pb-3">
             <div>
               <span className="text-[10px] font-mono text-ink-60 uppercase font-bold block">
                 Verification Task

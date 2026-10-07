@@ -70,7 +70,7 @@ export const MiniPlayer: React.FC = () => {
   return (
     <aside
       aria-label="Now playing"
-      className="fixed inset-x-0 bottom-14 z-40 border-t border-ink-12 bg-paper/95 backdrop-blur sm:bottom-0 sm:z-30 min-[1000px]:left-[max(220px,calc((100vw-1800px)/2+220px))]"
+      className="fixed inset-x-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-40 border-t border-ink-12 bg-paper/95 backdrop-blur sm:bottom-0 sm:z-30 min-[1000px]:left-[max(220px,calc((100vw-1800px)/2+220px))]"
     >
       <div
         onClick={handleBarClick}

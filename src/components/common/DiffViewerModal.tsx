@@ -28,7 +28,7 @@ export const DiffViewerModal: React.FC = () => {
       aria-modal="true"
       className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 p-4"
     >
-      <div className="relative w-full max-w-3xl max-h-[92vh] overflow-y-auto rounded-2xl border border-ink-12 bg-paper p-6 space-y-5 text-xs">
+      <div className="relative max-h-[92dvh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-ink-12 bg-paper p-4 space-y-5 text-xs sm:p-6">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-ink-12 pb-3">
           <div className="flex items-center gap-2">
@@ -181,4 +181,3 @@ export const DiffViewerModal: React.FC = () => {
     </div>
   );
 };
-

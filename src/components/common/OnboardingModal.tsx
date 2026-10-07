@@ -56,7 +56,7 @@ export const OnboardingModal: React.FC = () => {
       aria-modal="true"
       className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 p-4"
     >
-      <div className="relative w-full max-w-md rounded-2xl border border-ink-12 bg-paper p-6 sm:p-7 space-y-5">
+      <div className="relative max-h-[90dvh] w-full max-w-md overflow-y-auto rounded-2xl border border-ink-12 bg-paper p-4 space-y-5 sm:p-7">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             {screens.map((_, i) => (
@@ -143,4 +143,3 @@ export const OnboardingModal: React.FC = () => {
     </div>
   );
 };
-

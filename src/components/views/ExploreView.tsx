@@ -61,9 +61,9 @@ export const ExploreView: React.FC = () => {
             <h2 className="font-serif text-xl font-medium"><GeoAlt className="inline mr-2" />{currentCountry}</h2>
             <p className="text-xs text-ink-60">{countryRecordings.length} recording{countryRecordings.length === 1 ? '' : 's'} in this country.</p>
             {countryRecordings.map((recording) => (
-              <article key={recording.id} className="flex items-center justify-between gap-3 border-t border-ink-12 pt-3 text-xs">
-                <div>
-                  <h3 className="font-semibold text-ink">{recording.title}</h3>
+            <article key={recording.id} className="flex flex-wrap items-center justify-between gap-3 border-t border-ink-12 pt-3 text-xs">
+                <div className="min-w-0 flex-1">
+                  <h3 className="break-words font-semibold text-ink">{recording.title}</h3>
                   <p className="text-ink-60">{recording.artistOrBand} · {recording.releaseYear} · {recording.genre}</p>
                 </div>
                 <button aria-label={`Play ${recording.title}`} onClick={() => playSong(recording)} className="p-2 rounded-full bg-brand text-on-orange cursor-pointer"><PlayFill /></button>

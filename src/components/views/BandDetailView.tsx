@@ -48,7 +48,7 @@ const BandDetailContent: React.FC = () => {
   return (
     <div className="mx-auto max-w-4xl px-4 sm:px-6 py-6 space-y-6 pb-36">
       {/* Top back & edit */}
-      <div className="flex items-center justify-between border-b border-ink-12 pb-3">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ink-12 pb-3">
         <button
           onClick={goBack}
           disabled={!canGoBack}
@@ -60,7 +60,7 @@ const BandDetailContent: React.FC = () => {
 
         <button
           onClick={() => openQuickEdit(band.id, 'band_member')}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-on-orange bg-brand hover:bg-brand rounded-lg transition-colors cursor-pointer"
+          className="flex max-w-full items-center gap-1.5 rounded-lg bg-brand px-3 py-1.5 text-left text-xs font-semibold text-on-orange transition-colors hover:bg-brand cursor-pointer"
         >
           <PencilSquare className="w-3.5 h-3.5" />
           <span>Edit Band Article & Lineup</span>
@@ -99,25 +99,25 @@ const BandDetailContent: React.FC = () => {
         </div>
 
         <dl className="divide-y divide-ink-12 text-[11px]">
-          <div className="py-1.5 flex justify-between">
+          <div className="py-1.5 flex flex-wrap justify-between gap-x-2">
             <dt className="text-ink-60">Formed</dt>
-            <dd className="font-mono text-ink font-semibold">{band.formationYear}</dd>
+            <dd className="break-words text-right font-mono font-semibold text-ink">{band.formationYear}</dd>
           </div>
           {band.disbandYear && (
-            <div className="py-1.5 flex justify-between">
+            <div className="py-1.5 flex flex-wrap justify-between gap-x-2">
               <dt className="text-ink-60">Disbanded</dt>
               <dd className="font-mono text-ink">{band.disbandYear}</dd>
             </div>
           )}
-          <div className="py-1.5 flex justify-between">
+          <div className="py-1.5 flex flex-wrap justify-between gap-x-2">
             <dt className="text-ink-60">Origin</dt>
             <dd className="text-ink text-right">{band.region}, {band.country}</dd>
           </div>
-          <div className="py-1.5 flex justify-between">
+          <div className="py-1.5 flex flex-wrap justify-between gap-x-2">
             <dt className="text-ink-60">Genre</dt>
             <dd className="text-ink">{band.genre}</dd>
           </div>
-          <div className="py-1.5 flex justify-between">
+          <div className="py-1.5 flex flex-wrap justify-between gap-x-2">
             <dt className="text-ink-60">Key Members</dt>
             <dd className="text-ink text-right font-medium">
               {band.membersTimeline.slice(0, 3).map((m) => m.musicianName).join(', ')}

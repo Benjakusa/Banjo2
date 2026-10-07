@@ -71,18 +71,18 @@ export const HomeView: React.FC = () => {
       {/* 1. Banjo Welcome Header Banner */}
       <section className="border-b border-ink-12 bg-paper py-6 sm:py-8">
         <div className="mx-auto max-w-4xl px-4 sm:px-6">
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
+          <div className="space-y-3 text-center">
+            <div className="flex items-center justify-center gap-2">
               <span className="text-xs uppercase tracking-widest font-mono text-ink-60 font-semibold">
                 the free encyclopedia of African music
               </span>
             </div>
 
-            <h1 className="text-2xl sm:text-4xl font-serif font-medium text-ink leading-tight">
+            <h1 className="text-center text-2xl leading-tight font-serif font-medium text-brand sm:text-4xl">
               Welcome to Banjo, the free encyclopedia and archive of African music heritage.
             </h1>
 
-            <p className="text-xs sm:text-sm text-ink-60 leading-relaxed">
+            <p className="text-xs sm:text-sm text-ink-60 leading-relaxed text-center">
               Documenting <strong>{recordings.length} recordings</strong> and <strong>{musicians.length} musician rosters</strong>, with contributions growing as the archive is reviewed.
             </p>
 
@@ -127,7 +127,7 @@ export const HomeView: React.FC = () => {
       <div className="mx-auto max-w-4xl px-4 sm:px-6 space-y-8">
         {/* 2. Today's Featured Article */}
         {featuredRecording ? <section className="rounded-2xl border border-ink-12 bg-paper p-5 sm:p-6 space-y-4">
-          <div className="flex items-center justify-between border-b border-ink-12 pb-3">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ink-12 pb-3">
             <div className="flex items-center gap-2">
               <Stars className="w-4 h-4 text-brand" />
               <span className="text-xs uppercase tracking-widest font-mono text-ink-60 font-semibold">
@@ -217,7 +217,7 @@ export const HomeView: React.FC = () => {
 
         {/* 3. Did You Know & Historical Anecdotes */}
         <section className="rounded-2xl bg-brand p-5 space-y-3">
-          <div className="flex items-center justify-between border-b border-on-orange/30 pb-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-on-orange/30 pb-2">
             <span className="text-xs uppercase tracking-widest font-mono text-on-orange font-semibold flex items-center gap-1.5">
               <QuestionCircle className="w-3.5 h-3.5 text-on-orange" />
               Did You Know...
@@ -237,7 +237,7 @@ export const HomeView: React.FC = () => {
 
         {/* 4. Browse by Tradition & Country (Screen 3 & 12) */}
         <section className="space-y-3">
-          <div className="flex items-center justify-between border-b border-ink-12 pb-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ink-12 pb-2">
             <h2 className="text-lg font-serif font-medium text-ink">
               Browse by African Music Tradition
             </h2>
@@ -276,7 +276,7 @@ export const HomeView: React.FC = () => {
 
         {/* 5. Recently Documented Recordings (Banjo Entries Feed) */}
         <section className="space-y-4">
-          <div className="flex items-center justify-between border-b border-ink-12 pb-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ink-12 pb-2">
             <div>
               <h2 className="text-lg font-serif font-medium text-ink">
                 Recently Documented Entries
@@ -366,7 +366,7 @@ export const HomeView: React.FC = () => {
 
         {/* 6. Traceable History & Recent Revisions (Banjo Style) */}
         {recentlyUpdatedRecording && <section className="rounded-2xl border border-ink-12 bg-paper p-5 space-y-3">
-          <div className="flex items-center justify-between border-b border-ink-12 pb-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ink-12 pb-2">
             <div>
               <span className="text-xs uppercase tracking-widest font-mono text-ink-60 font-semibold">
                 Revision History
@@ -380,7 +380,7 @@ export const HomeView: React.FC = () => {
 
           <div className="divide-y divide-ink-12 text-xs">
             {recentlyUpdatedRecording.revisions.map((rev) => (
-              <div key={rev.id} className="py-2.5 flex items-center justify-between gap-3">
+              <div key={rev.id} className="flex flex-wrap items-center justify-between gap-3 py-2.5">
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="font-mono text-ink-60 font-bold">v{rev.version}.0</span>

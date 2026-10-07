@@ -207,7 +207,7 @@ export const AddDetailModal: React.FC = () => {
       aria-modal="true"
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-ink/60 p-0 sm:p-4 animate-in fade-in duration-200"
     >
-      <div className="relative w-full max-w-2xl max-h-[92vh] flex flex-col rounded-t-2xl sm:rounded-2xl border border-ink-12 bg-paper overflow-hidden">
+      <div className="relative flex max-h-[92dvh] w-full max-w-2xl flex-col overflow-hidden rounded-t-2xl border border-ink-12 bg-paper sm:rounded-2xl">
         {/* Top Header */}
         <div className="flex items-center justify-between border-b border-ink-12 px-5 py-3.5 bg-ink-06 shrink-0">
           <div className="flex items-center gap-2.5">

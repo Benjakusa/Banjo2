@@ -76,12 +76,38 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-h1,
+main {
+  min-width: 0;
+}
+
+img,
+video,
+canvas {
+  max-width: 100%;
+}
+
+dd,
+pre {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 h2,
 h3 {
   font-family: Roboto, system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   font-weight: 800;
   letter-spacing: -0.02em;
+}
+
+h1 {
+  font-family: "Kaushan Script", cursive;
+  font-weight: 400;
+  letter-spacing: normal;
+  overflow-wrap: anywhere;
+}
+
+h1[class] {
+  font-family: "Kaushan Script", cursive;
 }
 
 /* Text links: blue, underlined only on hover/focus. Never a visited purple. */

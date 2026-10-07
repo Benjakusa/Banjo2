@@ -34,7 +34,7 @@ export const EditSongModal: React.FC = () => {
       aria-modal="true"
       className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 p-4"
     >
-      <div className="relative w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-2xl border border-ink-12 bg-paper p-6 space-y-4">
+      <div className="relative max-h-[90dvh] w-full max-w-xl overflow-y-auto rounded-2xl border border-ink-12 bg-paper p-4 space-y-4 sm:p-6">
         <div className="flex items-center justify-between border-b border-ink-12 pb-3">
           <div className="flex items-center gap-2">
             <div>
@@ -150,4 +150,3 @@ export const EditSongModal: React.FC = () => {
     </div>
   );
 };
-

@@ -107,7 +107,7 @@ const AppContent: React.FC = () => {
       )}
 
       <footer className="border-t border-ink-12 bg-ink-06 px-4 py-8 text-xs text-ink-60 sm:px-6">
-        <div className="mx-auto flex max-w-[1800px] flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="mx-auto flex max-w-[1800px] flex-col items-center gap-4 text-center sm:flex-row sm:items-start sm:justify-between sm:text-left">
           <div className="space-y-1.5">
             <Wordmark size="sm" />
             <p className="max-w-md leading-relaxed">
@@ -116,7 +116,7 @@ const AppContent: React.FC = () => {
             </p>
           </div>
 
-          <nav className="flex flex-wrap items-center gap-x-5 gap-y-2">
+          <nav className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 sm:justify-start">
             <button
               type="button"
               onClick={() => navigateTo('home')}

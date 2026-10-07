@@ -61,7 +61,7 @@ export const ProfileDashboardView: React.FC = () => {
       {/* Contributor Profile Header */}
       <header className="rounded-2xl border border-ink-12 bg-paper p-5 sm:p-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3.5">
+          <div className="flex min-w-0 items-center gap-3.5">
             <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-brand bg-ink-06 shrink-0">
               <img
                 src={userProfile.avatarUrl}
@@ -71,18 +71,18 @@ export const ProfileDashboardView: React.FC = () => {
               />
             </div>
 
-            <div className="space-y-0.5">
-              <div className="flex items-center gap-2">
-                <h1 className="font-serif text-xl sm:text-2xl font-bold text-ink">
+            <div className="min-w-0 flex-1 space-y-0.5">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="break-words font-serif text-xl sm:text-2xl font-bold text-ink">
                   {userProfile.displayName}
                 </h1>
                 {userProfile.verifiedStatus && (
-                  <span className="text-[10px] font-mono text-ink bg-ink-06 border border-ink-12 px-1.5 py-0.5 rounded font-bold">
+                <span className="max-w-full text-[10px] font-mono text-ink bg-ink-06 border border-ink-12 px-1.5 py-0.5 rounded font-bold">
                     Verified Archivist
                   </span>
                 )}
               </div>
-              <p className="text-xs text-ink-60 font-mono">
+              <p className="break-words text-xs text-ink-60 font-mono">
                 {authEmail ?? userProfile.email} · Role: {activeRole}
               </p>
               <p className="text-xs text-ink-60 max-w-md pt-0.5 leading-relaxed">

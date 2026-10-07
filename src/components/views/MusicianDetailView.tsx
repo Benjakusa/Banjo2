@@ -52,7 +52,7 @@ const MusicianDetailContent: React.FC = () => {
   return (
     <div className="mx-auto max-w-4xl px-4 sm:px-6 py-6 space-y-6 pb-36">
       {/* Top back & edit */}
-      <div className="flex items-center justify-between border-b border-ink-12 pb-3">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ink-12 pb-3">
         <button
           onClick={goBack}
           disabled={!canGoBack}
@@ -64,7 +64,7 @@ const MusicianDetailContent: React.FC = () => {
 
         <button
           onClick={() => openQuickEdit(musician.id, 'bio')}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-on-orange bg-brand hover:bg-brand rounded-lg transition-colors cursor-pointer"
+          className="flex max-w-full items-center gap-1.5 rounded-lg bg-brand px-3 py-1.5 text-left text-xs font-semibold text-on-orange transition-colors hover:bg-brand cursor-pointer"
         >
           <PencilSquare className="w-3.5 h-3.5" />
           <span>Edit Biography & Instruments</span>
@@ -114,25 +114,25 @@ const MusicianDetailContent: React.FC = () => {
         </div>
 
         <dl className="divide-y divide-ink-12 text-[11px]">
-          <div className="py-1.5 flex justify-between">
+          <div className="py-1.5 flex flex-wrap justify-between gap-x-2">
             <dt className="text-ink-60">Born</dt>
             <dd className="font-mono text-ink">{musician.birthYear} ({musician.region})</dd>
           </div>
           {musician.deathYear && (
-            <div className="py-1.5 flex justify-between">
+            <div className="py-1.5 flex flex-wrap justify-between gap-x-2">
               <dt className="text-ink-60">Died</dt>
               <dd className="font-mono text-ink">{musician.deathYear}</dd>
             </div>
           )}
-          <div className="py-1.5 flex justify-between">
+          <div className="py-1.5 flex flex-wrap justify-between gap-x-2">
             <dt className="text-ink-60">Active Years</dt>
             <dd className="font-mono text-ink">{musician.activeYears}</dd>
           </div>
-          <div className="py-1.5 flex justify-between">
+          <div className="py-1.5 flex flex-wrap justify-between gap-x-2">
             <dt className="text-ink-60">Instruments</dt>
             <dd className="text-ink text-right">{musician.instruments.join(', ')}</dd>
           </div>
-          <div className="py-1.5 flex justify-between">
+          <div className="py-1.5 flex flex-wrap justify-between gap-x-2">
             <dt className="text-ink-60">Associated acts</dt>
             <dd className="text-ink text-right">
               {musician.bands.map((b) => b.name).join(', ')}
