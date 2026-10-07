@@ -1735,8 +1735,8 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           onStageChange?.('uploading_audio');
           audioPath = await uploadArchiveAudio(audioFile);
         }
-      } catch {
-        showToast('Audio upload failed. Check your connection and archive storage setup.');
+      } catch (error) {
+        showToast(error instanceof Error ? error.message : 'Audio upload failed. Check your connection and archive storage setup.');
         return false;
       }
       if (audioFile && !audioPath) {

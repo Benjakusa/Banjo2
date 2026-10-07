@@ -323,6 +323,9 @@ export async function uploadArchiveAudio(file: File): Promise<string | null> {
   });
   if (error) {
     console.warn('Could not upload archive audio:', error.message);
+    if (error.message.toLowerCase().includes('bucket not found')) {
+      throw new Error('Audio storage is not set up. Run supabase/media-storage.sql in the Supabase SQL Editor, then retry.');
+    }
     return null;
   }
   return path;

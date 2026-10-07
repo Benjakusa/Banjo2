@@ -503,7 +503,7 @@ export const UploadContributeView: React.FC = () => {
               </h2>
               <p className="text-ink-60">Choose the rights declaration that accurately applies to this contribution.</p>
               <p className="rounded-lg border border-brand/40 bg-brand/10 p-3 text-ink">
-                Publishing is immediate and does not wait for review. Recording metadata and any uploaded audio become publicly accessible, so only upload audio you have the right to share.
+                Recording metadata and any uploaded audio become publicly accessible after publishing. Only upload audio you have the right to share.
               </p>
             </div>
 
@@ -573,7 +573,7 @@ export const UploadContributeView: React.FC = () => {
                     <div className="h-2 overflow-hidden rounded-full bg-ink-12" aria-hidden="true">
                       <div className={`h-full rounded-full bg-brand transition-all duration-500 ${uploadStage === 'uploading_audio' ? 'w-1/3 animate-pulse' : 'w-2/3 animate-pulse'}`} />
                     </div>
-                    <p className="text-[11px] text-ink-60">Your recording will be published as soon as this finishes. Choose the rights declaration that applies; uploads are not reviewed first.</p>
+                    <p className="text-[11px] text-ink-60">Your recording will be published to the archive as soon as this finishes.</p>
                   </>
                 )}
                 {uploadStatus === 'completed' && (
