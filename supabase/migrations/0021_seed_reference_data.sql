@@ -90,7 +90,7 @@ from (values
   (null, 'lin', 'Lingala',                'Lingála',        false),
   (null, 'wol', 'Wolof',                  'Wolof',          false),
   (null, 'ara', 'Arabic',                 'العربية',         false),
-  ('fr', 'fra', 'French',                 'Français',       false),
+  ('fr', 'fra', 'French',                'Français',       false),
   ('pt', 'por', 'Portuguese',             'Português',      false)
 ) as v(iso1, iso3, name, name_local, is_ui)
 where not exists (select 1 from languages l where l.name = v.name);

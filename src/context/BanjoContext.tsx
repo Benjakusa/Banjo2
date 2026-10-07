@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import {
   Recording,
   SongComposition,
@@ -17,22 +17,29 @@ import {
   LyricLine,
   LyricsVersion,
 } from '../types';
-import {
-  INITIAL_RECORDINGS,
-  INITIAL_SONGS,
-  INITIAL_MUSICIANS,
-  INITIAL_BANDS,
-  INITIAL_ALBUMS,
-  INITIAL_ORAL_HISTORIES,
-  INITIAL_DOCUMENTS,
-  INITIAL_SUBMISSIONS,
-  INITIAL_COPYRIGHT_CASES,
-  INITIAL_AUDIT_LOGS,
-  CURRENT_USER_PROFILE,
-} from '../data/mockArchiveData';
 import { audioEngine } from '../utils/audioEngine';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { DEFAULT_ROLE, canSelfAssign, isElevated } from '../lib/auth';
+import {
+  ArchiveKind,
+  EMPTY_PROFILE,
+  ensureProfile,
+  insertAuditLog,
+  insertCopyrightCase,
+  insertProblemReport,
+  insertSubmission,
+  isLocalMode,
+  loadCatalogue,
+  loadModeration,
+  probeBackend,
+  uploadPendingAudio,
+  removePendingAudio,
+  getPendingAudioPreviewUrl,
+  saveArchiveItem,
+  saveProfile,
+  updateCopyrightCaseStatus,
+  updateSubmission,
+} from '../lib/archiveRepo';
 
 export type MainNavTab =
   | 'home'
@@ -128,13 +135,24 @@ interface BanjoContextType {
   copyrightCases: CopyrightCase[];
   auditLogs: AuditLogEntry[];
   userProfile: UserProfile;
+  /** The signed-in account's own profile row, written back on every change. */
+  updateProfile: (patch: Partial<UserProfile>) => void;
+  /** Name, bio and avatar — what the "Edit profile" form is allowed to change. */
+  saveProfileDetails: (patch: Pick<UserProfile, 'displayName' | 'bio' | 'avatarUrl'>) => void;
+  isEditProfileOpen: boolean;
+  setIsEditProfileOpen: (open: boolean) => void;
   activeRole: UserRole;
   setActiveRole: (role: UserRole) => void;
   isBackendConnected: boolean;
+  /** True until the first catalogue read finishes, so empty states can wait. */
+  isCatalogueLoading: boolean;
+  /** True when the archive is stored in this browser instead of a backend. */
+  isOfflineMode: boolean;
 
   // Authentication
   authStatus: 'loading' | 'signed_out' | 'signed_in';
   authEmail: string | null;
+  authUserId: string | null;
   authError: string | null;
   isAuthenticated: boolean;
   /** Which form the sign-in view opens with, so "Create account" lands on sign-up. */
@@ -143,7 +161,7 @@ interface BanjoContextType {
   /** True when signing in/up is only simulated because the backend is absent. */
   isOfflineAuth: boolean;
   signIn: (email: string, password: string) => Promise<boolean>;
-  signUp: (email: string, password: string, displayName: string) => Promise<boolean>;
+  signUp: (email: string, password: string, displayName: string, requestedRole?: UserRole) => Promise<boolean>;
   signOut: () => Promise<void>;
   clearAuthError: () => void;
 
@@ -163,9 +181,10 @@ interface BanjoContextType {
   updateMusicianBio: (musicianId: string, biography: string, instrument?: string) => void;
   updateBandHistory: (bandId: string, history: string, newMember?: { name: string; role: string; instrument: string }) => void;
   createArticle: (article: { type: 'song' | 'musician' | 'band'; title: string; country: string; region: string; genre: string; year: number; story: string; composerOrLeader?: string; instruments?: string; citations?: string }) => void;
-  submitNewRecording: (data: Partial<Recording>, rightsDeclaration: string, sources: string) => void;
-  submitProblemReport: (data: { targetTitle: string; reason: string; notes: string; email: string }) => void;
-  reviewSubmission: (submissionId: string, decision: 'approve' | 'reject' | 'evidence_requested', note?: string) => void;
+  submitNewRecording: (data: Partial<Recording>, rightsDeclaration: string, sources: string, audioFile: File) => Promise<boolean>;
+  submitProblemReport: (data: { targetRecordingId: string; targetTitle: string; reason: string; notes: string; email: string }) => void;
+  reviewSubmission: (submissionId: string, decision: 'approve' | 'reject' | 'evidence_requested', note?: string) => Promise<void>;
+  getSubmissionAudioPreviewUrl: (path: string) => Promise<string | null>;
   resolveCopyrightCase: (caseId: string, action: 'restricted' | 'resolved' | 'dismissed') => void;
 
   // Toast / System Notifications
@@ -179,21 +198,23 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Navigation stack
   const [navHistory, setNavHistory] = useState<NavigationState[]>([{ tab: 'home' }]);
   const [activeTab, setActiveTab] = useState<MainNavTab>('home');
-  const [selectedSongId, setSelectedSongId] = useState<string | null>('rec-001');
-  const [selectedMusicianId, setSelectedMusicianId] = useState<string | null>('mus-peter-ochieng');
-  const [selectedBandId, setSelectedBandId] = useState<string | null>('band-victoria-stars');
-  const [selectedOralHistoryId, setSelectedOralHistoryId] = useState<string | null>('oral-001');
-  const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>('doc-001');
+  // Nothing is selected until the catalogue says what exists: the archive ships
+  // empty and is filled by the people who contribute to it.
+  const [selectedSongId, setSelectedSongId] = useState<string | null>(null);
+  const [selectedMusicianId, setSelectedMusicianId] = useState<string | null>(null);
+  const [selectedBandId, setSelectedBandId] = useState<string | null>(null);
+  const [selectedOralHistoryId, setSelectedOralHistoryId] = useState<string | null>(null);
+  const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(null);
 
   // Audio Player State
   const [isPlaying, setIsPlaying] = useState(false);
-  const [currentRecording, setCurrentRecording] = useState<Recording | null>(INITIAL_RECORDINGS[0]);
+  const [currentRecording, setCurrentRecording] = useState<Recording | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(INITIAL_RECORDINGS[0].duration);
+  const [duration, setDuration] = useState(0);
   const [playbackSpeed, setPlaybackSpeed] = useState(1.0);
   const [isDataSaver, setIsDataSaverState] = useState(false);
   const [isFullPlayerOpen, setIsFullPlayerOpen] = useState(false);
-  const [playQueue, setPlayQueue] = useState<Recording[]>(INITIAL_RECORDINGS);
+  const [playQueue, setPlayQueue] = useState<Recording[]>([]);
 
   // Search State
   const [searchQuery, setSearchQuery] = useState('');
@@ -221,38 +242,66 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setIsAddDetailModalOpen(false);
   }, []);
 
-  // Archival Data State
-  const [recordings, setRecordings] = useState<Recording[]>(INITIAL_RECORDINGS);
-  const [songs, setSongs] = useState<SongComposition[]>(INITIAL_SONGS);
-  const [musicians, setMusicians] = useState<Musician[]>(INITIAL_MUSICIANS);
-  const [bands, setBands] = useState<Band[]>(INITIAL_BANDS);
-  const [oralHistories] = useState<OralHistory[]>(INITIAL_ORAL_HISTORIES);
-  const [documents] = useState<HistoricalDocument[]>(INITIAL_DOCUMENTS);
-  const [albums] = useState<Album[]>(INITIAL_ALBUMS);
-  const [submissions, setSubmissions] = useState<Submission[]>(INITIAL_SUBMISSIONS);
-  const [copyrightCases, setCopyrightCases] = useState<CopyrightCase[]>(INITIAL_COPYRIGHT_CASES);
-  const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>(INITIAL_AUDIT_LOGS);
-  const [userProfile, setUserProfile] = useState<UserProfile>(CURRENT_USER_PROFILE);
+  // Archival Data State — every one of these starts empty and is filled from
+  // the backend (or, offline, from this browser's own store). There is no seed.
+  const [recordings, setRecordings] = useState<Recording[]>([]);
+  const [songs, setSongs] = useState<SongComposition[]>([]);
+  const [musicians, setMusicians] = useState<Musician[]>([]);
+  const [bands, setBands] = useState<Band[]>([]);
+  const [oralHistories, setOralHistories] = useState<OralHistory[]>([]);
+  const [documents, setDocuments] = useState<HistoricalDocument[]>([]);
+  const [albums, setAlbums] = useState<Album[]>([]);
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [copyrightCases, setCopyrightCases] = useState<CopyrightCase[]>([]);
+  const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
+  const [userProfile, setUserProfile] = useState<UserProfile>(EMPTY_PROFILE);
   const [activeRole, setActiveRoleState] = useState<UserRole>(DEFAULT_ROLE);
   const [isBackendConnected, setIsBackendConnected] = useState<boolean>(false);
+  const [isCatalogueLoading, setIsCatalogueLoading] = useState<boolean>(true);
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // ---- Authentication ----------------------------------------------------
   // The session is the real gate. `activeRole` is only ever a *view* of the
-  // signed-in user's role: it starts at the least-privileged default and is
+  // signed-in account's role: it starts at the least-privileged default and is
   // clamped on every change, so an elevated role cannot be set from the client.
   const [authStatus, setAuthStatus] = useState<'loading' | 'signed_out' | 'signed_in'>('loading');
   const [authEmail, setAuthEmail] = useState<string | null>(null);
+  const [authUserId, setAuthUserId] = useState<string | null>(null);
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
   const [authError, setAuthError] = useState<string | null>(null);
   const [isOfflineAuth, setIsOfflineAuth] = useState<boolean>(!isSupabaseConfigured);
 
   const isAuthenticated = authStatus === 'signed_in';
 
-  const setActiveRole = useCallback((role: UserRole) => {
-    if (canSelfAssign(role) || isElevated(activeRole)) {
-      setActiveRoleState(role);
-    }
-  }, [activeRole]);
+  // The last profile we wrote (or read), so the write-back effect below cannot
+  // loop and a freshly loaded profile is not immediately re-saved.
+  const savedProfileRef = useRef<string>('');
+
+  /** The only way the profile changes: counters, library and edits alike. */
+  const updateProfile = useCallback((patch: Partial<UserProfile>) => {
+    setUserProfile((prev) => ({ ...prev, ...patch }));
+  }, []);
+
+  // Every profile change is written back to the account's own row. A signed-out
+  // visitor has no row, so nothing is written until they sign in.
+  useEffect(() => {
+    if (!authUserId || userProfile.id !== authUserId) return;
+    const snapshot = JSON.stringify(userProfile);
+    if (snapshot === savedProfileRef.current) return;
+    savedProfileRef.current = snapshot;
+    void saveProfile(authUserId, userProfile);
+  }, [authUserId, userProfile]);
+
+  const setActiveRole = useCallback(
+    (role: UserRole) => {
+      if (isLocalMode && (canSelfAssign(role) || isElevated(activeRole))) {
+        setActiveRoleState(role);
+        updateProfile({ role });
+      }
+    },
+    [activeRole, updateProfile]
+  );
 
   const clearAuthError = useCallback(() => setAuthError(null), []);
 
@@ -267,15 +316,17 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     supabase.auth.getSession().then(({ data }) => {
       if (!active) return;
-      const email = data.session?.user?.email ?? null;
-      setAuthEmail(email);
-      setAuthStatus(email ? 'signed_in' : 'signed_out');
+      const user = data.session?.user;
+      setAuthEmail(user?.email ?? null);
+      setAuthUserId(user?.id ?? null);
+      setAuthStatus(user ? 'signed_in' : 'signed_out');
     });
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      const email = session?.user?.email ?? null;
-      setAuthEmail(email);
-      setAuthStatus(email ? 'signed_in' : 'signed_out');
+      const user = session?.user;
+      setAuthEmail(user?.email ?? null);
+      setAuthUserId(user?.id ?? null);
+      setAuthStatus(user ? 'signed_in' : 'signed_out');
     });
 
     return () => {
@@ -283,6 +334,41 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       sub.subscription.unsubscribe();
     };
   }, []);
+
+  // A signed-in account gets its own profile row; a missing one is created on
+  // first sight. This is the only place a profile is attached to an account, so
+  // two accounts can never end up showing each other's data. A signed-out
+  // visitor sees an empty profile, never a stand-in.
+  useEffect(() => {
+    if (!authUserId) {
+      savedProfileRef.current = '';
+      setUserProfile(EMPTY_PROFILE);
+      setActiveRoleState(DEFAULT_ROLE);
+      return;
+    }
+
+    let active = true;
+
+    void (async () => {
+      const { data } = await supabase.auth.getSession();
+      const user = data.session?.user;
+      const profile = await ensureProfile(
+        authUserId,
+        user?.email ?? authEmail ?? '',
+        (user?.user_metadata?.display_name as string) || '',
+        (user?.user_metadata?.requested_role as UserRole) || DEFAULT_ROLE
+      );
+
+      if (!active || !profile) return;
+      savedProfileRef.current = JSON.stringify(profile);
+      setUserProfile(profile);
+      setActiveRoleState(profile.role);
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [authUserId, authEmail]);
 
   const signIn = useCallback(async (email: string, password: string) => {
     setAuthError(null);
@@ -292,6 +378,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       // a local-only session and grants no real access.
       setIsOfflineAuth(true);
       setAuthEmail(email.trim().toLowerCase());
+      setAuthUserId('local-session');
       setAuthStatus('signed_in');
       return true;
     }
@@ -311,52 +398,67 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
 
     setAuthEmail(data.user?.email ?? null);
+    setAuthUserId(data.user?.id ?? null);
     setAuthStatus('signed_in');
     return true;
   }, []);
 
-  const signUp = useCallback(async (email: string, password: string, displayName: string) => {
-    setAuthError(null);
+  // The role chosen at sign-up travels with the account as metadata and becomes
+  // the role on its own profile row — never anybody else's, and never elevated.
+  const signUp = useCallback(
+    async (
+      email: string,
+      password: string,
+      displayName: string,
+      requestedRole: UserRole = DEFAULT_ROLE
+    ) => {
+      setAuthError(null);
 
-    if (!isSupabaseConfigured) {
-      setIsOfflineAuth(true);
-      setAuthEmail(email.trim().toLowerCase());
+      const role = canSelfAssign(requestedRole) ? requestedRole : DEFAULT_ROLE;
+
+      if (!isSupabaseConfigured) {
+        setIsOfflineAuth(true);
+        setAuthEmail(email.trim().toLowerCase());
+        setAuthUserId('local-session');
+        setAuthStatus('signed_in');
+        return true;
+      }
+
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim().toLowerCase(),
+        password,
+        options: {
+          data: {
+            display_name: displayName.trim(),
+            // Recorded as metadata only. The granted role lives in `user_roles`
+            // and is assigned by an administrator, never by the person signing up.
+            requested_role: role,
+          },
+        },
+      });
+
+      if (error) {
+        setAuthError(
+          error.message === 'User already registered'
+            ? 'An account already exists for that email. Try signing in.'
+            : error.message
+        );
+        return false;
+      }
+
+      // With email confirmation on, there is no session until the link is used.
+      if (!data.session) {
+        setAuthError('Check your email to confirm the account, then sign in.');
+        return false;
+      }
+
+      setAuthEmail(data.user?.email ?? null);
+      setAuthUserId(data.user?.id ?? null);
       setAuthStatus('signed_in');
       return true;
-    }
-
-    const { data, error } = await supabase.auth.signUp({
-      email: email.trim().toLowerCase(),
-      password,
-      options: {
-        data: {
-          display_name: displayName.trim(),
-          // Recorded as metadata only. The granted role lives in `user_roles`
-          // and is assigned by an administrator, never by the person signing up.
-          requested_role: DEFAULT_ROLE,
-        },
-      },
-    });
-
-    if (error) {
-      setAuthError(
-        error.message === 'User already registered'
-          ? 'An account already exists for that email. Try signing in.'
-          : error.message
-      );
-      return false;
-    }
-
-    // With email confirmation on, there is no session until the link is used.
-    if (!data.session) {
-      setAuthError('Check your email to confirm the account, then sign in.');
-      return false;
-    }
-
-    setAuthEmail(data.user?.email ?? null);
-    setAuthStatus('signed_in');
-    return true;
-  }, []);
+    },
+    []
+  );
 
   const signOut = useCallback(async () => {
     setAuthError(null);
@@ -364,101 +466,149 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       await supabase.auth.signOut();
     }
     setAuthEmail(null);
+    setAuthUserId(null);
     setAuthStatus('signed_out');
     setActiveRoleState(DEFAULT_ROLE);
+    setUserProfile(EMPTY_PROFILE);
+    savedProfileRef.current = '';
   }, []);
 
-  // Sync with the archive backend on mount
+  // Load the archive on mount: the catalogue is public, the moderation
+  // workspace needs an account (and simply comes back empty without one).
   useEffect(() => {
-    if (!isSupabaseConfigured) return;
-
     let isMounted = true;
 
-    async function fetchArchiveData() {
+    async function loadArchive() {
       try {
-        const [subRes, auditRes, copyrightRes] = await Promise.all([
-          supabase.from('app_submissions').select('*').order('created_at', { ascending: false }),
-          supabase.from('app_audit_logs').select('*').order('created_at', { ascending: false }),
-          supabase.from('app_copyright_cases').select('*').order('created_at', { ascending: false }),
+        const [catalogue, backendReady] = await Promise.all([
+          loadCatalogue(),
+          probeBackend(),
         ]);
 
         if (!isMounted) return;
 
-        if (subRes.data && subRes.data.length > 0) {
-          const remoteSubs: Submission[] = subRes.data.map((row: any) => ({
-            id: row.id,
-            type: row.type,
-            title: row.title,
-            contributorName: row.contributor_name || 'Archivist Contributor',
-            contributorEmail: row.contributor_email || '',
-            targetId: row.target_id || undefined,
-            targetTitle: row.target_title || undefined,
-            targetType: row.target_type || undefined,
-            category: 'Archive Import',
-            priority: (row.priority as any) || 'normal',
-            status: (row.status as any) || 'pending',
-            rightsDeclaration: '',
-            submittedAt: row.created_at || new Date().toISOString(),
-            currentData: row.current_data || {},
-            proposedData: row.proposed_data || {},
-            sourcesProvided: row.sources_provided || '',
-            reviewNotes: row.review_notes || '',
-          }));
-          setSubmissions(remoteSubs);
-        }
-
-        if (auditRes.data && auditRes.data.length > 0) {
-          const remoteAudit: AuditLogEntry[] = auditRes.data.map((row: any) => ({
-            id: row.id,
-            who: row.who,
-            what: row.action,
-            where: row.target,
-            when: row.timestamp || row.created_at,
-            reason: row.notes || undefined,
-          }));
-          setAuditLogs(remoteAudit);
-        }
-
-        if (copyrightRes.data && copyrightRes.data.length > 0) {
-          const remoteCopyright: CopyrightCase[] = copyrightRes.data.map((row: any) => ({
-            id: row.id,
-            caseNumber: `BANJO-CR-${row.id.slice(0, 8)}`,
-            recordingId: row.recording_id || 'rec-001',
-            recordingTitle: row.recording_title || 'Disputed Recording',
-            artistOrBand: row.artist_or_band || 'Disputed Artist',
-            claimantName: row.claimant_name || 'Claimant',
-            claimantEmail: row.claimant_email || '',
-            claimType: (row.claim_type as any) || 'ownership',
-            status: (row.status as any) || 'open',
-            filedDate: row.filed_date || new Date().toISOString().split('T')[0],
-            evidenceSummary: row.evidence || row.summary || '',
-            assignedTo: row.assigned_to || undefined,
-          }));
-          setCopyrightCases(remoteCopyright);
-        }
-
-        setIsBackendConnected(true);
-      } catch (err) {
-        console.warn('Archive fetch failed, continuing with local state:', err);
+        setRecordings(catalogue.recordings);
+        setSongs(catalogue.songs);
+        setMusicians(catalogue.musicians);
+        setBands(catalogue.bands);
+        setAlbums(catalogue.albums);
+        setOralHistories(catalogue.oralHistories);
+        setDocuments(catalogue.documents);
+        setIsBackendConnected(backendReady);
+      } catch {
+        if (!isMounted) return;
+        setIsBackendConnected(false);
+        setToastMessage('Could not load the archive. Check the backend connection and try refreshing.');
+      } finally {
+        if (isMounted) setIsCatalogueLoading(false);
       }
     }
 
-    fetchArchiveData();
+    void loadArchive();
 
     return () => {
       isMounted = false;
     };
   }, []);
 
-  // Toast feedback
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  useEffect(() => {
+    let isMounted = true;
 
+    if (!isLocalMode && !authUserId) {
+      setSubmissions([]);
+      setAuditLogs([]);
+      setCopyrightCases([]);
+      return;
+    }
+
+    void loadModeration().then((moderation) => {
+      if (!isMounted) return;
+      setSubmissions(moderation.submissions);
+      setAuditLogs(moderation.auditLogs);
+      setCopyrightCases(moderation.copyrightCases);
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [authUserId]);
+
+  // ---- Catalogue write-through -------------------------------------------
+  // Every edit marks the entity it touched; the effect below then writes that
+  // entity to the backend (or to this browser's store when running offline), so
+  // a contribution survives the next reload. Reads only ever come from the
+  // backend — nothing is seeded and nothing lives only in memory.
+  const dirtyCatalogue = useRef<Map<ArchiveKind, Set<string>>>(new Map());
+
+  const markCatalogueChanged = useCallback((kind: ArchiveKind, id: string) => {
+    const pending = dirtyCatalogue.current.get(kind) ?? new Set<string>();
+    pending.add(id);
+    dirtyCatalogue.current.set(kind, pending);
+  }, []);
+
+  useEffect(() => {
+    if (isCatalogueLoading) return;
+    const pending = dirtyCatalogue.current;
+    if (pending.size === 0) return;
+
+    const lookup: Record<ArchiveKind, { id: string }[]> = {
+      recording: recordings,
+      song: songs,
+      musician: musicians,
+      band: bands,
+      album: albums,
+      oral_history: oralHistories,
+      document: documents,
+    };
+
+    dirtyCatalogue.current = new Map();
+    void (async () => {
+      let failed = false;
+      for (const [kind, ids] of pending) {
+        for (const id of ids) {
+          const entity = lookup[kind].find((candidate) => candidate.id === id);
+          if (entity && !(await saveArchiveItem(kind, entity))) failed = true;
+        }
+      }
+      if (!failed) return;
+      try {
+        const catalogue = await loadCatalogue();
+        setRecordings(catalogue.recordings);
+        setSongs(catalogue.songs);
+        setMusicians(catalogue.musicians);
+        setBands(catalogue.bands);
+        setAlbums(catalogue.albums);
+        setOralHistories(catalogue.oralHistories);
+        setDocuments(catalogue.documents);
+      } catch {
+        setToastMessage('A change could not be saved and the archive could not be refreshed.');
+        return;
+      }
+      setToastMessage('A change was not authorized or could not be saved; displayed data was refreshed.');
+    })();
+  }, [recordings, songs, musicians, bands, albums, oralHistories, documents, isCatalogueLoading]);
+
+  // Toast feedback
   const showToast = useCallback((msg: string) => {
     setToastMessage(msg);
     setTimeout(() => {
       setToastMessage((current) => (current === msg ? null : current));
     }, 4000);
   }, []);
+
+  // Name, bio and avatar: the three fields the "Edit profile" form owns. They
+  // land on the signed-in account's own row and nowhere else.
+  const saveProfileDetails = useCallback(
+    (patch: Pick<UserProfile, 'displayName' | 'bio' | 'avatarUrl'>) => {
+      updateProfile({
+        displayName: patch.displayName.trim() || userProfile.displayName,
+        bio: patch.bio.trim(),
+        avatarUrl: patch.avatarUrl.trim(),
+      });
+      showToast('Profile updated');
+    },
+    [showToast]
+  );
 
   // Configure Audio Engine listeners on mount
   useEffect(() => {
@@ -547,15 +697,23 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Playback control
   const playSong = useCallback((recording: Recording, queueList?: Recording[]) => {
+    if (!recording.audioUrl) {
+      audioEngine.stop();
+      setIsPlaying(false);
+      showToast('Audio is not available for this archive entry.');
+      return;
+    }
     setCurrentRecording(recording);
     if (queueList) {
       setPlayQueue(queueList);
     }
-    audioEngine.play(recording.audioSampleType, recording.duration, 0);
-    setIsPlaying(true);
+    void audioEngine.play(recording.audioUrl, recording.duration, 0).then(() => setIsPlaying(true)).catch(() => {
+      setIsPlaying(false);
+      showToast('Playback failed. The audio may be unavailable or unsupported.');
+    });
     setCurrentTime(0);
     setDuration(recording.duration);
-  }, []);
+  }, [showToast]);
 
   const playOralHistory = useCallback((oralHistory: OralHistory) => {
     // Create transient recording wrapper for oral history so mini-player can play it
@@ -579,6 +737,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       duration: 360,
       audioQuality: 'FLAC Master',
       audioSampleType: oralHistory.audioSampleType,
+      audioUrl: oralHistory.audioUrl,
       rightsStatus: 'permission_granted',
       rightsDeclaration: 'Recorded with oral interview release agreement for open digital preservation.',
       verificationStatus: 'rights_holder_verified',
@@ -595,12 +754,18 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       updatedAt: oralHistory.date,
     };
 
+    if (!oralHistory.audioUrl) {
+      showToast('Audio is not available for this oral history.');
+      return;
+    }
     setCurrentRecording(oralRecording);
-    audioEngine.play(oralHistory.audioSampleType, 360, 0);
-    setIsPlaying(true);
+    void audioEngine.play(oralHistory.audioUrl, 360, 0).then(() => setIsPlaying(true)).catch(() => {
+      setIsPlaying(false);
+      showToast('Playback failed. The audio may be unavailable or unsupported.');
+    });
     setCurrentTime(0);
     setDuration(360);
-  }, []);
+  }, [showToast]);
 
   const togglePlay = useCallback(() => {
     if (isPlaying) {
@@ -608,11 +773,13 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setIsPlaying(false);
     } else {
       if (currentRecording) {
-        audioEngine.play(currentRecording.audioSampleType, currentRecording.duration);
-        setIsPlaying(true);
+        void audioEngine.play(currentRecording.audioUrl || '', currentRecording.duration).then(() => setIsPlaying(true)).catch(() => {
+          setIsPlaying(false);
+          showToast('Audio is not available for this archive entry.');
+        });
       }
     }
-  }, [isPlaying, currentRecording]);
+  }, [isPlaying, currentRecording, showToast]);
 
   const seek = useCallback((seconds: number) => {
     audioEngine.seek(seconds);
@@ -646,14 +813,22 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const [theme, setThemeState] = useState<'light' | 'dark'>(() => {
     if (typeof window === 'undefined') return 'light';
-    const stored = window.localStorage.getItem('banjo-theme');
-    if (stored === 'light' || stored === 'dark') return stored;
+    try {
+      const stored = window.localStorage.getItem('banjo-theme');
+      if (stored === 'light' || stored === 'dark') return stored;
+    } catch {
+      return 'light';
+    }
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   });
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
-    window.localStorage.setItem('banjo-theme', theme);
+    try {
+      window.localStorage.setItem('banjo-theme', theme);
+    } catch {
+      return;
+    }
   }, [theme]);
 
   const setTheme = useCallback((next: 'light' | 'dark') => setThemeState(next), []);
@@ -669,14 +844,12 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Save / Bookmark
   const toggleSaveRecording = useCallback((recordingId: string) => {
-    setUserProfile((prev) => {
-      const exists = prev.savedRecordingIds.includes(recordingId);
-      const updated = exists
-        ? prev.savedRecordingIds.filter((id) => id !== recordingId)
-        : [...prev.savedRecordingIds, recordingId];
-      showToast(exists ? 'Removed from saved collection' : 'Saved to personal archive collection');
-      return { ...prev, savedRecordingIds: updated };
-    });
+    const exists = userProfile.savedRecordingIds.includes(recordingId);
+    const updated = exists
+      ? userProfile.savedRecordingIds.filter((id) => id !== recordingId)
+      : [...userProfile.savedRecordingIds, recordingId];
+    showToast(exists ? 'Removed from saved collection' : 'Saved to personal archive collection');
+    updateProfile({ savedRecordingIds: updated });
   }, [showToast]);
 
   // Submit edit suggestion
@@ -689,6 +862,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         id: `sub-${Date.now()}`,
         type: 'edit',
         title: `Suggested edit for ${targetRecording.title}`,
+        targetId: recordingId,
         contributorName: userProfile.displayName,
         contributorEmail: userProfile.email,
         submittedAt: new Date().toISOString(),
@@ -713,32 +887,12 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       };
 
       setSubmissions((prev) => [newSubmission, ...prev]);
-      if (isSupabaseConfigured) {
-        supabase.from('app_submissions').insert({
-          id: newSubmission.id,
-          type: newSubmission.type,
-          title: newSubmission.title,
-          contributor_name: newSubmission.contributorName,
-          contributor_email: newSubmission.contributorEmail,
-          target_id: newSubmission.targetId,
-          target_title: newSubmission.targetTitle,
-          target_type: newSubmission.targetType,
-          priority: newSubmission.priority,
-          status: newSubmission.status,
-          current_data: newSubmission.currentData,
-          proposed_data: newSubmission.proposedData,
-          sources_provided: newSubmission.sourcesProvided,
-          review_notes: newSubmission.reviewNotes,
-        }).then(({ error }) => {
-          if (error) console.error('Error inserting edit submission:', error);
-        });
-      }
-      setUserProfile((prev) => ({
-        ...prev,
-        editsSubmitted: prev.editsSubmitted + 1,
-        contributionsCount: prev.contributionsCount + 1,
-        pendingReview: prev.pendingReview + 1,
-      }));
+      void insertSubmission(newSubmission);
+      updateProfile({
+        editsSubmitted: userProfile.editsSubmitted + 1,
+        contributionsCount: userProfile.contributionsCount + 1,
+        pendingReview: userProfile.pendingReview + 1,
+      });
 
       showToast('Edit submitted! Under review by Banjo Archivists.');
       setIsEditModalOpen(false);
@@ -749,6 +903,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   /// Banjo-style addition of Musician credit to recording
   const addMusicianToRecording = useCallback(
     (recordingId: string, musicianName: string, role: string, instrument: string) => {
+      markCatalogueChanged('recording', recordingId);
       setRecordings((prev) =>
         prev.map((rec) => {
           if (rec.id === recordingId) {
@@ -790,11 +945,10 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         })
       );
 
-      setUserProfile((prev) => ({
-        ...prev,
-        contributionsCount: prev.contributionsCount + 1,
-        editsApproved: prev.editsApproved + 1,
-      }));
+      updateProfile({
+        contributionsCount: userProfile.contributionsCount + 1,
+        editsApproved: userProfile.editsApproved + 1,
+      });
 
       showToast(`Musician credit added: ${musicianName} (${instrument})`);
     },
@@ -804,6 +958,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Add a soloist credit to a recording with solo span info
   const addSoloistToRecording = useCallback(
     (recordingId: string, musicianName: string, role: string, instrument: string, isSoloist: boolean, soloOrder: number, solos?: { startSec: number; endSec: number; label?: string }[], notes?: string, sourceId?: string) => {
+      markCatalogueChanged('recording', recordingId);
       setRecordings((prev) =>
         prev.map((rec) => {
           if (rec.id === recordingId) {
@@ -850,11 +1005,10 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         })
       );
 
-      setUserProfile((prev) => ({
-        ...prev,
-        contributionsCount: prev.contributionsCount + 1,
-        editsApproved: prev.editsApproved + 1,
-      }));
+      updateProfile({
+        contributionsCount: userProfile.contributionsCount + 1,
+        editsApproved: userProfile.editsApproved + 1,
+      });
 
       showToast(`Soloist credit added: ${musicianName} (${instrument})`);
     },
@@ -864,6 +1018,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Update an existing musician credit on a recording
   const updateMusicianCredit = useCallback(
     (recordingId: string, musicianId: string, updates: Partial<MusicianCredit>) => {
+      markCatalogueChanged('recording', recordingId);
       setRecordings((prev) =>
         prev.map((rec) => {
           if (rec.id === recordingId) {
@@ -900,11 +1055,10 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         })
       );
 
-      setUserProfile((prev) => ({
-        ...prev,
-        contributionsCount: prev.contributionsCount + 1,
-        editsApproved: prev.editsApproved + 1,
-      }));
+      updateProfile({
+        contributionsCount: userProfile.contributionsCount + 1,
+        editsApproved: userProfile.editsApproved + 1,
+      });
 
       showToast('Musician credit updated');
     },
@@ -914,6 +1068,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Direct addition of Lyrics & Translation (enhanced with lyricsVersions)
   const addLyricsToRecording = useCallback(
     (recordingId: string, lyrics: string, translation: string, language?: string) => {
+      markCatalogueChanged('recording', recordingId);
       setRecordings((prev) =>
         prev.map((rec) => {
           if (rec.id === recordingId) {
@@ -951,11 +1106,10 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         })
       );
 
-      setUserProfile((prev) => ({
-        ...prev,
-        contributionsCount: prev.contributionsCount + 1,
-        editsApproved: prev.editsApproved + 1,
-      }));
+      updateProfile({
+        contributionsCount: userProfile.contributionsCount + 1,
+        editsApproved: userProfile.editsApproved + 1,
+      });
 
       showToast('Lyrics & translation published to encyclopedia!');
     },
@@ -965,6 +1119,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Add a full LyricsVersion to a recording (multi-language support)
   const addLyricsVersionToRecording = useCallback(
     (recordingId: string, language: string, isOriginal: boolean, isTranslation: boolean, translationOfId?: string, lines?: LyricLine[], lyricist?: string, transcribedBy?: string, sourceId?: string, isInstrumental?: boolean) => {
+      markCatalogueChanged('recording', recordingId);
       setRecordings((prev) =>
         prev.map((rec) => {
           if (rec.id === recordingId) {
@@ -1010,11 +1165,10 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         })
       );
 
-      setUserProfile((prev) => ({
-        ...prev,
-        contributionsCount: prev.contributionsCount + 1,
-        editsApproved: prev.editsApproved + 1,
-      }));
+      updateProfile({
+        contributionsCount: userProfile.contributionsCount + 1,
+        editsApproved: userProfile.editsApproved + 1,
+      });
 
       showToast(`Lyrics version added: ${language}`);
     },
@@ -1024,6 +1178,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   /// Banjo-style addition of Source/Citation to recording
   const addSourceToRecording = useCallback(
     (recordingId: string, sourceTitle: string, sourceType: any, notes: string) => {
+      markCatalogueChanged('recording', recordingId);
       setRecordings((prev) =>
         prev.map((rec) => {
           if (rec.id === recordingId) {
@@ -1063,11 +1218,10 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         })
       );
 
-      setUserProfile((prev) => ({
-        ...prev,
-        contributionsCount: prev.contributionsCount + 1,
-        editsApproved: prev.editsApproved + 1,
-      }));
+      updateProfile({
+        contributionsCount: userProfile.contributionsCount + 1,
+        editsApproved: userProfile.editsApproved + 1,
+      });
 
       showToast(`Citation added: "${sourceTitle}"`);
     },
@@ -1077,6 +1231,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   /// Banjo-style addition of Historical Narrative paragraph
   const addHistoricalParagraph = useCallback(
     (recordingId: string, paragraph: string, sourceCitation: string) => {
+      markCatalogueChanged('recording', recordingId);
       setRecordings((prev) =>
         prev.map((rec) => {
           if (rec.id === recordingId) {
@@ -1110,11 +1265,10 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         })
       );
 
-      setUserProfile((prev) => ({
-        ...prev,
-        contributionsCount: prev.contributionsCount + 1,
-        editsApproved: prev.editsApproved + 1,
-      }));
+      updateProfile({
+        contributionsCount: userProfile.contributionsCount + 1,
+        editsApproved: userProfile.editsApproved + 1,
+      });
 
       showToast('New historical details added to encyclopedia entry!');
     },
@@ -1124,6 +1278,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Direct addition of Trivia / Historical Anecdote
   const addTriviaToRecording = useCallback(
     (recordingId: string, triviaText: string, citation?: string) => {
+      markCatalogueChanged('recording', recordingId);
       setRecordings((prev) =>
         prev.map((rec) => {
           if (rec.id === recordingId) {
@@ -1158,11 +1313,10 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         })
       );
 
-      setUserProfile((prev) => ({
-        ...prev,
-        contributionsCount: prev.contributionsCount + 1,
-        editsApproved: prev.editsApproved + 1,
-      }));
+      updateProfile({
+        contributionsCount: userProfile.contributionsCount + 1,
+        editsApproved: userProfile.editsApproved + 1,
+      });
 
       showToast('Historical anecdote published!');
     },
@@ -1172,6 +1326,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Add Alternate Version / Lineage
   const addAlternateVersionToRecording = useCallback(
     (recordingId: string, title: string, band: string, year: number, label?: string) => {
+      markCatalogueChanged('recording', recordingId);
       setRecordings((prev) =>
         prev.map((rec) => {
           if (rec.id === recordingId) {
@@ -1212,11 +1367,10 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         })
       );
 
-      setUserProfile((prev) => ({
-        ...prev,
-        contributionsCount: prev.contributionsCount + 1,
-        editsApproved: prev.editsApproved + 1,
-      }));
+      updateProfile({
+        contributionsCount: userProfile.contributionsCount + 1,
+        editsApproved: userProfile.editsApproved + 1,
+      });
 
       showToast(`Alternate version "${title}" added!`);
     },
@@ -1226,6 +1380,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Add Talk / Discussion Comment
   const addTalkComment = useCallback(
     (recordingId: string, topic: string, comment: string) => {
+      markCatalogueChanged('recording', recordingId);
       setRecordings((prev) =>
         prev.map((rec) => {
           if (rec.id === recordingId) {
@@ -1254,6 +1409,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Update Musician Biography & Instrument
   const updateMusicianBio = useCallback(
     (musicianId: string, biography: string, instrument?: string) => {
+      markCatalogueChanged('musician', musicianId);
       setMusicians((prev) =>
         prev.map((m) => {
           if (m.id === musicianId) {
@@ -1270,11 +1426,10 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         })
       );
 
-      setUserProfile((prev) => ({
-        ...prev,
-        contributionsCount: prev.contributionsCount + 1,
-        editsApproved: prev.editsApproved + 1,
-      }));
+      updateProfile({
+        contributionsCount: userProfile.contributionsCount + 1,
+        editsApproved: userProfile.editsApproved + 1,
+      });
 
       showToast('Musician biography and credits updated!');
     },
@@ -1284,6 +1439,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Update Band History & Lineup
   const updateBandHistory = useCallback(
     (bandId: string, history: string, newMember?: { name: string; role: string; instrument: string }) => {
+      markCatalogueChanged('band', bandId);
       setBands((prev) =>
         prev.map((b) => {
           if (b.id === bandId) {
@@ -1308,11 +1464,10 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         })
       );
 
-      setUserProfile((prev) => ({
-        ...prev,
-        contributionsCount: prev.contributionsCount + 1,
-        editsApproved: prev.editsApproved + 1,
-      }));
+      updateProfile({
+        contributionsCount: userProfile.contributionsCount + 1,
+        editsApproved: userProfile.editsApproved + 1,
+      });
 
       showToast('Band article updated with new history and personnel!');
     },
@@ -1423,7 +1578,9 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         };
 
         setSongs((prev) => [newSongComp, ...prev]);
+        markCatalogueChanged('song', newSongComp.id);
         setRecordings((prev) => [newRec, ...prev]);
+        markCatalogueChanged('recording', newRec.id);
         setSelectedSongId(newRec.id);
         setActiveTab('song_detail');
       } else if (data.type === 'musician') {
@@ -1452,6 +1609,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           ],
         };
         setMusicians((prev) => [newMusician, ...prev]);
+        markCatalogueChanged('musician', newMusician.id);
         setSelectedMusicianId(newMusician.id);
         setActiveTab('musician_detail');
       } else if (data.type === 'band') {
@@ -1487,16 +1645,16 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           ],
         };
         setBands((prev) => [newBand, ...prev]);
+        markCatalogueChanged('band', newBand.id);
         setSelectedBandId(newBand.id);
         setActiveTab('band_detail');
       }
 
-      setUserProfile((prev) => ({
-        ...prev,
-        songsSubmitted: prev.songsSubmitted + 1,
-        contributionsCount: prev.contributionsCount + 1,
-        editsApproved: prev.editsApproved + 1,
-      }));
+      updateProfile({
+        songsSubmitted: userProfile.songsSubmitted + 1,
+        contributionsCount: userProfile.contributionsCount + 1,
+        editsApproved: userProfile.editsApproved + 1,
+      });
 
       showToast(`"${data.title}" published to Banjo!`);
       setIsCreateArticleModalOpen(false);
@@ -1506,7 +1664,16 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Submit new recording (Screen 24-26)
   const submitNewRecording = useCallback(
-    (data: Partial<Recording>, rightsDeclaration: string, sourcesProvided: string) => {
+    async (data: Partial<Recording>, rightsDeclaration: string, sourcesProvided: string, audioFile: File) => {
+      if (isLocalMode) {
+        showToast('Audio contributions require the configured online archive.');
+        return false;
+      }
+      const audioPath = await uploadPendingAudio(audioFile);
+      if (!audioPath) {
+        showToast('Audio upload failed. Check your connection and archive storage setup.');
+        return false;
+      }
       const newSubmission: Submission = {
         id: `sub-${Date.now()}`,
         type: 'recording',
@@ -1523,104 +1690,55 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           artistOrBand: data.artistOrBand || '',
           releaseYear: String(data.releaseYear || 1978),
           country: data.country || 'Kenya',
+          region: data.region || 'Nyanza',
+          language: data.language || 'Luo',
           genre: data.genre || 'Benga',
           studio: data.studio || 'Nairobi Studio',
           composer: data.composer || '',
-          // Media attached by the contributor, so a reviewer can see what was
-          // actually supplied rather than inferring it from the metadata.
+          producer: data.producer || '',
+          story: data.story || '',
           coverImage: data.coverImage || '',
           audioFileName: data.audioFileName || '',
           audioMimeType: data.audioMimeType || '',
           audioFileSize: String(data.audioFileSize || 0),
-          audioAttached: String(Boolean(data.audioUrl || data.audioFileName)),
+          audioAttached: 'true',
+          audioStoragePath: audioPath,
+          rightsDeclaration,
         },
         sourcesProvided,
       };
 
-      setSubmissions((prev) => [newSubmission, ...prev]);
-      if (isSupabaseConfigured) {
-        supabase.from('app_submissions').insert({
-          id: newSubmission.id,
-          type: newSubmission.type,
-          title: newSubmission.title,
-          contributor_name: newSubmission.contributorName,
-          contributor_email: newSubmission.contributorEmail,
-          priority: newSubmission.priority,
-          status: newSubmission.status,
-          proposed_data: newSubmission.proposedData,
-          sources_provided: newSubmission.sourcesProvided,
-        }).then(({ error }) => {
-          if (error) console.error('Error inserting new recording submission:', error);
-        });
+      if (!(await insertSubmission(newSubmission))) {
+        await removePendingAudio(audioPath);
+        showToast('Submission could not be saved. Please try again.');
+        return false;
       }
-      // Add the contribution to the archive so it is immediately browsable and
-      // playable, with the artwork resolved at submission time.
-      const newRecording: Recording = {
-        id: `rec-${Date.now()}`,
-        songId: `song-${Date.now()}`,
-        title: data.title || 'Untitled Historical Recording',
-        recordingTitle: data.title || 'Untitled Historical Recording',
-        artistOrBand: data.artistOrBand || 'Traditional Ensemble',
-        releaseYear: Number(data.releaseYear) || 1978,
-        country: data.country || 'Kenya',
-        region: data.region || 'Nyanza',
-        language: data.language || 'Luo',
-        genre: data.genre || 'Benga',
-        label: 'Community Submission',
-        composer: data.composer || '',
-        lyricist: '',
-        producer: data.producer || '',
-        studio: data.studio || 'Nairobi Studio',
-        recordingLocation: data.country || 'Kenya',
-        duration: 0,
-        audioQuality: '320kbps MP3',
-        audioSampleType: 'benga_fast',
-        audioUrl: data.audioUrl,
-        audioFileName: data.audioFileName,
-        audioMimeType: data.audioMimeType,
-        audioFileSize: data.audioFileSize,
-        rightsStatus: 'permission_granted',
-        rightsDeclaration,
-        verificationStatus: 'unverified',
-        coverImage: data.coverImage || '',
-        story: data.story || '',
-        recordingHistory: [`Submitted by ${userProfile.displayName}`],
-        musicians: [],
-        instruments: [],
-        sources: sourcesProvided
-          ? [{ id: `src-${Date.now()}`, type: 'Community submission', title: sourcesProvided, notes: '' }]
-          : [],
-        revisions: [],
-        waveformPoints: [],
-        playsCount: 0,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      setRecordings((prev) => [newRecording, ...prev]);
+      setSubmissions((prev) => [newSubmission, ...prev]);
 
-      setUserProfile((prev) => ({
-        ...prev,
-        songsSubmitted: prev.songsSubmitted + 1,
-        contributionsCount: prev.contributionsCount + 1,
-        pendingReview: prev.pendingReview + 1,
-      }));
+      updateProfile({
+        songsSubmitted: userProfile.songsSubmitted + 1,
+        contributionsCount: userProfile.contributionsCount + 1,
+        pendingReview: userProfile.pendingReview + 1,
+      });
 
-      showToast('Recording uploaded and submitted to Archival Moderation Queue!');
+      showToast('Recording metadata submitted to the Archival Moderation Queue.');
+      return true;
     },
     [userProfile, showToast]
   );
 
   // Submit problem / copyright report (Screen 33)
   const submitProblemReport = useCallback(
-    (report: { targetTitle: string; reason: string; notes: string; email: string }) => {
+    (report: { targetRecordingId: string; targetTitle: string; reason: string; notes: string; email: string }) => {
       const isCopyright = report.reason.toLowerCase().includes('copyright');
       if (isCopyright) {
+        const targetRecording = recordings.find((recording) => recording.id === report.targetRecordingId);
         const newCase: CopyrightCase = {
           id: `case-${Date.now()}`,
           caseNumber: `BANJO-CR-${new Date().getFullYear()}-${Math.floor(100 + Math.random() * 900)}`,
-          recordingId: selectedSongId || 'rec-001',
+          recordingId: report.targetRecordingId,
           recordingTitle: report.targetTitle,
-          artistOrBand: 'Disputed Entry',
+          artistOrBand: targetRecording?.artistOrBand || 'Disputed Entry',
           claimantName: report.email.split('@')[0] || 'Rights Claimant',
           claimantEmail: report.email,
           claimType: 'ownership',
@@ -1629,35 +1747,46 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           status: 'open',
         };
         setCopyrightCases((prev) => [newCase, ...prev]);
-        if (isSupabaseConfigured) {
-          supabase.from('app_copyright_cases').insert({
-            id: newCase.id,
-            recording_id: newCase.recordingId,
-            recording_title: newCase.recordingTitle,
-            artist_or_band: newCase.artistOrBand,
-            claimant_name: newCase.claimantName,
-            claimant_email: newCase.claimantEmail,
-            claim_type: newCase.claimType,
-            status: newCase.status,
-            filed_date: newCase.filedDate,
-            summary: newCase.evidenceSummary,
-          }).then(({ error }) => {
-            if (error) console.error('Error inserting copyright case:', error);
-          });
-        }
+        void insertCopyrightCase(newCase);
+      } else {
+        // Public reports are stored separately from the trusted audit trail.
+        const reportLog: AuditLogEntry = {
+          id: `log-${Date.now()}`,
+          who: report.email || 'Anonymous visitor',
+          what: `Problem report: ${report.targetTitle}`,
+          where: report.targetTitle,
+          when: new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC',
+          reason: `${report.reason} — ${report.notes}`,
+        };
+        setAuditLogs((prev) => [reportLog, ...prev]);
+        void insertProblemReport({
+          id: reportLog.id,
+          targetTitle: report.targetTitle,
+          reason: report.reason,
+          notes: report.notes,
+          email: report.email,
+        });
       }
 
-      showToast(`Report filed successfully. Reference Case created for Rights & Moderation review.`);
+      showToast(isCopyright ? 'Rights claim filed for review.' : 'Archive issue report filed for review.');
       setIsReportModalOpen(false);
     },
-    [selectedSongId, showToast]
+    [recordings, showToast]
   );
 
   // Moderation action
   const reviewSubmission = useCallback(
-    (submissionId: string, decision: 'approve' | 'reject' | 'evidence_requested', note?: string) => {
+    async (submissionId: string, decision: 'approve' | 'reject' | 'evidence_requested', note?: string) => {
       const sub = submissions.find((s) => s.id === submissionId);
       if (!sub) return;
+      const pendingAudioPath = sub.proposedData.audioStoragePath;
+      const decidedStatus: Submission['status'] =
+        decision === 'approve' ? 'approved' : decision === 'reject' ? 'rejected' : 'evidence_requested';
+      if (!(await updateSubmission(submissionId, decidedStatus, note || sub.reviewNotes || ''))) {
+        showToast('Review decision could not be saved. No changes were applied.');
+        return;
+      }
+      if (pendingAudioPath && decision === 'reject') await removePendingAudio(pendingAudioPath);
 
       const updatedSubmissions = submissions.map((s) =>
         s.id === submissionId
@@ -1669,14 +1798,6 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           : s
       );
       setSubmissions(updatedSubmissions as Submission[]);
-      if (isSupabaseConfigured) {
-        supabase.from('app_submissions').update({
-          status: decision === 'approve' ? 'approved' : decision === 'reject' ? 'rejected' : 'evidence_requested',
-          review_notes: note || sub.reviewNotes,
-        }).eq('id', submissionId).then(({ error }) => {
-          if (error) console.error('Error updating submission:', error);
-        });
-      }
 
       // Append immutable audit log
       const newAuditLog: AuditLogEntry = {
@@ -1690,24 +1811,15 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         reason: note || 'Archivist verified documentary evidence and provenance.',
       };
       setAuditLogs((prev) => [newAuditLog, ...prev]);
-      if (isSupabaseConfigured) {
-        supabase.from('app_audit_logs').insert({
-          id: newAuditLog.id,
-          who: newAuditLog.who,
-          action: newAuditLog.what,
-          target: newAuditLog.where,
-          timestamp: newAuditLog.when,
-          notes: newAuditLog.reason,
-        }).then(({ error }) => {
-          if (error) console.error('Error inserting audit log:', error);
-        });
-      }
+      void insertAuditLog(newAuditLog);
 
       // If approved edit on recording, update live recording state
       if (decision === 'approve' && sub.type === 'edit') {
+        const targetId = sub.targetId;
+        if (targetId) markCatalogueChanged('recording', targetId);
         setRecordings((prev) =>
           prev.map((rec) => {
-            if (rec.title.includes(sub.proposedData.title || 'NOMATCH') || sub.title.includes(rec.title)) {
+            if (targetId ? rec.id === targetId : rec.title === sub.currentData?.title) {
               const newRev: Revision = {
                 id: `rev-${Date.now()}`,
                 version: rec.revisions.length + 1,
@@ -1738,9 +1850,58 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         );
       }
 
+      if (decision === 'approve' && sub.type === 'recording') {
+        const data = sub.proposedData;
+        const recordingId = `rec-${sub.id}`;
+        const createdAt = new Date().toISOString();
+        const recording: Recording = {
+          id: recordingId,
+          songId: `song-${sub.id}`,
+          title: data.title || sub.title,
+          recordingTitle: data.title || sub.title,
+          artistOrBand: data.artistOrBand || 'Traditional Ensemble',
+          releaseYear: Number(data.releaseYear) || 1978,
+          country: data.country || 'Kenya',
+          region: data.region || 'Nyanza',
+          language: data.language || 'Luo',
+          genre: data.genre || 'Benga',
+          label: 'Community Submission',
+          composer: data.composer || '',
+          lyricist: '',
+          producer: data.producer || '',
+          studio: data.studio || 'Nairobi Studio',
+          recordingLocation: data.country || 'Kenya',
+          duration: 0,
+          audioQuality: '320kbps MP3',
+          audioSampleType: 'benga_fast',
+          audioStoragePath: data.audioStoragePath,
+          audioFileName: data.audioFileName || undefined,
+          audioMimeType: data.audioMimeType || undefined,
+          audioFileSize: Number(data.audioFileSize) || undefined,
+          rightsStatus: 'rights_unknown',
+          rightsDeclaration: data.rightsDeclaration || sub.rightsDeclaration,
+          verificationStatus: 'reviewed',
+          coverImage: data.coverImage || '',
+          story: data.story || '',
+          recordingHistory: [`Published after review from ${sub.contributorName}`],
+          musicians: [],
+          instruments: [],
+          sources: sub.sourcesProvided
+            ? [{ id: `src-${sub.id}`, type: 'Community submission', title: sub.sourcesProvided, notes: '' }]
+            : [],
+          revisions: [],
+          waveformPoints: [],
+          playsCount: 0,
+          createdAt,
+          updatedAt: createdAt,
+        };
+        setRecordings((prev) => [recording, ...prev]);
+        markCatalogueChanged('recording', recordingId);
+      }
+
       showToast(`Submission has been marked: ${decision.toUpperCase()}`);
     },
-    [submissions, userProfile, activeRole, showToast]
+    [submissions, userProfile, activeRole, showToast, markCatalogueChanged]
   );
 
   const resolveCopyrightCase = useCallback(
@@ -1748,13 +1909,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setCopyrightCases((prev) =>
         prev.map((c) => (c.id === caseId ? { ...c, status: action } : c))
       );
-      if (isSupabaseConfigured) {
-        supabase.from('app_copyright_cases').update({
-          status: action,
-        }).eq('id', caseId).then(({ error }) => {
-          if (error) console.error('Error updating copyright case:', error);
-        });
-      }
+      void updateCopyrightCaseStatus(caseId, action);
       const caseItem = copyrightCases.find((c) => c.id === caseId);
 
       const newAuditLog: AuditLogEntry = {
@@ -1768,18 +1923,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         reason: `Legal determination made by Banjo Rights Desk. Recording stream permissions set to ${action}.`,
       };
       setAuditLogs((prev) => [newAuditLog, ...prev]);
-      if (isSupabaseConfigured) {
-        supabase.from('app_audit_logs').insert({
-          id: newAuditLog.id,
-          who: newAuditLog.who,
-          action: newAuditLog.what,
-          target: newAuditLog.where,
-          timestamp: newAuditLog.when,
-          notes: newAuditLog.reason,
-        }).then(({ error }) => {
-          if (error) console.error('Error inserting copyright audit log:', error);
-        });
-      }
+      void insertAuditLog(newAuditLog);
 
       showToast(`Copyright Case #${caseItem?.caseNumber} updated to ${action.toUpperCase()}`);
     },
@@ -1887,6 +2031,7 @@ toggleSaveRecording,
          submitNewRecording,
          submitProblemReport,
          reviewSubmission,
+         getSubmissionAudioPreviewUrl: getPendingAudioPreviewUrl,
          resolveCopyrightCase,
 
         isBackendConnected,

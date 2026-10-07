@@ -29,7 +29,7 @@ const validateAudio = (file: File): string | null => {
 };
 
 export const UploadContributeView: React.FC = () => {
-  const { submitNewRecording, navigateTo } = useBanjo();
+  const { submitNewRecording, navigateTo, isOfflineMode, showToast } = useBanjo();
 
   const [submissionCategory, setSubmissionCategory] = useState<
     'music_recording' | 'photograph' | 'document' | 'interview' | 'artist_band'
@@ -64,22 +64,18 @@ export const UploadContributeView: React.FC = () => {
     'I have permission to submit this recording.'
   );
 
-  // Upload simulation & resilience state
+  // Upload state
   // Media attached to the submission. The audio file is mandatory: a song
   // entry with no recording is not a song entry. The thumbnail is not -- when
   // it is missing the app draws one from the title instead.
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [audioError, setAudioError] = useState<string | null>(null);
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [thumbnailError, setThumbnailError] = useState<string | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
   const [thumbnailTouched, setThumbnailTouched] = useState(false);
 
-  const [uploadStatus, setUploadStatus] = useState<
-    'idle' | 'scanning' | 'uploading' | 'verifying_hash' | 'completed'
-  >('idle');
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'completed'>('idle');
 
   // The cover shown throughout the wizard: the uploaded image if there is one,
   // otherwise artwork derived from whatever title has been typed so far.
@@ -89,8 +85,6 @@ export const UploadContributeView: React.FC = () => {
   const handleAudioFile = (file: File | null) => {
     setAudioFile(file);
     setAudioError(file ? validateAudio(file) : null);
-    if (audioUrl) URL.revokeObjectURL(audioUrl);
-    setAudioUrl(file ? URL.createObjectURL(file) : null);
   };
 
   const handleThumbnailFile = (file: File | null) => {
@@ -107,13 +101,6 @@ export const UploadContributeView: React.FC = () => {
     }
     setThumbnailTouched(true);
   };
-
-  // Release the object URL when the wizard unmounts.
-  React.useEffect(() => {
-    return () => {
-      if (audioUrl) URL.revokeObjectURL(audioUrl);
-    };
-  }, [audioUrl]);
 
   const rightsOptions = [
     {
@@ -138,25 +125,14 @@ export const UploadContributeView: React.FC = () => {
     },
   ];
 
-  const handleSimulatedUpload = () => {
-    setUploadStatus('scanning');
-    setUploadProgress(20);
-
-    setTimeout(() => {
-      setUploadStatus('uploading');
-      setUploadProgress(55);
-    }, 600);
-
-    setTimeout(() => {
-      setUploadStatus('verifying_hash');
-      setUploadProgress(85);
-    }, 1200);
-
-    setTimeout(() => {
-      setUploadStatus('completed');
-      setUploadProgress(100);
-
-      submitNewRecording(
+  const handleUpload = async () => {
+    if (!audioFile || isOfflineMode) {
+      showToast(isOfflineMode ? 'Connect the archive backend before uploading audio.' : 'Choose a valid audio file first.');
+      return;
+    }
+    setUploadStatus('uploading');
+    try {
+      const submitted = await submitNewRecording(
         {
           title: title || 'New Historical Archive Entry',
           artistOrBand: artistOrBand || 'Traditional Ensemble',
@@ -169,19 +145,20 @@ export const UploadContributeView: React.FC = () => {
           composer,
           producer,
           story: historyNarrative || 'Historical details submitted by community contributor.',
-          // Carried through so the new entry is immediately playable and has
-          // artwork. The object URL is session-scoped; a durable copy needs a
-          // Storage upload, which is why the audio file name is kept alongside it.
           coverImage,
-          audioUrl: audioUrl || undefined,
           audioFileName: audioFile?.name,
           audioFileSize: audioFile?.size,
           audioMimeType: audioFile?.type,
         },
         rightsDeclaration,
-        sourcesProvided
+        sourcesProvided,
+        audioFile
       );
-    }, 1800);
+      setUploadStatus(submitted ? 'completed' : 'idle');
+    } catch {
+      setUploadStatus('idle');
+      showToast('Submission failed unexpectedly. Please retry.');
+    }
   };
 
   return (
@@ -212,8 +189,10 @@ export const UploadContributeView: React.FC = () => {
           return (
             <button
               key={item.key}
-              onClick={() => setSubmissionCategory(item.key as any)}
-              className={`p-3 rounded-xl border text-left flex flex-col justify-between gap-1.5 transition-all cursor-pointer ${
+              onClick={() => item.key === 'music_recording' && setSubmissionCategory(item.key as typeof submissionCategory)}
+              disabled={item.key !== 'music_recording'}
+              title={item.key === 'music_recording' ? undefined : 'This contribution type is not available yet.'}
+              className={`p-3 rounded-xl border text-left flex flex-col justify-between gap-1.5 transition-all ${item.key === 'music_recording' ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'} ${
                 isSelected
                   ? 'border-ink bg-ink text-paper'
                   : 'border-ink-12 bg-paper text-ink-60 hover:bg-ink-06'
@@ -221,6 +200,7 @@ export const UploadContributeView: React.FC = () => {
             >
               <IconC className={`w-4 h-4 ${isSelected ? 'text-brand' : 'text-ink-60'}`} />
               <span className="font-semibold text-[11px]">{item.label}</span>
+              {item.key !== 'music_recording' && <span className="text-[9px]">Coming soon</span>}
             </button>
           );
         })}
@@ -506,17 +486,11 @@ export const UploadContributeView: React.FC = () => {
 
             {uploadStatus !== 'idle' && (
               <div className="p-4 rounded-xl bg-brand/10 border border-brand space-y-2">
-                <div className="flex justify-between font-mono text-[11px] text-ink-60">
-                  <span>Uploading to archive storage...</span>
-                  <span className="font-bold">{uploadProgress}%</span>
-                </div>
-                <div className="w-full bg-brand/10 h-2 rounded-full overflow-hidden">
-                  <div className="bg-brand h-full transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
-                </div>
+                {uploadStatus === 'uploading' && <p className="text-xs text-ink-60">Uploading audio and submitting for review…</p>}
                 {uploadStatus === 'completed' && (
                   <div className="p-2.5 bg-ink-06 border border-ink-12 rounded-lg text-ink flex items-center gap-2">
                     <Check2Circle className="w-4 h-4 text-ink shrink-0" />
-                    <span>Submission confirmed! Sent to Archival Moderation Queue.</span>
+                    <span>Audio and metadata submitted for archival review.</span>
                   </div>
                 )}
               </div>
@@ -532,12 +506,12 @@ export const UploadContributeView: React.FC = () => {
                 )}
                 <button
                   type="button"
-                  onClick={handleSimulatedUpload}
-                  disabled={!audioFile}
+                  onClick={handleUpload}
+                  disabled={!audioFile || Boolean(audioError) || isOfflineMode || uploadStatus === 'uploading'}
                   className="w-full py-3 rounded-xl bg-brand text-on-orange font-semibold text-xs cursor-pointer flex items-center justify-center gap-2 transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <CloudArrowUp className="w-4 h-4" />
-                  <span>Publish to Archival Review Queue</span>
+                  <span>{uploadStatus === 'uploading' ? 'Uploading…' : 'Submit to Archival Review Queue'}</span>
                 </button>
               </>
             )}

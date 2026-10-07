@@ -375,10 +375,20 @@ create policy revision_changes_select_public on revision_changes
 create policy review_decisions_select_staff on review_decisions
   for select to authenticated using (private.is_staff());
 
--- Public contributor profile: bio and counters only, never contact data.
-create policy profiles_select_all on profiles
-  for select to anon, authenticated
-  using (deleted_at is null and account_status <> 'deleted');
+-- Users can only view their own profile.
+create policy profiles_select_own on profiles
+  for select to authenticated
+  using (id = auth.uid());
+
+-- Staff who may manage users can read every profile (the moderation and
+-- contributor-management screens need names, avatars and roles).
+create policy profiles_select_staff on profiles
+  for select to authenticated
+  using (private.has_permission('users.manage'));
+
+-- The earlier public-read policy is gone; drop it on databases where it was
+-- already applied.
+drop policy if exists profiles_select_all on profiles;
 
 create policy profiles_update_own on profiles
   for update to authenticated
@@ -389,7 +399,9 @@ create policy profiles_update_staff on profiles
   using (private.has_permission('users.manage'))
   with check (private.has_permission('users.manage'));
 
--- No client insert policy: profiles are created by an auth trigger.
+-- No client insert policy here: profiles are created by an auth trigger.
+-- 0025 adds `profiles_insert_own` as the recovery path for accounts whose
+-- trigger-created row is missing.
 
 create policy bookmarks_all_own on bookmarks
   for all to authenticated

@@ -32,7 +32,7 @@ export const HomeView: React.FC = () => {
     openQuickEdit,
   } = useBanjo();
 
-  const featuredRecording = recordings[0]; // Kano Ni Nyasaye
+  const featuredRecording = recordings[0];
   const recentlyUpdatedRecording = recordings.find((r) => r.revisions.length > 0) || recordings[0];
 
   const handleQuickSearch = (e: React.FormEvent<HTMLFormElement>) => {
@@ -45,14 +45,26 @@ export const HomeView: React.FC = () => {
     }
   };
 
-  const countries = [
-    { name: 'Kenya', genre: 'Benga · Twist', count: '1,420 articles' },
-    { name: 'DR Congo', genre: 'Rhumba · Soukous', count: '3,890 articles' },
-    { name: 'Nigeria', genre: 'Afrobeat · Highlife', count: '2,650 articles' },
-    { name: 'Tanzania', genre: 'Zilipendwa · Taarab', count: '890 articles' },
-    { name: 'Ghana', genre: 'Highlife · Palm-wine', count: '1,120 articles' },
-    { name: 'Zimbabwe', genre: 'Chimurenga · Jit', count: '670 articles' },
-  ];
+  const countries = Array.from(
+    recordings.reduce((countryMap, recording) => {
+      const country = recording.country.trim();
+      if (!country) return countryMap;
+      const entry = countryMap.get(country) || { genres: new Set<string>(), count: 0 };
+      if (recording.genre) entry.genres.add(recording.genre);
+      entry.count += 1;
+      countryMap.set(country, entry);
+      return countryMap;
+    }, new Map<string, { genres: Set<string>; count: number }>())
+  ).map(([name, data]) => ({
+    name,
+    genre: Array.from(data.genres).slice(0, 2).join(' · ') || 'Music archive',
+    count: `${data.count} recording${data.count === 1 ? '' : 's'}`,
+  }));
+  const popularTerms = Array.from(new Set([
+    ...bands.map((band) => band.name),
+    ...recordings.map((recording) => recording.genre),
+    ...musicians.map((musician) => musician.name),
+  ].filter(Boolean))).slice(0, 5);
 
   return (
     <div className="space-y-8 pb-32">
@@ -71,7 +83,7 @@ export const HomeView: React.FC = () => {
             </h1>
 
             <p className="text-xs sm:text-sm text-ink-60 leading-relaxed">
-              Documenting <strong>{recordings.length + 184} recordings</strong>, <strong>{musicians.length + 80} musician rosters</strong>, studio session logs, and verified primary sources from across Africa.
+              Documenting <strong>{recordings.length} recordings</strong> and <strong>{musicians.length} musician rosters</strong>, with contributions growing as the archive is reviewed.
             </p>
 
             {/* Fast Mobile Search Input */}
@@ -93,8 +105,8 @@ export const HomeView: React.FC = () => {
 
             {/* Quick Explore Chips */}
             <div className="flex flex-wrap items-center gap-1.5 pt-1 text-xs">
-              <span className="text-ink-60 font-mono text-[11px]">Popular:</span>
-              {['Victoria Stars', 'Benga', 'Franco Luambo', 'Tony Allen', '1970s Nairobi'].map((term) => (
+              {popularTerms.length > 0 && <span className="text-ink-60 font-mono text-[11px]">From the archive:</span>}
+              {popularTerms.map((term) => (
                 <button
                   key={term}
                   onClick={() => {
@@ -114,7 +126,7 @@ export const HomeView: React.FC = () => {
       {/* Main Content Feed: Mobile-First Container */}
       <div className="mx-auto max-w-4xl px-4 sm:px-6 space-y-8">
         {/* 2. Today's Featured Article */}
-        <section className="rounded-2xl border border-ink-12 bg-paper p-5 sm:p-6 space-y-4">
+        {featuredRecording ? <section className="rounded-2xl border border-ink-12 bg-paper p-5 sm:p-6 space-y-4">
           <div className="flex items-center justify-between border-b border-ink-12 pb-3">
             <div className="flex items-center gap-2">
               <Stars className="w-4 h-4 text-brand" />
@@ -153,7 +165,7 @@ export const HomeView: React.FC = () => {
                 </button>
               </div>
               <p className="text-[11px] text-ink-60 text-center mt-2 font-serif italic">
-                Fig 1. Original 1978 7-inch release (Polydor AS 1042)
+                {featuredRecording.releaseYear} · {featuredRecording.country}
               </p>
             </div>
 
@@ -199,7 +211,9 @@ export const HomeView: React.FC = () => {
               </div>
             </div>
           </div>
-        </section>
+        </section> : <section className="rounded-2xl border border-ink-12 bg-paper p-6 text-sm text-ink-60">
+          The archive has no published recordings yet. Approved contributions will appear here.
+        </section>}
 
         {/* 3. Did You Know & Historical Anecdotes */}
         <section className="rounded-2xl bg-brand p-5 space-y-3">
@@ -216,17 +230,9 @@ export const HomeView: React.FC = () => {
             </button>
           </div>
 
-          <ul className="text-xs text-on-orange space-y-2 list-disc list-inside leading-relaxed">
-            <li>
-              ...that early Kenyan <strong>Benga guitarists</strong> tuned the first two strings of electric guitars higher to replicate the exact open-plucking timbre of the ancient 8-stringed Luo <em>nyatiti</em>?
-            </li>
-            <li>
-              ...that Congolese ensemble <strong>Super Mazembe</strong> migrated through Tanzania in 1974 and sold over 100,000 copies of "Pole Musa" at Nairobi's Garden Square club?
-            </li>
-            <li>
-              ...that Grand Maître <strong>Franco Luambo Makiadi</strong> recorded more than 1,000 compositions across four decades with Orchestre T.P. OK Jazz?
-            </li>
-          </ul>
+          <p className="text-xs text-on-orange leading-relaxed">
+            {featuredRecording?.story || 'Help build the archive by submitting a documented recording and its sources.'}
+          </p>
         </section>
 
         {/* 4. Browse by Tradition & Country (Screen 3 & 12) */}
@@ -287,6 +293,7 @@ export const HomeView: React.FC = () => {
           </div>
 
           <div className="space-y-3">
+            {recordings.length === 0 && <p className="rounded-xl border border-ink-12 bg-paper p-5 text-sm text-ink-60">No published recordings yet.</p>}
             {recordings.map((rec) => (
               <article
                 key={rec.id}
@@ -358,7 +365,7 @@ export const HomeView: React.FC = () => {
         </section>
 
         {/* 6. Traceable History & Recent Revisions (Banjo Style) */}
-        <section className="rounded-2xl border border-ink-12 bg-paper p-5 space-y-3">
+        {recentlyUpdatedRecording && <section className="rounded-2xl border border-ink-12 bg-paper p-5 space-y-3">
           <div className="flex items-center justify-between border-b border-ink-12 pb-2">
             <div>
               <span className="text-xs uppercase tracking-widest font-mono text-ink-60 font-semibold">
@@ -391,7 +398,7 @@ export const HomeView: React.FC = () => {
               </div>
             ))}
           </div>
-        </section>
+        </section>}
       </div>
     </div>
   );

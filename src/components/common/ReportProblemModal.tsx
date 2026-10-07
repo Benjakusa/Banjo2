@@ -28,6 +28,7 @@ export const ReportProblemModal: React.FC = () => {
     if (!notes.trim() || !email.trim()) return;
 
     submitProblemReport({
+      targetRecordingId: currentRecording.id,
       targetTitle: currentRecording.title,
       reason,
       notes,

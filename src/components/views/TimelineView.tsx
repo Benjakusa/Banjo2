@@ -1,14 +1,9 @@
 import React, { useState } from 'react';
 import {
   useBanjo } from '../../context/BanjoContext';
-import { INITIAL_TIMELINE } from '../../data/mockArchiveData';
 import { TimelineEvent } from '../../types';
 import {
-  Calendar,
-  Vinyl,
-  People,
   GeoAlt,
-  ClockHistory,
   ArrowRight,
   PlayFill
 } from 'react-bootstrap-icons';
@@ -17,7 +12,16 @@ export const TimelineView: React.FC = () => {
   const { navigateTo, recordings, playSong } = useBanjo();
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
 
-  const events: TimelineEvent[] = INITIAL_TIMELINE;
+  const events: TimelineEvent[] = recordings.map((recording): TimelineEvent => ({
+    year: recording.releaseYear,
+    title: `${recording.title} — ${recording.artistOrBand}`,
+    category: 'first_recording',
+    country: recording.country,
+    description: recording.recordingHistory[0] || recording.story || 'Archival recording entry.',
+    relatedRecordingId: recording.id,
+    relatedBandId: recording.bandId,
+    relatedMusicianId: recording.artistId,
+  })).sort((first, second) => first.year - second.year);
 
   const filteredEvents = events.filter((ev) => {
     if (selectedFilter === 'all') return true;
@@ -42,9 +46,7 @@ export const TimelineView: React.FC = () => {
       <div className="flex flex-wrap gap-1 border-b border-ink-12 pb-2 text-xs font-mono">
         {[
           { key: 'all', label: 'All Milestones' },
-          { key: 'band_formed', label: 'Band Formations' },
-          { key: 'album_released', label: 'Master Recordings' },
-          { key: 'lineup_change', label: 'Lineup Changes' },
+          { key: 'first_recording', label: 'Archive Recordings' },
         ].map((btn) => (
           <button
             key={btn.key}
@@ -61,7 +63,9 @@ export const TimelineView: React.FC = () => {
       </div>
 
       {/* Timeline items */}
-      <div className="relative pl-6 space-y-6 border-l-2 border-ink-12">
+      {filteredEvents.length === 0 ? (
+        <p className="rounded-xl border border-ink-12 bg-paper p-6 text-sm text-ink-60">Timeline entries will appear as recordings are added to the archive.</p>
+      ) : <div className="relative pl-6 space-y-6 border-l-2 border-ink-12">
         {filteredEvents.map((ev, idx) => {
           const matchedRec = recordings.find((r) => r.id === ev.relatedRecordingId);
 
@@ -124,7 +128,7 @@ export const TimelineView: React.FC = () => {
             </div>
           );
         })}
-      </div>
+      </div>}
     </div>
   );
 };

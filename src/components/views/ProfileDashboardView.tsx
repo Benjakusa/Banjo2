@@ -87,20 +87,25 @@ export const ProfileDashboardView: React.FC = () => {
 
           <div className="p-2.5 bg-ink-06 border border-ink-12 rounded-xl text-xs space-y-1">
             <span className="text-[10px] font-mono uppercase text-ink-60 block">Your role:</span>
-            <select
-              value={activeRole}
-              onChange={(e) => setActiveRole(e.target.value as any)}
-              className="bg-paper border border-ink-12 rounded px-2 py-1 text-xs text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
-            >
-              {SELF_ASSIGNABLE_ROLES.map((r) => (
-                <option key={r} value={r}>
-                  {roleLabel(r)}
-                </option>
-              ))}
-            </select>
+            {isOfflineAuth ? (
+              <select
+                value={activeRole}
+                onChange={(e) => setActiveRole(e.target.value as any)}
+                className="bg-paper border border-ink-12 rounded px-2 py-1 text-xs text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
+              >
+                {SELF_ASSIGNABLE_ROLES.map((r) => (
+                  <option key={r} value={r}>
+                    {roleLabel(r)}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <span className="text-xs text-ink">{roleLabel(activeRole)}</span>
+            )}
             <p className="mt-1 max-w-[22rem] text-[11px] text-ink-60">
-              Archivist and moderation roles are granted by an administrator and cannot be
-              selected here.
+              {isOfflineAuth
+                ? 'Archivist and moderation roles cannot be selected in offline mode.'
+                : 'Roles are assigned by Banjo administrators.'}
             </p>
           </div>
         </div>

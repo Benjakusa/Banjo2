@@ -117,9 +117,9 @@ export interface Recording {
   duration: number; // in seconds
   audioQuality: 'FLAC Master' | '320kbps MP3' | '128kbps Stream';
   audioSampleType: 'benga_fast' | 'rhumba_slow' | 'highlife' | 'taarab' | 'soukous';
-  /** Playable source for the uploaded master. Session-scoped object URL for
-   *  local contributions; a Storage path once the file is durably uploaded. */
+  /** Playable source for a master stored durably in the media backend. */
   audioUrl?: string;
+  audioStoragePath?: string;
   audioFileName?: string;
   audioMimeType?: string;
   audioFileSize?: number;
@@ -232,6 +232,7 @@ export interface OralHistory {
   location: string;
   duration: string;
   audioSampleType: 'rhumba_slow' | 'benga_fast';
+  audioUrl?: string;
   summary: string;
   transcriptEn: string;
   transcriptSw: string;

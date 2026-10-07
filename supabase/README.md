@@ -2,33 +2,48 @@
 
 Everything the frontend needs, and everything the archive is designed to grow into,
 lives in this folder. Two paths exist on purpose: a small re-runnable file for the
-three tables the React app writes to today, and the full versioned schema.
+tables the React app reads and writes today, and the full versioned schema.
 
 ## Which file do I run?
 
 | Goal | File | How |
 | --- | --- | --- |
-| Get sign-in-independent contribution flows working **now** | [`../SUPABASE_COPY_PASTE.sql`](../SUPABASE_COPY_PASTE.sql) | Paste into Dashboard → SQL Editor → Run. Re-runnable. |
-| Stand up the whole archive schema | [`banjo-full-schema.sql`](banjo-full-schema.sql) — all 24 migrations + seed concatenated | Paste into SQL Editor, or `psql "$DATABASE_URL" --single-transaction -f supabase/banjo-full-schema.sql` |
+| Get contribution flows, per-account profiles and the live catalogue working **now** | [`../SUPABASE_COPY_PASTE.sql`](../SUPABASE_COPY_PASTE.sql) | Paste into Dashboard → SQL Editor → Run. Re-runnable. |
+| Enable private audio submissions and staff review previews | [`media-storage.sql`](media-storage.sql) | Run after `SUPABASE_COPY_PASTE.sql` in Supabase SQL Editor. |
+| Stand up the whole archive schema | [`banjo-full-schema.sql`](banjo-full-schema.sql) — all 25 migrations concatenated, **no demo rows** | Paste into SQL Editor, or `psql "$DATABASE_URL" --single-transaction -f supabase/banjo-full-schema.sql` |
 | Versioned deploys / CI | [`migrations/`](migrations/) | `supabase link --project-ref <ref> && supabase db push` |
 
 `banjo-full-schema.sql` is **generated** — never edit it. Rebuild after adding a
-migration with `npm run sql:bundle` (`scripts/build-sql-bundle.sh`).
+migration with `npm run sql:bundle` (`scripts/build-sql-bundle.sh`). The bundle is
+built **without** `seed.sql`, so a demo account can never end up in a live project;
+`npm run sql:bundle -- --with-seed` appends the Phase 1 development dataset for
+local work only.
 
 ## What the React app actually touches
 
-`src/context/BanjoContext.tsx` only calls three tables, all created by
-`SUPABASE_COPY_PASTE.sql`, all with RLS open to the `anon` key (public read,
-public insert, and update for moderation decisions):
+`src/lib/archiveRepo.ts` (used by `src/context/BanjoContext.tsx`) reads and writes
+the six tables created by `SUPABASE_COPY_PASTE.sql`:
 
-| Table | Written by | Columns the app sends |
+| Table | Used for | RLS |
 | --- | --- | --- |
-| `app_submissions` | new-recording + edit submissions, moderation decisions | `id, type, title, contributor_name, contributor_email, priority, status, proposed_data, sources_provided`; updates `status, review_notes` |
-| `app_audit_logs` | every approve/reject/copyright decision | `id, who, action, target, timestamp, notes` |
-| `app_copyright_cases` | "report a problem" + rights console | `id, recording_id, recording_title, artist_or_band, claimant_name, claimant_email, claim_type, status, filed_date, summary`; updates `status` |
+| `app_archive_items` | the whole catalogue: recordings, songs, musicians, bands, albums, oral histories, documents — one JSONB payload per entity | public read; signed-in authors can update their own items; archivists can update or delete any item |
+| `app_profiles` | one private profile per account, primary key = account id, so two accounts can never share a row | owner only; owners cannot edit their role, verification status or moderation counters |
+| `app_submissions` | new-recording + edit submissions, moderation decisions | contributors can read their own; archivists and moderators can review all; only staff can decide |
+| `app_audit_logs` | an entry for every approve/reject/copyright decision | staff only; no public report inserts |
+| `app_problem_reports` | public archive issue reports | anyone may file; designated staff can read |
+| `app_copyright_cases` | copyright reports + rights console | anyone may file; rights staff can read and resolve |
 
-The rest of the schema (people, songs, recordings, rights, media jobs, RLS on
-162 policies) is the archival model the app will progressively adopt.
+Nothing is seeded: a new project starts with an empty catalogue and no accounts.
+The publisher's own data — including profiles — is created by real accounts as
+people sign up and contribute. Staff roles must be provisioned by an administrator
+through a trusted database operation; the client cannot grant itself staff access.
+The upload flow requires the Supabase storage bucket and policies in `media-storage.sql`;
+it is intentionally unavailable in local/offline mode. Audio stays private after metadata
+approval because the app does not yet have a rights-clearance and public-release workflow.
+
+The full schema (people, songs, recordings, rights, media jobs, 164 policies) is
+the archival model the app will progressively adopt; it is **not** required for the
+app to run.
 
 ## Migration inventory
 
@@ -58,7 +73,8 @@ The rest of the schema (people, songs, recordings, rights, media jobs, RLS on
 | 0022 | `0022_rls_supplementary_policies.sql` | policies for the remaining tables |
 | 0023 | `0023_private_schema_grants.sql` | `usage` on `private` so RLS read paths can reach the helpers |
 | 0024 | `0024_solo_credits_and_lyrics.sql` | solo credit roles, `is_soloist` / `solo_order`, `recording_musician_solos` |
-| — | `seed.sql` | Phase 1 reference dataset — D.O. Misiani & Shirati Jazz, Kenyan benga 1970s (one band, end-to-end slice) |
+| 0025 | `0025_api_privileges_and_profile_self_service.sql` | table privileges for the API roles, and owner-only profile read/write policies (idempotent) |
+| — | `seed.sql` | Phase 1 reference dataset — D.O. Misiani & Shirati Jazz, Kenyan benga 1970s (one band, end-to-end slice). Development only; not part of the generated bundle |
 
 ## Verified locally
 
@@ -66,8 +82,27 @@ Every script here was applied to a clean PostgreSQL 14 instance (Supabase's
 `auth.users`, `auth.uid()` and the `anon` / `authenticated` / `service_role`
 roles stubbed in):
 
-* `migrations/0001` → `0024` apply in order with no errors → **87 tables, 162 policies**.
-* `banjo-full-schema.sql` applies as **one transaction** (`--single-transaction`) → same 87/162, seed rows loaded (20 instruments, 26 countries, 17 genres).
+* `migrations/0001` → `0025` apply in order with no errors → **87 tables, 164 policies**.
+* `banjo-full-schema.sql` (the generated bundle, built **without** `seed.sql`)
+  applies as **one transaction** (`--single-transaction`) → same 87/164, with zero
+  profiles, songs, recordings, bands or people; the reference vocabulary still
+  loads with the schema (26 countries, 17 genres, 10 roles, 23 permissions).
+* `0025` re-applies cleanly on top of the full schema (every policy is dropped
+  before it is created), and it repairs the two states a database can be in:
+  a legacy `profiles_select_all` public-read policy on `profiles` is dropped, and
+  accounts whose trigger-created profile row is missing can create their own.
+* Profile isolation, re-run on both a legacy database repaired with `0025` and a
+  clean bundle install, as roles `anon` / `authenticated`:
+  two accounts (`auth.uid()` stubbed per request) each see exactly **one**
+  `app_profiles` row — their own; inserting a second row for the same account
+  fails on the primary key; inserting, updating or deleting another account's row
+  is refused (RLS error, `UPDATE 0`, `DELETE 0`); `anon` cannot read either
+  `app_profiles` or `profiles` (0 rows) and cannot write the catalogue, the
+  moderation queue or the audit trail; `anon` *can* read the catalogue and *file*
+  a rights report; signed-in authors can update their own catalogue rows, while
+  archivist roles can update or delete any row. Submission rows are scoped to
+  their contributor except for staff review; public problem reports are stored
+  separately and never written into the audit trail.
 * After the reference dataset was swapped to real 1970s benga (D.O. Misiani &
   Shirati Jazz), `seed.sql` was re-verified on a clean instance: it loads in one
   transaction, a second run changes no row counts, the closing
@@ -77,8 +112,9 @@ roles stubbed in):
   (9 of 11 recordings, 10 songs).
 * `SUPABASE_COPY_PASTE.sql` applies **twice** in a row (idempotent) and works on a
   plain Postgres with no Supabase default privileges — the GRANTs are stated explicitly.
-* As role `anon`, the exact payloads the app sends insert, select and update
-  successfully through the RLS policies on all three `app_*` tables.
+* As role `anon`, the catalogue is readable and a rights or problem report can be
+  filed, while profiles, submissions, audit logs and staff case queues remain
+  protected by row policies.
 
 Migrations are versioned, not idempotent — run them once, in order, on a fresh
 database (`supabase db push` tracks them in `supabase_migrations.schema_migrations`).

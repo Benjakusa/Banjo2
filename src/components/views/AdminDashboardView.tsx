@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   useBanjo } from '../../context/BanjoContext';
 import {
@@ -25,6 +25,7 @@ export const AdminDashboardView: React.FC = () => {
     bands,
     submissions,
     reviewSubmission,
+    getSubmissionAudioPreviewUrl,
     copyrightCases,
     resolveCopyrightCase,
     auditLogs,
@@ -42,8 +43,23 @@ export const AdminDashboardView: React.FC = () => {
   const [selectedSubId, setSelectedSubId] = useState<string>(submissions[0]?.id || '');
   const [reviewNote, setReviewNote] = useState('');
   const [filterPriority, setFilterPriority] = useState<string>('all');
+  const [audioPreviewUrl, setAudioPreviewUrl] = useState<string | null>(null);
 
   const currentSub = submissions.find((s) => s.id === selectedSubId) || submissions[0];
+
+  useEffect(() => {
+    let active = true;
+    setAudioPreviewUrl(null);
+    const path = currentSub?.proposedData.audioStoragePath;
+    if (path) {
+      void getSubmissionAudioPreviewUrl(path).then((url) => {
+        if (active) setAudioPreviewUrl(url);
+      });
+    }
+    return () => {
+      active = false;
+    };
+  }, [currentSub?.id, currentSub?.proposedData.audioStoragePath, getSubmissionAudioPreviewUrl]);
 
   const filteredSubmissions = submissions.filter((s) => {
     return filterPriority === 'all' || s.priority === filterPriority;
@@ -87,6 +103,18 @@ export const AdminDashboardView: React.FC = () => {
         </div>
       </div>
 
+      {currentSub?.proposedData.audioStoragePath && (
+        <section className="rounded-xl border border-ink-12 bg-paper p-4 space-y-2">
+          <h2 className="font-semibold text-sm">Private submission audio</h2>
+          {audioPreviewUrl ? (
+            <audio controls preload="none" src={audioPreviewUrl} className="w-full" />
+          ) : (
+            <p className="text-xs text-ink-60">Private preview is unavailable or still loading.</p>
+          )}
+          <p className="text-xs text-ink-60">Audio remains private after metadata approval until rights clearance is implemented.</p>
+        </section>
+      )}
+
       {/* Admin Section Tabs */}
       <div className="flex flex-wrap gap-1 border-b border-ink-12 pb-2 text-xs font-mono">
         {[
@@ -117,19 +145,19 @@ export const AdminDashboardView: React.FC = () => {
             <div className="p-4 rounded-xl border border-ink-12 bg-paper">
               <span className="text-ink-60 font-mono text-[11px] block">Compositions</span>
               <span className="font-mono text-2xl font-bold text-ink mt-1 block">
-                {songs.length + 184}
+                {songs.length}
               </span>
             </div>
             <div className="p-4 rounded-xl border border-ink-12 bg-paper">
               <span className="text-ink-60 font-mono text-[11px] block">Recordings</span>
               <span className="font-mono text-2xl font-bold text-ink mt-1 block">
-                {recordings.length + 420}
+                {recordings.length}
               </span>
             </div>
             <div className="p-4 rounded-xl border border-ink-12 bg-paper">
               <span className="text-ink-60 font-mono text-[11px] block">Musicians</span>
               <span className="font-mono text-2xl font-bold text-ink mt-1 block">
-                {musicians.length + 85}
+                {musicians.length}
               </span>
             </div>
             <div className="p-4 rounded-xl border border-ink-12 bg-paper">
