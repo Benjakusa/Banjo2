@@ -17,21 +17,21 @@ import { FileDropzone } from '../common/FileDropzone';
 import { generateThumbnail, initialsFromTitle, validateThumbnail } from '../../lib/thumbnail';
 import { MusicianCredit } from '../../types';
 
-const AUDIO_ACCEPT = 'audio/*,.mp3,.wav,.flac,.m4a,.ogg,.aac';
+const AUDIO_ACCEPT = 'audio/*,.mp3,.wav,.flac,.m4a,.ogg,.aac,.webm';
 const AUDIO_MAX_BYTES = 100 * 1024 * 1024;
 const METADATA_ONLY_DECLARATION = 'I am submitting historical information only; Banjo should not host the audio.';
 
 const validateAudio = (file: File): string | null => {
   const looksLikeAudio =
-    file.type.startsWith('audio/') || /\.(mp3|wav|flac|m4a|ogg|aac)$/i.test(file.name);
-  if (!looksLikeAudio) return 'That does not look like an audio file. Use MP3, WAV, FLAC, M4A, OGG or AAC.';
+    file.type.startsWith('audio/') || file.type === 'video/webm' || /\.(mp3|wav|flac|m4a|ogg|aac|webm)$/i.test(file.name);
+  if (!looksLikeAudio) return 'Use an MP3, WAV, FLAC, M4A, OGG, AAC or WebM file that contains audio.';
   if (file.size > AUDIO_MAX_BYTES) return 'Audio must be under 100 MB.';
   if (file.size === 0) return 'That audio file is empty.';
   return null;
 };
 
 export const UploadContributeView: React.FC = () => {
-  const { submitNewRecording, navigateTo, isOfflineMode, showToast } = useBanjo();
+  const { submitNewRecording, navigateTo, isOfflineMode, isBackendConnected, showToast } = useBanjo();
 
   const [submissionCategory, setSubmissionCategory] = useState<
     'music_recording' | 'photograph' | 'document' | 'interview' | 'artist_band'
@@ -82,6 +82,18 @@ export const UploadContributeView: React.FC = () => {
   // otherwise artwork derived from whatever title has been typed so far.
   const coverImage = thumbnailPreview || (title.trim() ? generateThumbnail(title) : '');
   const isAutoCover = !thumbnailPreview && Boolean(coverImage);
+  const parsedYear = Number(releaseYear);
+  const validReleaseYear = Number.isInteger(parsedYear) && parsedYear >= 1850 && parsedYear <= new Date().getFullYear();
+  const metadataOnly = rightsDeclaration === METADATA_ONLY_DECLARATION;
+  const submissionIssues = [
+    (isOfflineMode || !isBackendConnected) ? 'Archive backend is unavailable. Check Vercel Supabase environment variables and database setup.' : '',
+    !title.trim() ? 'Add a recording title.' : '',
+    !artistOrBand.trim() ? 'Add an artist or band.' : '',
+    !country.trim() ? 'Add a country.' : '',
+    !validReleaseYear ? 'Enter a valid release year between 1850 and the current year.' : '',
+    !audioFile && !metadataOnly ? 'Attach an audio file, or choose metadata-only submission.' : '',
+    !metadataOnly && audioError ? audioError : '',
+  ].filter(Boolean);
 
   const handleAudioFile = (file: File | null) => {
     setAudioFile(file);
@@ -127,13 +139,11 @@ export const UploadContributeView: React.FC = () => {
   ];
 
   const handleUpload = async () => {
-    const metadataOnly = rightsDeclaration === METADATA_ONLY_DECLARATION;
-    const parsedYear = Number(releaseYear);
-    if ((!audioFile && !metadataOnly) || (!metadataOnly && audioError) || isOfflineMode) {
-      showToast(isOfflineMode ? 'Connect the archive backend before submitting a contribution.' : 'Attach a valid audio file or choose metadata-only submission.');
+    if ((!audioFile && !metadataOnly) || (!metadataOnly && audioError) || isOfflineMode || !isBackendConnected) {
+      showToast(isOfflineMode || !isBackendConnected ? 'Connect the archive backend before submitting a contribution.' : 'Attach a valid audio file or choose metadata-only submission.');
       return;
     }
-    if (!title.trim() || !artistOrBand.trim() || !country.trim() || !Number.isInteger(parsedYear) || parsedYear < 1850 || parsedYear > new Date().getFullYear()) {
+    if (!title.trim() || !artistOrBand.trim() || !country.trim() || !validReleaseYear) {
       showToast('Enter a title, artist, country, and valid release year.');
       return;
     }
@@ -273,7 +283,7 @@ export const UploadContributeView: React.FC = () => {
               accept={AUDIO_ACCEPT}
               label="Audio file"
               cta="Choose audio file"
-              hint="MP3, WAV, FLAC, M4A, OGG or AAC, up to 100 MB."
+              hint="MP3, WAV, FLAC, M4A, OGG, AAC or WebM with audio, up to 100 MB."
               icon="audio"
               file={audioFile}
               onFile={handleAudioFile}
@@ -537,11 +547,12 @@ export const UploadContributeView: React.FC = () => {
             <div className="p-4 rounded-xl bg-ink-06 border border-ink-12 space-y-1.5 font-mono text-[11px]">
               <div><strong>Title:</strong> {title || 'Untitled Archive Track'}</div>
               <div><strong>Artist:</strong> {artistOrBand || 'Traditional Artists'}</div>
-              <div><strong>Year:</strong> {releaseYear}</div>
+              <div><strong>Year:</strong> {releaseYear || 'not entered'}</div>
+              <div><strong>Country:</strong> {country || 'not entered'}</div>
               <div><strong>Rights:</strong> {rightsDeclaration}</div>
               <div>
                 <strong>Audio:</strong>{' '}
-                {audioFile ? `${audioFile.name} (${audioFile.type || 'audio'})` : 'not attached'}
+                {metadataOnly ? 'metadata-only submission; no audio will be stored' : audioFile ? `${audioFile.name} (${audioFile.type || 'audio'})` : 'not attached'}
               </div>
               <div>
                 <strong>Cover:</strong>{' '}
@@ -563,16 +574,18 @@ export const UploadContributeView: React.FC = () => {
 
             {uploadStatus === 'idle' && (
               <>
-                {!audioFile && rightsDeclaration !== METADATA_ONLY_DECLARATION && (
-                  <p className="rounded-xl border border-ink-12 bg-ink-06 px-3 py-2 text-ink-60">
-                    A song entry needs its recording. Go back to step 1 and attach an
-                    audio file before publishing.
-                  </p>
+                {submissionIssues.length > 0 && (
+                  <div role="status" aria-live="polite" className="rounded-xl border border-ink-12 bg-ink-06 px-3 py-2 text-ink-60">
+                    <p className="mb-1 font-semibold text-ink">Complete these items before submitting:</p>
+                    <ul className="list-inside list-disc space-y-0.5">
+                      {submissionIssues.map((issue) => <li key={issue}>{issue}</li>)}
+                    </ul>
+                  </div>
                 )}
                 <button
                   type="button"
                   onClick={handleUpload}
-                  disabled={(!audioFile && rightsDeclaration !== METADATA_ONLY_DECLARATION) || (rightsDeclaration !== METADATA_ONLY_DECLARATION && Boolean(audioError)) || isOfflineMode || !title.trim() || !artistOrBand.trim()}
+                  disabled={submissionIssues.length > 0}
                   className="w-full py-3 rounded-xl bg-brand text-on-orange font-semibold text-xs cursor-pointer flex items-center justify-center gap-2 transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <CloudArrowUp className="w-4 h-4" />

@@ -109,15 +109,20 @@ export const isLocalMode = !isSupabaseConfigured;
 export async function probeBackend(): Promise<boolean> {
   if (isLocalMode) return false;
 
-  const { error } = await supabase
-    .from('app_archive_items')
-    .select('id', { head: true, count: 'exact' });
+  try {
+    const { error } = await supabase
+      .from('app_archive_items')
+      .select('id', { head: true, count: 'exact' });
 
-  if (error) {
-    console.warn('The archive backend is not ready:', error.message);
+    if (error) {
+      console.warn('The archive backend is not ready:', error.message);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.warn('The archive backend health check failed:', error);
     return false;
   }
-  return true;
 }
 
 const KNOWN_ROLES: UserRole[] = [

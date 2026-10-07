@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useBanjo } from '../../context/BanjoContext';
 import type { MainNavTab } from '../../context/BanjoContext';
 import { isElevated } from '../../lib/auth';
@@ -16,8 +16,38 @@ import {
   CloudArrowUp,
   ShieldLock,
   PlusLg,
+  MoonStars,
+  Sun,
   X,
 } from 'react-bootstrap-icons';
+
+type AccessibilityTextSize = 'standard' | 'large' | 'largest';
+
+const TEXT_SIZE_STEPS: AccessibilityTextSize[] = ['standard', 'large', 'largest'];
+const TEXT_SIZE_LABELS: Record<AccessibilityTextSize, string> = {
+  standard: 'Standard',
+  large: 'Large',
+  largest: 'Largest',
+};
+
+const readTextSize = (): AccessibilityTextSize => {
+  try {
+    const saved = window.localStorage.getItem('banjo.accessibility.text-size');
+    return TEXT_SIZE_STEPS.includes(saved as AccessibilityTextSize)
+      ? (saved as AccessibilityTextSize)
+      : 'standard';
+  } catch {
+    return 'standard';
+  }
+};
+
+const readHighContrast = (): boolean => {
+  try {
+    return window.localStorage.getItem('banjo.accessibility.high-contrast') === 'true';
+  } catch {
+    return false;
+  }
+};
 
 interface SidebarProps {
   isOpen: boolean;
@@ -32,7 +62,27 @@ interface NavEntry {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
-  const { activeTab, navigateTo, isAuthenticated, activeRole } = useBanjo();
+  const { activeTab, navigateTo, isAuthenticated, activeRole, theme, toggleTheme } = useBanjo();
+  const [textSize, setTextSize] = useState<AccessibilityTextSize>(readTextSize);
+  const [highContrast, setHighContrast] = useState(readHighContrast);
+
+  useEffect(() => {
+    document.documentElement.dataset.accessibilityTextSize = textSize;
+    try {
+      window.localStorage.setItem('banjo.accessibility.text-size', textSize);
+    } catch {
+      return;
+    }
+  }, [textSize]);
+
+  useEffect(() => {
+    document.documentElement.dataset.highContrast = String(highContrast);
+    try {
+      window.localStorage.setItem('banjo.accessibility.high-contrast', String(highContrast));
+    } catch {
+      return;
+    }
+  }, [highContrast]);
 
   // Archivist tooling follows the signed-in session, never a profile fixture.
   const isArchivist = isAuthenticated && isElevated(activeRole);
@@ -146,6 +196,65 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           {renderSection('Archive', primaryItems)}
           {renderSection('You', youItems)}
           {renderSection('Community', communityItems)}
+
+          <section aria-labelledby="sidebar-accessibility-heading" className="mx-3 border-t border-ink-12 px-3 py-4">
+            <h2 id="sidebar-accessibility-heading" className="mb-2 text-[11px] font-bold uppercase tracking-wide text-ink-60">
+              Appearance & accessibility
+            </h2>
+            <div className="space-y-2">
+              <button
+                type="button"
+                onClick={toggleTheme}
+                aria-pressed={theme === 'dark'}
+                aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+                className="flex w-full items-center justify-between gap-2 rounded-lg px-2 py-2 text-left text-sm text-ink transition-colors hover:bg-ink-06"
+              >
+                <span className="flex items-center gap-2">
+                  {theme === 'dark' ? <MoonStars aria-hidden="true" className="h-4 w-4" /> : <Sun aria-hidden="true" className="h-4 w-4" />}
+                  <span>{theme === 'dark' ? 'Dark mode' : 'Light mode'}</span>
+                </span>
+                <span className="text-xs text-ink-60">Change</span>
+              </button>
+
+              <div className="space-y-2 rounded-lg px-2 py-2">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-sm text-ink">Text size</span>
+                  <span aria-live="polite" className="text-xs text-ink-60">{TEXT_SIZE_LABELS[textSize]}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    aria-label="Decrease text size"
+                    disabled={textSize === 'standard'}
+                    onClick={() => setTextSize((current) => TEXT_SIZE_STEPS[Math.max(0, TEXT_SIZE_STEPS.indexOf(current) - 1)])}
+                    className="flex h-9 flex-1 items-center justify-center rounded-lg border border-ink-12 text-sm font-semibold text-ink hover:bg-ink-06 disabled:opacity-40"
+                  >
+                    A−
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Increase text size"
+                    disabled={textSize === 'largest'}
+                    onClick={() => setTextSize((current) => TEXT_SIZE_STEPS[Math.min(TEXT_SIZE_STEPS.length - 1, TEXT_SIZE_STEPS.indexOf(current) + 1)])}
+                    className="flex h-9 flex-1 items-center justify-center rounded-lg border border-ink-12 text-lg font-semibold text-ink hover:bg-ink-06 disabled:opacity-40"
+                  >
+                    A+
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setHighContrast((enabled) => !enabled)}
+                aria-pressed={highContrast}
+                aria-label={`${highContrast ? 'Disable' : 'Enable'} high contrast`}
+                className="flex w-full items-center justify-between gap-2 rounded-lg px-2 py-2 text-left text-sm text-ink transition-colors hover:bg-ink-06"
+              >
+                <span>High contrast</span>
+                <span className="text-xs text-ink-60">{highContrast ? 'On' : 'Off'}</span>
+              </button>
+            </div>
+          </section>
         </nav>
       </aside>
     </>

@@ -47,6 +47,34 @@
   --focus: #6ea8fe;
 }
 
+:root[data-accessibility-text-size="large"] {
+  font-size: 112.5%;
+}
+
+:root[data-accessibility-text-size="largest"] {
+  font-size: 125%;
+}
+
+:root[data-high-contrast="true"] {
+  --ink-60: rgba(0, 0, 0, 0.86);
+  --ink-12: rgba(0, 0, 0, 0.38);
+  --ink-06: rgba(0, 0, 0, 0.1);
+  --orange: #b93800;
+  --on-orange: #ffffff;
+  --link: #003b8e;
+  --focus: #003b8e;
+}
+
+:root[data-theme="dark"][data-high-contrast="true"] {
+  --ink-60: rgba(255, 255, 255, 0.9);
+  --ink-12: rgba(255, 255, 255, 0.52);
+  --ink-06: rgba(255, 255, 255, 0.16);
+  --orange: #f3a64a;
+  --on-orange: #000000;
+  --link: #9bc7ff;
+  --focus: #ffbf47;
+}
+
 /* Map the raw tokens into Tailwind so utilities are bg-paper / text-ink / bg-brand. */
 @theme inline {
   --color-paper: var(--paper);

@@ -10,8 +10,6 @@ import {
   Gear,
   WifiOff,
   Wifi,
-  MoonStars,
-  Sun,
   X,
   Clock,
   BoxArrowInRight,
@@ -29,8 +27,6 @@ export const Header: React.FC<{ onOpenNav?: () => void }> = ({ onOpenNav }) => {
     navigateTo,
     isDataSaver,
     setDataSaver,
-    theme,
-    toggleTheme,
     userProfile,
     isAuthenticated,
     authEmail,
@@ -302,21 +298,6 @@ export const Header: React.FC<{ onOpenNav?: () => void }> = ({ onOpenNav }) => {
                       Settings
                     </p>
                     <div className="space-y-1">
-                      <button
-                        type="button"
-                        onClick={toggleTheme}
-                        className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-sm text-ink transition-colors hover:bg-ink-06"
-                      >
-                        <span className="flex items-center gap-2">
-                          {theme === 'dark' ? (
-                            <MoonStars className="h-4 w-4" />
-                          ) : (
-                            <Sun className="h-4 w-4" />
-                          )}
-                          Appearance
-                        </span>
-                        <span className="font-mono text-[11px] text-ink-60">{theme}</span>
-                      </button>
                       <button
                         type="button"
                         onClick={() => setDataSaver(!isDataSaver)}

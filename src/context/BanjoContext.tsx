@@ -533,6 +533,13 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setAuthStatus('signed_out');
   }, [setAuthenticatedIdentity]);
 
+  const showToast = useCallback((msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => {
+      setToastMessage((current) => (current === msg ? null : current));
+    }, 4000);
+  }, []);
+
   // Load the archive on mount: the catalogue is public, the moderation
   // workspace needs an account (and simply comes back empty without one).
   useEffect(() => {
@@ -555,10 +562,11 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setOralHistories(catalogue.oralHistories);
         setDocuments(catalogue.documents);
         setIsBackendConnected(backendReady);
-      } catch {
+      } catch (error) {
         if (!isMounted) return;
+        console.error('Could not load the archive catalogue:', error);
         setIsBackendConnected(false);
-        setToastMessage('Could not load the archive. Check the backend connection and try refreshing.');
+        showToast('Could not load the archive. Check the Supabase connection and confirm the app SQL setup is applied.');
       } finally {
         if (isMounted) setIsCatalogueLoading(false);
       }
@@ -569,7 +577,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [showToast]);
 
   useEffect(() => {
     let isMounted = true;
@@ -647,14 +655,6 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setToastMessage('A change was not authorized or could not be saved; displayed data was refreshed.');
     })();
   }, [recordings, songs, musicians, bands, albums, oralHistories, documents, isCatalogueLoading]);
-
-  // Toast feedback
-  const showToast = useCallback((msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => {
-      setToastMessage((current) => (current === msg ? null : current));
-    }, 4000);
-  }, []);
 
   // Name, bio and avatar: the three fields the "Edit profile" form owns. They
   // land on the signed-in account's own row and nowhere else.
