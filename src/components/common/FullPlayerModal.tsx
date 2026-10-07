@@ -196,7 +196,7 @@ export const FullPlayerModal: React.FC = () => {
 
                 <div className="mt-4 space-y-1 text-center">
                   <p className="text-xs text-ink-60">
-                    {currentRecording.country} · {currentRecording.releaseYear} ·{' '}
+                    {currentRecording.country} · {currentRecording.releaseYear ?? 'Year unknown'} ·{' '}
                     {currentRecording.genre}
                   </p>
                   <h2 className="text-xl font-bold leading-tight text-ink sm:text-2xl">
@@ -565,7 +565,7 @@ export const FullPlayerModal: React.FC = () => {
                         {rec.title}
                       </span>
                       <span className="block truncate text-[11px] text-ink-60">
-                        {rec.artistOrBand} · {rec.releaseYear}
+                        {rec.artistOrBand} · {rec.releaseYear ?? 'Year unknown'}
                       </span>
                     </span>
                     <span className="shrink-0 font-mono text-[11px] text-ink-60">

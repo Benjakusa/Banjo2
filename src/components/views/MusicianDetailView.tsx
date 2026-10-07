@@ -206,7 +206,7 @@ const MusicianDetailContent: React.FC = () => {
                       {rec.title}
                     </h3>
                     <p className="text-ink-60 text-[11px]">
-                      {rec.releaseYear} · Credit: <strong className="text-ink-60">{credit?.role} ({credit?.instrument})</strong>
+                      {rec.releaseYear ?? 'Year unknown'} · Credit: <strong className="text-ink-60">{credit?.role} ({credit?.instrument})</strong>
                     </p>
                   </div>
                 </div>

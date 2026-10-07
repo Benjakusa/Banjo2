@@ -309,6 +309,36 @@ export async function uploadPendingAudio(file: File): Promise<string | null> {
   return path;
 }
 
+export async function uploadArchiveAudio(file: File): Promise<string | null> {
+  if (!isSupabaseConfigured) return null;
+  const { data: session } = await supabase.auth.getSession();
+  const userId = session.session?.user?.id;
+  if (!userId) return null;
+
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_').slice(-120) || 'audio';
+  const path = `${userId}/${crypto.randomUUID()}-${safeName}`;
+  const { error } = await supabase.storage.from('banjo-archive-audio').upload(path, file, {
+    contentType: file.type || 'application/octet-stream',
+    upsert: false,
+  });
+  if (error) {
+    console.warn('Could not upload archive audio:', error.message);
+    return null;
+  }
+  return path;
+}
+
+export async function removeArchiveAudio(path: string): Promise<void> {
+  if (!isSupabaseConfigured || !path) return;
+  const { error } = await supabase.storage.from('banjo-archive-audio').remove([path]);
+  if (error) console.warn('Could not remove archive audio:', error.message);
+}
+
+export function getArchiveAudioUrl(path: string): string | null {
+  if (!isSupabaseConfigured || !path) return null;
+  return supabase.storage.from('banjo-archive-audio').getPublicUrl(path).data.publicUrl;
+}
+
 export async function removePendingAudio(path: string): Promise<void> {
   if (!isSupabaseConfigured || !path) return;
   const { error } = await supabase.storage.from('banjo-pending-audio').remove([path]);

@@ -78,7 +78,7 @@ export const Header: React.FC<{ onOpenNav?: () => void }> = ({ onOpenNav }) => {
       return recordings.slice(0, 4).map((r) => ({ id: r.id, title: r.title, meta: r.artistOrBand, kind: 'Recording' as const, seconds: r.duration }));
     }
     const matches = recordings
-      .filter((r) => `${r.title} ${r.artistOrBand} ${r.genre} ${r.country} ${r.releaseYear}`.toLowerCase().includes(q))
+      .filter((r) => `${r.title} ${r.artistOrBand} ${r.genre} ${r.country} ${r.releaseYear ?? ''}`.toLowerCase().includes(q))
       .slice(0, 5)
       .map((r) => ({ id: r.id, title: r.title, meta: r.artistOrBand, kind: 'Recording' as const, seconds: r.duration }));
     const people = [

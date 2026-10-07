@@ -12,7 +12,7 @@ The Vite `VITE_*` values are included in the browser bundle. The Supabase anon/p
 
 ## Supabase and Google sign-in
 
-1. Apply the app's Supabase SQL setup described in [`supabase/README.md`](supabase/README.md). Apply `supabase/media-storage.sql` as well if audio uploads and private review playback are needed.
+1. Apply the app's Supabase SQL setup described in [`supabase/README.md`](supabase/README.md). Apply `supabase/media-storage.sql` to enable audio uploads. New audio uploads are public immediately after the contributor's rights declaration; older pending-review audio remains in a separate private bucket.
 2. In Supabase Authentication → URL Configuration, set the Site URL to the deployed production origin, such as `https://your-domain.example`.
 3. Add the production origin to the allowed Redirect URLs. Add your Vercel preview pattern only if you intend to test sign-in from preview deployments; restrict it to your Vercel team/account slug.
 4. In Supabase Authentication → Providers, enable Google and configure the Google OAuth client. In Google Cloud, use the callback URL shown by Supabase as the authorized redirect URI. The Google client secret belongs in Supabase, not in Vercel or the frontend.

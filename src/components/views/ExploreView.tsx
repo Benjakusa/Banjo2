@@ -13,6 +13,7 @@ export const ExploreView: React.FC = () => {
   const currentCountry = countries.includes(selectedCountry) ? selectedCountry : countries[0] || '';
   const countryRecordings = recordings.filter((recording) => recording.country.trim() === currentCountry);
   const decades = Array.from(recordings.reduce((groups, recording) => {
+    if (typeof recording.releaseYear !== 'number') return groups;
     const decade = Math.floor(recording.releaseYear / 10) * 10;
     const entries = groups.get(decade) || [];
     entries.push(recording);
@@ -64,7 +65,7 @@ export const ExploreView: React.FC = () => {
             <article key={recording.id} className="flex flex-wrap items-center justify-between gap-3 border-t border-ink-12 pt-3 text-xs">
                 <div className="min-w-0 flex-1">
                   <h3 className="break-words font-semibold text-ink">{recording.title}</h3>
-                  <p className="text-ink-60">{recording.artistOrBand} · {recording.releaseYear} · {recording.genre}</p>
+                  <p className="text-ink-60">{recording.artistOrBand} · {recording.releaseYear ?? 'Year unknown'} · {recording.genre}</p>
                 </div>
                 <button aria-label={`Play ${recording.title}`} onClick={() => playSong(recording)} className="p-2 rounded-full bg-brand text-on-orange cursor-pointer"><PlayFill /></button>
               </article>
@@ -78,7 +79,7 @@ export const ExploreView: React.FC = () => {
           {decades.map(([decade, entries]) => (
             <section key={decade} className="p-4 rounded-xl border border-ink-12 bg-paper space-y-2 text-xs">
               <h2 className="font-mono text-ink-60 font-bold text-sm"><CalendarEvent className="inline mr-2" />{decade}s · {entries.length} recording{entries.length === 1 ? '' : 's'}</h2>
-              {entries.map((recording) => <p key={recording.id} className="text-ink">{recording.releaseYear} — {recording.title} · {recording.artistOrBand}</p>)}
+              {entries.map((recording) => <p key={recording.id} className="text-ink">{recording.releaseYear ?? 'Year unknown'} — {recording.title} · {recording.artistOrBand}</p>)}
             </section>
           ))}
         </div>

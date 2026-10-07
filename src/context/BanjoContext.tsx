@@ -33,7 +33,9 @@ import {
   loadCatalogue,
   loadModeration,
   probeBackend,
-  uploadPendingAudio,
+  uploadArchiveAudio,
+  removeArchiveAudio,
+  getArchiveAudioUrl,
   removePendingAudio,
   getPendingAudioPreviewUrl,
   saveArchiveItem,
@@ -184,7 +186,13 @@ interface BanjoContextType {
   updateMusicianBio: (musicianId: string, biography: string, instrument?: string) => void;
   updateBandHistory: (bandId: string, history: string, newMember?: { name: string; role: string; instrument: string }) => void;
   createArticle: (article: { type: 'song' | 'musician' | 'band'; title: string; country: string; region: string; genre: string; year: number; story: string; composerOrLeader?: string; instruments?: string; citations?: string }) => void;
-  submitNewRecording: (data: Partial<Recording>, rightsDeclaration: string, sources: string, audioFile: File | null) => Promise<boolean>;
+  submitNewRecording: (
+    data: Partial<Recording>,
+    rightsDeclaration: string,
+    sources: string,
+    audioFile: File | null,
+    onStageChange?: (stage: 'uploading_audio' | 'publishing') => void
+  ) => Promise<boolean>;
   submitProblemReport: (data: { targetRecordingId: string; targetTitle: string; reason: string; notes: string; email: string }) => void;
   reviewSubmission: (submissionId: string, decision: 'approve' | 'reject' | 'evidence_requested', note?: string) => Promise<void>;
   getSubmissionAudioPreviewUrl: (path: string) => Promise<string | null>;
@@ -1708,16 +1716,25 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     [userProfile, showToast]
   );
 
-  // Submit new recording (Screen 24-26)
+  // Publish a new recording directly after the contributor declares its rights.
   const submitNewRecording = useCallback(
-    async (data: Partial<Recording>, rightsDeclaration: string, sourcesProvided: string, audioFile: File | null) => {
+    async (
+      data: Partial<Recording>,
+      rightsDeclaration: string,
+      sourcesProvided: string,
+      audioFile: File | null,
+      onStageChange?: (stage: 'uploading_audio' | 'publishing') => void
+    ) => {
       if (isLocalMode) {
         showToast('Audio contributions require the configured online archive.');
         return false;
       }
       let audioPath: string | null = null;
       try {
-        audioPath = audioFile ? await uploadPendingAudio(audioFile) : null;
+        if (audioFile) {
+          onStageChange?.('uploading_audio');
+          audioPath = await uploadArchiveAudio(audioFile);
+        }
       } catch {
         showToast('Audio upload failed. Check your connection and archive storage setup.');
         return false;
@@ -1726,62 +1743,82 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         showToast('Audio upload failed. Check your connection and archive storage setup.');
         return false;
       }
-      const newSubmission: Submission = {
-        id: `sub-${Date.now()}`,
-        type: 'recording',
-        title: data.title || 'Untitled Historical Recording',
-        contributorName: userProfile.displayName,
-        contributorEmail: userProfile.email,
-        submittedAt: new Date().toISOString(),
-        category: 'New Music Recording',
-        priority: 'high',
-        status: 'pending',
+      onStageChange?.('publishing');
+      const recordingId = `rec-${crypto.randomUUID()}`;
+      const createdAt = new Date().toISOString();
+      const declaration = rightsDeclaration.toLowerCase();
+      const rightsStatus: Recording['rightsStatus'] = declaration.includes('public domain')
+        ? 'public_domain'
+        : declaration.includes('own the recording')
+          ? 'rights_holder_uploaded'
+          : declaration.includes('represent the rights holder')
+            ? 'licensed'
+            : declaration.includes('permission')
+              ? 'permission_granted'
+              : 'rights_unknown';
+      const title = data.title?.trim() || 'Untitled Historical Recording';
+      const recording: Recording = {
+        id: recordingId,
+        songId: `song-${recordingId}`,
+        title,
+        recordingTitle: title,
+        artistOrBand: data.artistOrBand?.trim() || '',
+        albumTitle: data.albumTitle?.trim() || undefined,
+        releaseYear: data.releaseYear ?? null,
+        country: data.country?.trim() || '',
+        region: data.region?.trim() || '',
+        language: data.language?.trim() || '',
+        genre: data.genre?.trim() || '',
+        label: '',
+        composer: data.composer?.trim() || '',
+        lyricist: '',
+        producer: data.producer?.trim() || '',
+        studio: data.studio?.trim() || '',
+        recordingLocation: [data.region?.trim(), data.country?.trim()].filter(Boolean).join(', '),
+        duration: 0,
+        audioQuality: 'Unknown',
+        audioSampleType: 'unknown',
+        audioUrl: audioPath ? getArchiveAudioUrl(audioPath) || undefined : undefined,
+        audioStoragePath: audioPath || undefined,
+        audioFileName: data.audioFileName || undefined,
+        audioMimeType: data.audioMimeType || undefined,
+        audioFileSize: data.audioFileSize || undefined,
+        rightsStatus,
         rightsDeclaration,
-        proposedData: {
-          title: data.title || '',
-          artistOrBand: data.artistOrBand || '',
-          albumTitle: data.albumTitle || '',
-          releaseYear: String(data.releaseYear ?? ''),
-          country: data.country || '',
-          region: data.region || '',
-          language: data.language || '',
-          genre: data.genre || '',
-          studio: data.studio || '',
-          composer: data.composer || '',
-          producer: data.producer || '',
-          story: data.story || '',
-          coverImage: data.coverImage || '',
-          audioFileName: data.audioFileName || '',
-          audioMimeType: data.audioMimeType || '',
-          audioFileSize: String(data.audioFileSize || 0),
-          audioAttached: audioPath ? 'true' : 'false',
-          audioStoragePath: audioPath || '',
-          musicians: JSON.stringify(data.musicians || []),
-          rightsDeclaration,
-        },
-        sourcesProvided,
+        verificationStatus: 'community_sourced',
+        coverImage: data.coverImage || generateThumbnail(title),
+        story: data.story || '',
+        recordingHistory: sourcesProvided ? [`Contributor source: ${sourcesProvided}`] : [],
+        musicians: data.musicians || [],
+        instruments: Array.from(new Set((data.musicians || []).map((credit) => credit.instrument).filter(Boolean))),
+        sources: sourcesProvided
+          ? [{ id: `src-${recordingId}`, type: 'Community submission', title: sourcesProvided }]
+          : [],
+        revisions: [],
+        waveformPoints: [],
+        playsCount: 0,
+        createdAt,
+        updatedAt: createdAt,
       };
-
       let saved = false;
       try {
-        saved = await insertSubmission(newSubmission);
+        saved = await saveArchiveItem('recording', recording);
       } catch {
         saved = false;
       }
       if (!saved) {
-        if (audioPath) await removePendingAudio(audioPath);
-        showToast('Submission could not be saved. Please try again.');
+        if (audioPath) await removeArchiveAudio(audioPath);
+        showToast('Recording could not be published. Please try again.');
         return false;
       }
-      setSubmissions((prev) => [newSubmission, ...prev]);
+      setRecordings((prev) => [recording, ...prev]);
 
       updateProfile({
         songsSubmitted: userProfile.songsSubmitted + 1,
         contributionsCount: userProfile.contributionsCount + 1,
-        pendingReview: userProfile.pendingReview + 1,
       });
 
-      showToast('Recording metadata submitted to the Archival Moderation Queue.');
+      showToast('Recording published to the archive.');
       return true;
     },
     [userProfile, showToast]
@@ -1900,7 +1937,9 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 title: sub.proposedData.title || rec.title,
                 composer: sub.proposedData.composer || rec.composer,
                 story: sub.proposedData.story || rec.story,
-                releaseYear: sub.proposedData.releaseYear ? parseInt(sub.proposedData.releaseYear, 10) : rec.releaseYear,
+                releaseYear: sub.proposedData.releaseYear && Number.isInteger(Number(sub.proposedData.releaseYear))
+                  ? Number(sub.proposedData.releaseYear)
+                  : rec.releaseYear,
                 revisions: [newRev, ...rec.revisions],
                 updatedAt: new Date().toISOString(),
               };
@@ -1921,7 +1960,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           recordingTitle: data.title || sub.title,
           artistOrBand: data.artistOrBand || '',
           albumTitle: data.albumTitle || undefined,
-          releaseYear: Number(data.releaseYear),
+          releaseYear: Number(data.releaseYear) || null,
           country: data.country || '',
           region: data.region || '',
           language: data.language || '',

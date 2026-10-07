@@ -233,7 +233,7 @@ const BandDetailContent: React.FC = () => {
                     {rec.title}
                   </h3>
                   <p className="text-ink-60 text-[11px]">
-                    Released: {rec.releaseYear} · Studio: {rec.studio}
+                    Released: {rec.releaseYear ?? 'Year unknown'} · Studio: {rec.studio}
                   </p>
                 </div>
               </div>

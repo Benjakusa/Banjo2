@@ -12,7 +12,9 @@ export const TimelineView: React.FC = () => {
   const { navigateTo, recordings, playSong } = useBanjo();
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
 
-  const events: TimelineEvent[] = recordings.map((recording): TimelineEvent => ({
+  const events: TimelineEvent[] = recordings.filter(
+    (recording): recording is typeof recording & { releaseYear: number } => typeof recording.releaseYear === 'number'
+  ).map((recording): TimelineEvent => ({
     year: recording.releaseYear,
     title: `${recording.title} — ${recording.artistOrBand}`,
     category: 'first_recording',

@@ -65,7 +65,7 @@ export const MobileBottomNav: React.FC = () => {
       .filter((r) =>
         q.length === 0
           ? true
-          : `${r.title} ${r.artistOrBand} ${r.genre} ${r.country} ${r.releaseYear}`
+          : `${r.title} ${r.artistOrBand} ${r.genre} ${r.country} ${r.releaseYear ?? ''}`
               .toLowerCase()
               .includes(q)
       )
@@ -73,7 +73,7 @@ export const MobileBottomNav: React.FC = () => {
       .map((r) => ({
         id: r.id,
         title: r.title,
-        meta: `${r.artistOrBand} · ${r.releaseYear}`,
+        meta: `${r.artistOrBand} · ${r.releaseYear ?? 'Year unknown'}`,
         seconds: r.duration,
         isRecording: true,
       }));

@@ -173,7 +173,7 @@ export const AddDetailModal: React.FC = () => {
       targetRecording.id,
       altTitle.trim(),
       altBand.trim() || targetRecording.artistOrBand,
-      parseInt(altYear, 10) || targetRecording.releaseYear,
+      parseInt(altYear, 10) || targetRecording.releaseYear || 0,
       altLabel.trim() || 'Independent Recording'
     );
     setAltTitle('');

@@ -103,7 +103,7 @@ export interface Recording {
   artistId?: string;
   albumId?: string;
   albumTitle?: string;
-  releaseYear: number;
+  releaseYear: number | null;
   country: string;
   region: string;
   language: string;
@@ -116,7 +116,7 @@ export interface Recording {
   recordingLocation: string;
   duration: number; // in seconds
   audioQuality: 'FLAC Master' | '320kbps MP3' | '128kbps Stream' | 'Unknown';
-  audioSampleType: 'benga_fast' | 'rhumba_slow' | 'highlife' | 'taarab' | 'soukous';
+  audioSampleType: 'benga_fast' | 'rhumba_slow' | 'highlife' | 'taarab' | 'soukous' | 'unknown';
   /** Playable source for a master stored durably in the media backend. */
   audioUrl?: string;
   audioStoragePath?: string;

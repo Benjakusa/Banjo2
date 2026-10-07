@@ -107,7 +107,7 @@ const CompactRecordingCard: React.FC<{
       <span className="block truncate text-sm font-semibold leading-tight text-current">{recording.title}</span>
       <span className="mt-0.5 block truncate text-xs text-current/60">{recording.artistOrBand}</span>
       <span className="mt-0.5 block truncate font-mono text-[10px] text-current/40">
-        {recording.releaseYear} · {recording.country}
+        {recording.releaseYear ?? 'Year unknown'} · {recording.country}
       </span>
     </span>
   </button>
@@ -615,7 +615,7 @@ const SongDetailContent: React.FC = () => {
                 <span>{recording.playsCount.toLocaleString()} plays</span>
                 <span className="text-current/30">·</span>
                 <span className="font-mono text-[11px] text-current/60">
-                  {recording.releaseYear} · {recording.label}
+                  {recording.releaseYear ?? 'Year unknown'} · {recording.label}
                 </span>
                 <span className="text-current/30">·</span>
                 <span className="font-mono text-[11px] text-current/60">{recording.audioQuality}</span>
@@ -721,7 +721,7 @@ const SongDetailContent: React.FC = () => {
                     </div>
                     <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm sm:grid-cols-3">
                       {[
-                        { label: 'Released', value: String(recording.releaseYear) },
+                        { label: 'Released', value: String(recording.releaseYear ?? 'Year unknown') },
                         { label: 'Composition', value: songComposition?.title || '—' },
                         { label: 'Composer', value: recording.composer },
                         { label: 'Lyricist', value: recording.lyricist },

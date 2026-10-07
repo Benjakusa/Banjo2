@@ -165,7 +165,7 @@ export const HomeView: React.FC = () => {
                 </button>
               </div>
               <p className="text-[11px] text-ink-60 text-center mt-2 font-serif italic">
-                {featuredRecording.releaseYear} · {featuredRecording.country}
+                {featuredRecording.releaseYear ?? 'Year unknown'} · {featuredRecording.country}
               </p>
             </div>
 
@@ -173,7 +173,7 @@ export const HomeView: React.FC = () => {
               <div className="flex items-center gap-2 text-xs text-ink-60 font-mono">
                 <span>{featuredRecording.country}</span>
                 <span>·</span>
-                <span>{featuredRecording.releaseYear}</span>
+                <span>{featuredRecording.releaseYear ?? 'Year unknown'}</span>
                 <span>·</span>
                 <span className="text-ink-60 font-medium">{featuredRecording.genre}</span>
               </div>
@@ -310,7 +310,7 @@ export const HomeView: React.FC = () => {
                     <div className="flex items-center gap-2 text-[11px] text-ink-60 font-mono">
                       <span>{rec.country}</span>
                       <span>·</span>
-                      <span>{rec.releaseYear}</span>
+                      <span>{rec.releaseYear ?? 'Year unknown'}</span>
                       <span>·</span>
                       <span className="text-ink-60">{rec.genre}</span>
                       <span>·</span>

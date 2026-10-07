@@ -63,9 +63,7 @@ export const UploadContributeView: React.FC = () => {
   const [sourcesProvided, setSourcesProvided] = useState('');
 
   // Step 4 Rights Declaration
-  const [rightsDeclaration, setRightsDeclaration] = useState(
-    'I have permission to submit this recording.'
-  );
+  const [rightsDeclaration, setRightsDeclaration] = useState('');
 
   // Upload state
   // Audio can be omitted only when the contributor selects metadata-only rights terms.
@@ -77,6 +75,7 @@ export const UploadContributeView: React.FC = () => {
   const [thumbnailTouched, setThumbnailTouched] = useState(false);
 
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'completed'>('idle');
+  const [uploadStage, setUploadStage] = useState<'uploading_audio' | 'publishing'>('uploading_audio');
 
   // The cover shown throughout the wizard: the uploaded image if there is one,
   // otherwise artwork derived from whatever title has been typed so far.
@@ -89,6 +88,7 @@ export const UploadContributeView: React.FC = () => {
   const submissionIssues = [
     (isOfflineMode || !isBackendConnected) ? 'Archive backend is unavailable. Check Vercel Supabase environment variables and database setup.' : '',
     !validReleaseYear ? 'Enter a valid release year between 1850 and the current year, or leave it blank.' : '',
+    !rightsDeclaration ? 'Choose a rights declaration before publishing.' : '',
     !audioFile && !metadataOnly ? 'Attach an audio file, or choose metadata-only submission.' : '',
     !metadataOnly && audioError ? audioError : '',
   ].filter(Boolean);
@@ -137,8 +137,8 @@ export const UploadContributeView: React.FC = () => {
   ];
 
   const handleUpload = async () => {
-    if ((!audioFile && !metadataOnly) || (!metadataOnly && audioError) || isOfflineMode || !isBackendConnected) {
-      showToast(isOfflineMode || !isBackendConnected ? 'Connect the archive backend before submitting a contribution.' : 'Attach a valid audio file or choose metadata-only submission.');
+    if ((!audioFile && !metadataOnly) || (!metadataOnly && audioError) || !rightsDeclaration || isOfflineMode || !isBackendConnected) {
+      showToast(isOfflineMode || !isBackendConnected ? 'Connect the archive backend before publishing a contribution.' : 'Choose a rights declaration and attach valid audio, or choose metadata-only submission.');
       return;
     }
     if (!validReleaseYear) {
@@ -146,6 +146,7 @@ export const UploadContributeView: React.FC = () => {
       return;
     }
     setUploadStatus('uploading');
+    setUploadStage(metadataOnly ? 'publishing' : 'uploading_audio');
     try {
       const musicians: MusicianCredit[] = [];
       const addMusician = (name: string, role: string, instrument: string) => {
@@ -178,7 +179,7 @@ export const UploadContributeView: React.FC = () => {
           language,
           studio,
           composer,
-          story: historyNarrative || 'Historical details submitted by community contributor.',
+          story: historyNarrative.trim(),
           coverImage,
           audioFileName: metadataOnly ? undefined : audioFile?.name,
           audioFileSize: metadataOnly ? undefined : audioFile?.size,
@@ -187,7 +188,8 @@ export const UploadContributeView: React.FC = () => {
         },
         rightsDeclaration,
         sourcesProvided,
-        metadataOnly ? null : audioFile
+        metadataOnly ? null : audioFile,
+        setUploadStage
       );
       setUploadStatus(submitted ? 'completed' : 'idle');
     } catch {
@@ -499,7 +501,10 @@ export const UploadContributeView: React.FC = () => {
               <h2 className="text-lg font-serif font-medium text-ink">
                 Step 4: Rights & Copyright Declaration
               </h2>
-              <p className="text-ink-60">Banjo respects intellectual property and requires verified assertions.</p>
+              <p className="text-ink-60">Choose the rights declaration that accurately applies to this contribution.</p>
+              <p className="rounded-lg border border-brand/40 bg-brand/10 p-3 text-ink">
+                Publishing is immediate and does not wait for review. Recording metadata and any uploaded audio become publicly accessible, so only upload audio you have the right to share.
+              </p>
             </div>
 
             <div className="space-y-2.5">
@@ -537,9 +542,9 @@ export const UploadContributeView: React.FC = () => {
           <div className="space-y-5 text-xs">
             <div>
               <h2 className="text-lg font-serif font-medium text-ink">
-                Step 5: Review & Submit
+                Step 5: Review & Publish
               </h2>
-              <p className="text-ink-60">Confirm details before submitting to the archivist queue.</p>
+              <p className="text-ink-60">Confirm the details before the recording is published to the public archive.</p>
             </div>
 
             <div className="p-4 rounded-xl bg-ink-06 border border-ink-12 space-y-1.5 font-mono text-[11px]">
@@ -559,12 +564,22 @@ export const UploadContributeView: React.FC = () => {
             </div>
 
             {uploadStatus !== 'idle' && (
-              <div className="p-4 rounded-xl bg-brand/10 border border-brand space-y-2">
-                {uploadStatus === 'uploading' && <p className="text-xs text-ink-60">{rightsDeclaration === METADATA_ONLY_DECLARATION ? 'Submitting metadata for review…' : 'Uploading audio and submitting for review…'}</p>}
+              <div role="status" aria-live="polite" aria-busy={uploadStatus === 'uploading'} className="p-4 rounded-xl bg-brand/10 border border-brand space-y-3">
+                {uploadStatus === 'uploading' && (
+                  <>
+                    <p className="text-xs font-semibold text-ink">
+                      {uploadStage === 'uploading_audio' ? 'Uploading audio to the archive…' : 'Publishing recording…'}
+                    </p>
+                    <div className="h-2 overflow-hidden rounded-full bg-ink-12" aria-hidden="true">
+                      <div className={`h-full rounded-full bg-brand transition-all duration-500 ${uploadStage === 'uploading_audio' ? 'w-1/3 animate-pulse' : 'w-2/3 animate-pulse'}`} />
+                    </div>
+                    <p className="text-[11px] text-ink-60">Your recording will be published as soon as this finishes. Choose the rights declaration that applies; uploads are not reviewed first.</p>
+                  </>
+                )}
                 {uploadStatus === 'completed' && (
                   <div className="p-2.5 bg-ink-06 border border-ink-12 rounded-lg text-ink flex items-center gap-2">
                     <Check2Circle className="w-4 h-4 text-ink shrink-0" />
-                    <span>{rightsDeclaration === METADATA_ONLY_DECLARATION ? 'Metadata submitted for archival review; no audio was stored.' : 'Audio submitted privately with metadata for archival review.'}</span>
+                    <span>{rightsDeclaration === METADATA_ONLY_DECLARATION ? 'The metadata entry is now published. No audio was stored.' : 'The recording and metadata are now published in the archive.'}</span>
                   </div>
                 )}
               </div>
@@ -574,7 +589,7 @@ export const UploadContributeView: React.FC = () => {
               <>
                 {submissionIssues.length > 0 && (
                   <div role="status" aria-live="polite" className="rounded-xl border border-ink-12 bg-ink-06 px-3 py-2 text-ink-60">
-                    <p className="mb-1 font-semibold text-ink">Complete these items before submitting:</p>
+                    <p className="mb-1 font-semibold text-ink">Resolve these items before publishing:</p>
                     <ul className="list-inside list-disc space-y-0.5">
                       {submissionIssues.map((issue) => <li key={issue}>{issue}</li>)}
                     </ul>
@@ -587,7 +602,7 @@ export const UploadContributeView: React.FC = () => {
                   className="w-full py-3 rounded-xl bg-brand text-on-orange font-semibold text-xs cursor-pointer flex items-center justify-center gap-2 transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <CloudArrowUp className="w-4 h-4" />
-                  <span>Submit to Archival Review Queue</span>
+                  <span>Publish Recording Now</span>
                 </button>
               </>
             )}

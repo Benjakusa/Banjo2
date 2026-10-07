@@ -13,7 +13,7 @@
 --                       bands, albums, oral histories, documents
 --   app_profiles        one private profile per account, keyed by the account
 --                       id — two accounts can never share a profile row
---   app_submissions     moderation queue (edits + new recordings)
+--   app_submissions     moderation queue (edit suggestions and legacy items)
 --   app_audit_logs      immutable trail for approvals + rights decisions
 --   app_problem_reports public archive issue reports, readable by staff
 --   app_copyright_cases reports / takedown requests

@@ -9,7 +9,7 @@ tables the React app reads and writes today, and the full versioned schema.
 | Goal | File | How |
 | --- | --- | --- |
 | Get contribution flows, per-account profiles and the live catalogue working **now** | [`../SUPABASE_COPY_PASTE.sql`](../SUPABASE_COPY_PASTE.sql) | Paste into Dashboard → SQL Editor → Run. Re-runnable. |
-| Enable private audio submissions and staff review previews | [`media-storage.sql`](media-storage.sql) | Run after `SUPABASE_COPY_PASTE.sql` in Supabase SQL Editor. |
+| Enable audio uploads | [`media-storage.sql`](media-storage.sql) | Run after `SUPABASE_COPY_PASTE.sql` in Supabase SQL Editor. New audio is published immediately after the contributor selects a rights declaration; legacy pending-review files remain private. |
 | Stand up the whole archive schema | [`banjo-full-schema.sql`](banjo-full-schema.sql) — all 25 migrations concatenated, **no demo rows** | Paste into SQL Editor, or `psql "$DATABASE_URL" --single-transaction -f supabase/banjo-full-schema.sql` |
 | Versioned deploys / CI | [`migrations/`](migrations/) | `supabase link --project-ref <ref> && supabase db push` |
 
@@ -28,7 +28,7 @@ the six tables created by `SUPABASE_COPY_PASTE.sql`:
 | --- | --- | --- |
 | `app_archive_items` | the whole catalogue: recordings, songs, musicians, bands, albums, oral histories, documents — one JSONB payload per entity | public read; signed-in authors can update their own items; archivists can update or delete any item |
 | `app_profiles` | one private profile per account, primary key = account id, so two accounts can never share a row | owner only; owners cannot edit their role, verification status or moderation counters |
-| `app_submissions` | new-recording + edit submissions, moderation decisions | contributors can read their own; archivists and moderators can review all; only staff can decide |
+| `app_submissions` | edit suggestions, legacy recording submissions, moderation decisions | contributors can read their own; archivists and moderators can review all; only staff can decide |
 | `app_audit_logs` | an entry for every approve/reject/copyright decision | staff only; no public report inserts |
 | `app_problem_reports` | public archive issue reports | anyone may file; designated staff can read |
 | `app_copyright_cases` | copyright reports + rights console | anyone may file; rights staff can read and resolve |
@@ -37,9 +37,12 @@ Nothing is seeded: a new project starts with an empty catalogue and no accounts.
 The publisher's own data — including profiles — is created by real accounts as
 people sign up and contribute. Staff roles must be provisioned by an administrator
 through a trusted database operation; the client cannot grant itself staff access.
-The upload flow requires the Supabase storage bucket and policies in `media-storage.sql`;
-it is intentionally unavailable in local/offline mode. Audio stays private after metadata
-approval because the app does not yet have a rights-clearance and public-release workflow.
+The upload flow requires the Supabase storage buckets and policies in `media-storage.sql`;
+it is intentionally unavailable in local/offline mode. New recording submissions are
+published directly to the catalogue and public audio bucket after a contributor selects
+a rights declaration; they do not wait for archivist approval. This means uploaded audio
+is publicly accessible immediately, so enable the flow only if that is acceptable for
+your archive and rights process. Older audio in `banjo-pending-audio` remains private.
 
 The full schema (people, songs, recordings, rights, media jobs, 164 policies) is
 the archival model the app will progressively adopt; it is **not** required for the

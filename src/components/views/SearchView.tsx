@@ -80,8 +80,8 @@ export const SearchView: React.FC = () => {
       const matchGenre = !genreFilter || r.genre.toLowerCase().includes(genreFilter.toLowerCase());
       const matchLang = !languageFilter || r.language.toLowerCase().includes(languageFilter.toLowerCase());
       const matchInst = !instrumentFilter || r.instruments.some((i) => i.toLowerCase().includes(instrumentFilter.toLowerCase()));
-      const matchStartYear = !startYear || r.releaseYear >= parseInt(startYear, 10);
-      const matchEndYear = !endYear || r.releaseYear <= parseInt(endYear, 10);
+      const matchStartYear = !startYear || (typeof r.releaseYear === 'number' && r.releaseYear >= parseInt(startYear, 10));
+      const matchEndYear = !endYear || (typeof r.releaseYear === 'number' && r.releaseYear <= parseInt(endYear, 10));
 
       return matchBasic && matchCountry && matchGenre && matchLang && matchInst && matchStartYear && matchEndYear;
     });
@@ -325,7 +325,7 @@ export const SearchView: React.FC = () => {
                         {rec.title}
                       </h3>
                       <p className="text-ink-60">
-                        {rec.artistOrBand} · {rec.releaseYear} · {rec.country} ({rec.genre})
+                        {rec.artistOrBand} · {rec.releaseYear ?? 'Year unknown'} · {rec.country} ({rec.genre})
                       </p>
                       <p className="text-ink-60 text-[11px] line-clamp-1 mt-0.5">
                         {rec.story}

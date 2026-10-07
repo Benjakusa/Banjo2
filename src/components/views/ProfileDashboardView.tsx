@@ -271,7 +271,7 @@ export const ProfileDashboardView: React.FC = () => {
                     >
                       {rec.title}
                     </h4>
-                    <p className="text-ink-60 text-[11px]">{rec.artistOrBand} · {rec.releaseYear}</p>
+                    <p className="text-ink-60 text-[11px]">{rec.artistOrBand} · {rec.releaseYear ?? 'Year unknown'}</p>
                   </div>
                 </div>
 
