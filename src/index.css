@@ -210,3 +210,81 @@ textarea:focus-visible,
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+.mb-import {
+  border: 1px solid var(--ink-12);
+  border-radius: 0.75rem;
+  background: var(--ink-06);
+  padding: 1rem;
+  color: var(--ink);
+}
+
+.mb-import-head,
+.mb-import-results li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.mb-import-head > div,
+.mb-import-results li > div {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.mb-import-head small,
+.mb-import-results small,
+.mb-import-note,
+.mb-import-status,
+.mb-import-error {
+  color: var(--ink-60);
+  font-size: 0.75rem;
+}
+
+.mb-import-note {
+  margin: 0.75rem 0;
+}
+
+.mb-import-results {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mb-import-results li {
+  border-top: 1px solid var(--ink-12);
+  padding-top: 0.65rem;
+}
+
+.mb-import-results button {
+  flex: none;
+  border: 1px solid var(--ink-12);
+  border-radius: 0.5rem;
+  background: var(--paper);
+  padding: 0.45rem 0.65rem;
+  color: var(--ink);
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.mb-import-results button:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.mb-import-error {
+  color: #b93800;
+}
+
+@media (max-width: 480px) {
+  .mb-import-results li {
+    align-items: flex-start;
+  }
+
+  .mb-import-results button {
+    white-space: nowrap;
+  }
+}
