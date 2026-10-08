@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useBanjo } from '../../context/BanjoContext';
 import {
   CloudArrowUp,
@@ -31,7 +31,9 @@ const validateAudio = (file: File): string | null => {
 };
 
 export const UploadContributeView: React.FC = () => {
-  const { submitNewRecording, navigateTo, isOfflineMode, isBackendConnected, showToast } = useBanjo();
+  const { submitNewRecording, submitSongEdit, replaceRecordingMedia, editingRecordingId, recordings, navigateTo, isOfflineMode, isBackendConnected, showToast } = useBanjo();
+  const editingRecording = editingRecordingId ? recordings.find((recording) => recording.id === editingRecordingId) : undefined;
+  const isEditing = Boolean(editingRecording);
 
   const [submissionCategory, setSubmissionCategory] = useState<
     'music_recording' | 'photograph' | 'document' | 'interview' | 'artist_band'
@@ -76,6 +78,68 @@ export const UploadContributeView: React.FC = () => {
 
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'completed'>('idle');
   const [uploadStage, setUploadStage] = useState<'uploading_audio' | 'publishing'>('uploading_audio');
+  const [editSummary, setEditSummary] = useState('');
+
+  // Entering or leaving edit mode resets the whole wizard, then either fills
+  // it from the recording being edited or clears it for a fresh contribution.
+  useEffect(() => {
+    setStep(1);
+    setUploadStatus('idle');
+    setUploadStage('uploading_audio');
+    setEditSummary('');
+    setAudioFile(null);
+    setAudioError(null);
+    setThumbnailFile(null);
+    setThumbnailError(null);
+    setSubmissionCategory('music_recording');
+
+    if (!editingRecording) {
+      setTitle('');
+      setArtistOrBand('');
+      setReleaseYear('');
+      setCountry('');
+      setRegion('');
+      setGenre('');
+      setLanguage('');
+      setStudio('');
+      setComposer('');
+      setLeadVocalist('');
+      setOtherVocalists([]);
+      setGuitarists([]);
+      setOtherInstrumentalists([]);
+      setBandLeader('');
+      setAlbumTitle('');
+      setHistoryNarrative('');
+      setSourcesProvided('');
+      setRightsDeclaration('');
+      setThumbnailPreview(null);
+      setThumbnailTouched(false);
+      return;
+    }
+
+    setTitle(editingRecording.title || '');
+    setArtistOrBand(editingRecording.artistOrBand || '');
+    setReleaseYear(editingRecording.releaseYear == null ? '' : String(editingRecording.releaseYear));
+    setCountry(editingRecording.country || '');
+    setRegion(editingRecording.region || '');
+    setGenre(editingRecording.genre || '');
+    setLanguage(editingRecording.language || '');
+    setStudio(editingRecording.studio || '');
+    setAlbumTitle(editingRecording.albumTitle || '');
+    setComposer(editingRecording.composer || editingRecording.musicians.find((credit) => credit.role.toLowerCase().includes('composer'))?.musicianName || '');
+    setLeadVocalist(editingRecording.musicians.find((credit) => credit.role.toLowerCase().includes('lead vocal'))?.musicianName || '');
+    setOtherVocalists(editingRecording.musicians.filter((credit) => credit.role.toLowerCase().includes('other vocalist')).map((credit) => credit.musicianName));
+    setGuitarists(editingRecording.musicians.filter((credit) => credit.role.toLowerCase().includes('guitar')).map((credit) => ({ name: credit.musicianName, guitarType: credit.instrument || 'Guitar' })));
+    setOtherInstrumentalists(editingRecording.musicians.filter((credit) => credit.role.toLowerCase() === 'instrumentalist').map((credit) => ({ name: credit.musicianName, instrument: credit.instrument || '' })));
+    setBandLeader(editingRecording.musicians.find((credit) => credit.role.toLowerCase().includes('band leader'))?.musicianName || '');
+    setHistoryNarrative(editingRecording.story || '');
+    setSourcesProvided(editingRecording.sources?.map((source) => source.title).filter(Boolean).join('; ') || '');
+    setThumbnailPreview(editingRecording.coverImage || null);
+    setThumbnailTouched(Boolean(editingRecording.coverImage));
+    // No rights declaration until a replacement file is attached: the media
+    // already in the archive keeps the rights it was published under.
+    setRightsDeclaration('');
+  }, [editingRecordingId]);
 
   // The cover shown throughout the wizard: the uploaded image if there is one,
   // otherwise artwork derived from whatever title has been typed so far.
@@ -88,9 +152,12 @@ export const UploadContributeView: React.FC = () => {
   const submissionIssues = [
     (isOfflineMode || !isBackendConnected) ? 'Archive backend is unavailable. Check Vercel Supabase environment variables and database setup.' : '',
     !validReleaseYear ? 'Enter a valid release year between 1850 and the current year, or leave it blank.' : '',
-    !rightsDeclaration ? 'Choose a rights declaration before publishing.' : '',
-    !audioFile && !metadataOnly ? 'Attach an audio file, or choose metadata-only submission.' : '',
-    !metadataOnly && audioError ? audioError : '',
+    !isEditing && !rightsDeclaration ? 'Choose a rights declaration before publishing.' : '',
+    !isEditing && !audioFile && !metadataOnly ? 'Attach an audio file, or choose metadata-only submission.' : '',
+    isEditing && audioFile && metadataOnly ? 'Choose a rights declaration for the replacement media.' : '',
+    isEditing && audioFile && !rightsDeclaration ? 'Choose a rights declaration for the replacement media.' : '',
+    audioFile && !metadataOnly ? audioError : '',
+    isEditing && !editSummary.trim() ? 'Explain what changed before submitting this edit.' : '',
   ].filter(Boolean);
 
   const handleAudioFile = (file: File | null) => {
@@ -137,8 +204,13 @@ export const UploadContributeView: React.FC = () => {
   ];
 
   const handleUpload = async () => {
-    if ((!audioFile && !metadataOnly) || (!metadataOnly && audioError) || !rightsDeclaration || isOfflineMode || !isBackendConnected) {
-      showToast(isOfflineMode || !isBackendConnected ? 'Connect the archive backend before publishing a contribution.' : 'Choose a rights declaration and attach valid audio, or choose metadata-only submission.');
+    if (isOfflineMode || !isBackendConnected) {
+      showToast('Connect the archive backend before publishing a contribution.');
+      return;
+    }
+    if ((!isEditing && ((!audioFile && !metadataOnly) || (!metadataOnly && audioError) || !rightsDeclaration))
+      || (isEditing && audioFile && (metadataOnly || !rightsDeclaration || audioError))) {
+      showToast(isEditing ? 'Choose a valid replacement file and its rights declaration.' : 'Choose a rights declaration and attach valid audio, or choose metadata-only submission.');
       return;
     }
     if (!validReleaseYear) {
@@ -146,7 +218,7 @@ export const UploadContributeView: React.FC = () => {
       return;
     }
     setUploadStatus('uploading');
-    setUploadStage(metadataOnly ? 'publishing' : 'uploading_audio');
+    setUploadStage(audioFile ? 'uploading_audio' : 'publishing');
     try {
       const musicians: MusicianCredit[] = [];
       const addMusician = (name: string, role: string, instrument: string) => {
@@ -166,6 +238,40 @@ export const UploadContributeView: React.FC = () => {
       guitarists.forEach(({ name, guitarType }) => addMusician(name, 'Guitarist', guitarType.trim() || 'Guitar'));
       otherInstrumentalists.forEach(({ name, instrument }) => addMusician(name, 'Instrumentalist', instrument.trim() || 'Other instrument'));
       addMusician(bandLeader, 'Band Leader', 'Band leadership');
+
+      if (isEditing && editingRecording) {
+        if (!editSummary.trim()) {
+          showToast('Add a short explanation of the metadata changes.');
+          setUploadStatus('idle');
+          return;
+        }
+        if (audioFile) {
+          const mediaSaved = await replaceRecordingMedia(editingRecording.id, audioFile, rightsDeclaration);
+          if (!mediaSaved) {
+            setUploadStatus('idle');
+            return;
+          }
+        }
+        submitSongEdit(editingRecording.id, {
+          title: title.trim(),
+          artistOrBand: artistOrBand.trim(),
+          albumTitle: albumTitle.trim(),
+          year: releaseYear,
+          country,
+          region,
+          genre,
+          language,
+          studio,
+          composer,
+          history: historyNarrative,
+          musicians,
+          sources: sourcesProvided,
+          coverImage,
+          explanation: editSummary.trim(),
+        });
+        setUploadStatus('completed');
+        return;
+      }
 
       const submitted = await submitNewRecording(
         {
@@ -202,17 +308,30 @@ export const UploadContributeView: React.FC = () => {
     <div className="mx-auto max-w-3xl px-4 sm:px-6 py-6 space-y-6 pb-36">
       <div>
         <span className="text-xs uppercase tracking-widest font-mono text-ink-60 font-semibold">
-          Community Contribution
+          {isEditing ? 'Editing Archive Entry' : 'Community Contribution'}
         </span>
         <h1 className="text-2xl sm:text-3xl font-serif font-medium text-ink mt-0.5">
-          Contribute Knowledge & Recordings
+          {isEditing ? `Edit: ${editingRecording?.title}` : 'Contribute Knowledge & Recordings'}
         </h1>
         <p className="text-xs text-ink-60 mt-1">
-          Add missing details, upload digitized master recordings, or submit documentary evidence to the encyclopedia.
+          {isEditing
+            ? 'Correct metadata, add sources, or attach a replacement media file. Archivists review every edit before it is published.'
+            : 'Add missing details, upload digitized master recordings, or submit documentary evidence to the encyclopedia.'}
         </p>
+        {isEditing && editingRecording && (
+          <button
+            type="button"
+            onClick={() => navigateTo('song_detail', { songId: editingRecording.id })}
+            className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-link hover:underline cursor-pointer"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Back to the recording</span>
+          </button>
+        )}
       </div>
 
-      {/* Category Selection Bar */}
+      {/* Category Selection Bar — the contribution type is fixed while editing an existing recording */}
+      {!isEditing && (
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs font-mono">
         {[
           { key: 'music_recording', label: 'Music Track', icon: FileEarmarkMusic },
@@ -242,6 +361,7 @@ export const UploadContributeView: React.FC = () => {
           );
         })}
       </div>
+      )}
 
       {/* Step Wizard Container */}
       <div className="rounded-2xl border border-ink-12 bg-paper p-6 sm:p-8 space-y-6">
@@ -276,19 +396,25 @@ export const UploadContributeView: React.FC = () => {
               <h2 className="text-lg font-serif font-medium text-ink">
                 Step 1: Song & Recording Metadata
               </h2>
-              <p className="text-ink-60">Provide title, artist, year, and studio information.</p>
+              <p className="text-ink-60">
+                {isEditing
+                  ? 'Update the details below. Leave the media empty to keep what the archive already holds.'
+                  : 'Provide title, artist, year, and studio information.'}
+              </p>
             </div>
 
             <FileDropzone
               accept={AUDIO_ACCEPT}
-              label="Audio or video file"
+              label={isEditing ? 'Replacement audio or video file' : 'Audio or video file'}
               cta="Choose media file"
-              hint="Audio files, or MP4, WebM and OGG video, up to 100 MB."
+              hint={isEditing
+                ? 'Optional — leave empty to keep the media already in the archive. Audio files, or MP4, WebM and OGG video, up to 100 MB.'
+                : 'Audio files, or MP4, WebM and OGG video, up to 100 MB.'}
               icon="audio"
               file={audioFile}
               onFile={handleAudioFile}
               error={audioError}
-              required={rightsDeclaration !== METADATA_ONLY_DECLARATION}
+              required={!isEditing && rightsDeclaration !== METADATA_ONLY_DECLARATION}
             />
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto] sm:items-start">
@@ -296,7 +422,9 @@ export const UploadContributeView: React.FC = () => {
                 accept="image/*"
                 label="Upload thumbnail file"
                 cta="Choose a thumbnail image"
-                hint="Leave empty and the app draws cover art from the song title."
+                hint={isEditing
+                  ? 'Optional — leave empty to keep the cover art already in the archive.'
+                  : 'Leave empty and the app draws cover art from the song title.'}
                 icon="image"
                 file={thumbnailFile}
                 onFile={handleThumbnailFile}
@@ -505,6 +633,13 @@ export const UploadContributeView: React.FC = () => {
               <p className="rounded-lg border border-brand/40 bg-brand/10 p-3 text-ink">
                 Recording metadata and any uploaded audio become publicly accessible after publishing. Only upload audio you have the right to share.
               </p>
+              {isEditing && (
+                <p className="rounded-lg border border-ink-12 bg-ink-06 p-3 text-ink-60">
+                  {audioFile
+                    ? 'A replacement file is attached, so choose the rights declaration that covers this upload.'
+                    : 'No replacement file attached — the archive keeps the existing media and the rights it was published under. A declaration is only needed if you attach a file.'}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2.5">
@@ -542,24 +677,46 @@ export const UploadContributeView: React.FC = () => {
           <div className="space-y-5 text-xs">
             <div>
               <h2 className="text-lg font-serif font-medium text-ink">
-                Step 5: Review & Publish
+                {isEditing ? 'Step 5: Review & Submit Edit' : 'Step 5: Review & Publish'}
               </h2>
-              <p className="text-ink-60">Confirm the details before the recording is published to the public archive.</p>
+              <p className="text-ink-60">
+                {isEditing
+                  ? 'Confirm the changes and explain what you updated. Archivists review the edit before it appears in the archive.'
+                  : 'Confirm the details before the recording is published to the public archive.'}
+              </p>
             </div>
+
+            {isEditing && (
+              <div>
+                <label className="block text-ink-60 font-medium mb-1">Edit summary (required)</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Corrected the release year using the 1978 Daily Nation review"
+                  value={editSummary}
+                  onChange={(e) => setEditSummary(e.target.value)}
+                  className="w-full rounded-lg border border-ink-12 px-3 py-2 text-ink focus:border-focus focus:outline-2 focus:outline-focus focus:outline-offset-0"
+                />
+              </div>
+            )}
 
             <div className="p-4 rounded-xl bg-ink-06 border border-ink-12 space-y-1.5 font-mono text-[11px]">
               <div><strong>Title:</strong> {title || 'Untitled Archive Track'}</div>
               <div><strong>Artist:</strong> {artistOrBand || 'Traditional Artists'}</div>
               <div><strong>Year:</strong> {releaseYear || 'not entered'}</div>
               <div><strong>Country:</strong> {country || 'not entered'}</div>
-              <div><strong>Rights:</strong> {rightsDeclaration}</div>
+              <div>
+                <strong>Rights:</strong>{' '}
+                {isEditing && !rightsDeclaration ? 'existing archive media rights unchanged' : rightsDeclaration}
+              </div>
               <div>
                 <strong>Media:</strong>{' '}
-                {metadataOnly ? 'metadata-only submission; no media will be stored' : audioFile ? `${audioFile.name} (${audioFile.type || 'media'})` : 'not attached'}
+                {isEditing && !audioFile
+                  ? 'existing archive media kept'
+                  : metadataOnly ? 'metadata-only submission; no media will be stored' : audioFile ? `${audioFile.name} (${audioFile.type || 'media'})` : 'not attached'}
               </div>
               <div>
                 <strong>Cover:</strong>{' '}
-                {isAutoCover ? `generated from title (${initialsFromTitle(title)})` : thumbnailFile ? thumbnailFile.name : 'none'}
+                {isAutoCover ? `generated from title (${initialsFromTitle(title)})` : thumbnailFile ? thumbnailFile.name : thumbnailPreview ? 'existing cover art kept' : 'none'}
               </div>
             </div>
 
@@ -568,18 +725,28 @@ export const UploadContributeView: React.FC = () => {
                 {uploadStatus === 'uploading' && (
                   <>
                     <p className="text-xs font-semibold text-ink">
-                      {uploadStage === 'uploading_audio' ? 'Uploading audio to the archive…' : 'Publishing recording…'}
+                      {uploadStage === 'uploading_audio'
+                        ? (isEditing ? 'Uploading replacement media…' : 'Uploading audio to the archive…')
+                        : (isEditing ? 'Submitting your edit…' : 'Publishing recording…')}
                     </p>
                     <div className="h-2 overflow-hidden rounded-full bg-ink-12" aria-hidden="true">
                       <div className={`h-full rounded-full bg-brand transition-all duration-500 ${uploadStage === 'uploading_audio' ? 'w-1/3 animate-pulse' : 'w-2/3 animate-pulse'}`} />
                     </div>
-                    <p className="text-[11px] text-ink-60">Your recording will be published to the archive as soon as this finishes.</p>
+                    <p className="text-[11px] text-ink-60">
+                      {isEditing
+                        ? 'Your edit will be queued for archivist review as soon as this finishes.'
+                        : 'Your recording will be published to the archive as soon as this finishes.'}
+                    </p>
                   </>
                 )}
                 {uploadStatus === 'completed' && (
                   <div className="p-2.5 bg-ink-06 border border-ink-12 rounded-lg text-ink flex items-center gap-2">
                     <Check2Circle className="w-4 h-4 text-ink shrink-0" />
-                    <span>{rightsDeclaration === METADATA_ONLY_DECLARATION ? 'The metadata entry is now published. No audio was stored.' : 'The recording and metadata are now published in the archive.'}</span>
+                    <span>
+                      {isEditing
+                        ? 'Your edit has been submitted and is under review by Banjo Archivists.'
+                        : rightsDeclaration === METADATA_ONLY_DECLARATION ? 'The metadata entry is now published. No audio was stored.' : 'The recording and metadata are now published in the archive.'}
+                    </span>
                   </div>
                 )}
               </div>
@@ -589,7 +756,7 @@ export const UploadContributeView: React.FC = () => {
               <>
                 {submissionIssues.length > 0 && (
                   <div role="status" aria-live="polite" className="rounded-xl border border-ink-12 bg-ink-06 px-3 py-2 text-ink-60">
-                    <p className="mb-1 font-semibold text-ink">Resolve these items before publishing:</p>
+                    <p className="mb-1 font-semibold text-ink">{isEditing ? 'Resolve these items before submitting this edit:' : 'Resolve these items before publishing:'}</p>
                     <ul className="list-inside list-disc space-y-0.5">
                       {submissionIssues.map((issue) => <li key={issue}>{issue}</li>)}
                     </ul>
@@ -602,7 +769,7 @@ export const UploadContributeView: React.FC = () => {
                   className="w-full py-3 rounded-xl bg-brand text-on-orange font-semibold text-xs cursor-pointer flex items-center justify-center gap-2 transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <CloudArrowUp className="w-4 h-4" />
-                  <span>Publish Recording Now</span>
+                  <span>{isEditing ? 'Submit Edit for Review' : 'Publish Recording Now'}</span>
                 </button>
               </>
             )}
@@ -633,14 +800,21 @@ export const UploadContributeView: React.FC = () => {
             </button>
           )}
 
-          {step === 5 && uploadStatus === 'completed' && (
+          {step === 5 && uploadStatus === 'completed' && (isEditing && editingRecording ? (
+            <button
+              onClick={() => navigateTo('song_detail', { songId: editingRecording.id })}
+              className="px-4 py-2 rounded-lg border border-ink-12 bg-paper hover:bg-ink-06 text-ink-60 text-xs font-medium cursor-pointer"
+            >
+              Back to the recording <ArrowRight className="w-3 h-3 inline" />
+            </button>
+          ) : (
             <button
               onClick={() => navigateTo('profile')}
               className="px-4 py-2 rounded-lg border border-ink-12 bg-paper hover:bg-ink-06 text-ink-60 text-xs font-medium cursor-pointer"
             >
               View in My Contributions <ArrowRight className="w-3 h-3 inline" />
             </button>
-          )}
+          ))}
         </div>
       </div>
     </div>

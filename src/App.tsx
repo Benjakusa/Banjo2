@@ -5,7 +5,6 @@ import { Sidebar } from './components/common/Sidebar';
 import { MiniPlayer } from './components/common/MiniPlayer';
 import { FullPlayerModal } from './components/common/FullPlayerModal';
 import { OnboardingModal } from './components/common/OnboardingModal';
-import { EditSongModal } from './components/common/EditSongModal';
 import { ReportProblemModal } from './components/common/ReportProblemModal';
 import { DiffViewerModal } from './components/common/DiffViewerModal';
 import { AddDetailModal } from './components/common/AddDetailModal';
@@ -163,7 +162,6 @@ const AppContent: React.FC = () => {
 
       <FullPlayerModal />
       <OnboardingModal />
-      <EditSongModal />
       <ReportProblemModal />
       <DiffViewerModal />
       <AddDetailModal />

@@ -74,6 +74,7 @@ interface BanjoContextType {
   // Navigation
   activeTab: MainNavTab;
   selectedSongId: string | null;
+  editingRecordingId: string | null;
   selectedMusicianId: string | null;
   selectedBandId: string | null;
   selectedOralHistoryId: string | null;
@@ -242,6 +243,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Nothing is selected until the catalogue says what exists: the archive ships
   // empty and is filled by the people who contribute to it.
   const [selectedSongId, setSelectedSongId] = useState<string | null>(null);
+  const [editingRecordingId, setEditingRecordingId] = useState<string | null>(null);
   const [selectedMusicianId, setSelectedMusicianId] = useState<string | null>(null);
   const [selectedBandId, setSelectedBandId] = useState<string | null>(null);
   const [selectedOralHistoryId, setSelectedOralHistoryId] = useState<string | null>(null);
@@ -910,6 +912,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     (tab: MainNavTab, ids?: { songId?: string; musicianId?: string; bandId?: string; oralHistoryId?: string; documentId?: string }) => {
       setNavHistory((prev) => [...prev, { tab, ...ids }]);
       setActiveTab(tab);
+      setEditingRecordingId(tab === 'upload' ? ids?.songId || null : null);
       if (ids?.songId) setSelectedSongId(ids.songId);
       if (ids?.musicianId) setSelectedMusicianId(ids.musicianId);
       if (ids?.bandId) setSelectedBandId(ids.bandId);
@@ -963,6 +966,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const prev = newHistory[newHistory.length - 1];
       setNavHistory(newHistory);
       setActiveTab(prev.tab);
+      setEditingRecordingId(prev.tab === 'upload' ? prev.songId || null : null);
       if (prev.songId) setSelectedSongId(prev.songId);
       if (prev.musicianId) setSelectedMusicianId(prev.musicianId);
       if (prev.bandId) setSelectedBandId(prev.bandId);
@@ -2318,6 +2322,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       value={{
         activeTab,
         selectedSongId,
+        editingRecordingId,
         selectedMusicianId,
         selectedBandId,
         selectedOralHistoryId,

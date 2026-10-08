@@ -364,7 +364,6 @@ const SongDetailContent: React.FC = () => {
     navigateTo,
     goBack,
     canGoBack,
-    setIsEditModalOpen,
     setIsReportModalOpen,
     openDiffViewer,
     openQuickEdit,
@@ -619,7 +618,7 @@ const SongDetailContent: React.FC = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setIsEditModalOpen(true)}
+                  onClick={() => navigateTo('upload', { songId: recording.id })}
                   className="inline-flex items-center gap-1.5 rounded-full bg-brand px-3.5 py-2 text-sm font-semibold text-on-orange transition-opacity hover:opacity-90"
                 >
                   <PencilSquare className="h-4 w-4" />
@@ -667,7 +666,7 @@ const SongDetailContent: React.FC = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setIsEditModalOpen(true)}
+                  onClick={() => navigateTo('upload', { songId: recording.id })}
                   className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium text-current/60 transition-colors hover:bg-current/5 hover:text-current"
                 >
                   <PencilSquare className="h-3.5 w-3.5" />
@@ -1248,7 +1247,7 @@ const SongDetailContent: React.FC = () => {
                 <section>
                   <SectionHeader
                     title="Revision history"
-                    onEdit={() => setIsEditModalOpen(true)}
+                    onEdit={() => navigateTo('upload', { songId: recording.id })}
                     addLabel="Propose an edit"
                   />
                   <p className="mb-4 text-sm text-current/60">
