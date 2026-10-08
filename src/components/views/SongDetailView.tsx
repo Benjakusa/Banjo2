@@ -186,6 +186,8 @@ const WaveformPlayer: React.FC<{
           {recording.musicians.filter((m) => m.isSoloist).length === 1 ? '' : 's'} credited
         </div>
       )}
+      </div>
+      )}
     </div>
   );
 };
@@ -1442,8 +1444,6 @@ const SongDetailContent: React.FC = () => {
           </aside>
         )}
       </div>
-      </div>
-      )}
     </div>
   );
 };
