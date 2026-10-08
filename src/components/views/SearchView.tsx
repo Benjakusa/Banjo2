@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { MusicBrainzImport } from '../common/MusicBrainzImport';
+import { YouTubeSearchResults } from '../common/YouTubeSearchResults';
 import {
   useBanjo } from '../../context/BanjoContext';
 import {
@@ -335,6 +336,17 @@ export const SearchView: React.FC = () => {
                       <p className="text-ink-60 text-[11px] line-clamp-1 mt-0.5">
                         {rec.story}
                       </p>
+                      {rec.youtubeVideoId && (
+                        <a
+                          href={`https://www.youtube.com/watch?v=${encodeURIComponent(rec.youtubeVideoId)}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          onClick={(event) => event.stopPropagation()}
+                          className="mt-1 inline-block text-[10px] font-semibold text-link hover:underline"
+                        >
+                          Watch video on YouTube
+                        </a>
+                      )}
                     </div>
                   </div>
 
@@ -346,7 +358,9 @@ export const SearchView: React.FC = () => {
                       [edit]
                     </button>
                     <button
-                      onClick={() => playSong(rec)}
+                      onClick={() => rec.youtubeVideoId
+                        ? window.open(`https://www.youtube.com/embed/${encodeURIComponent(rec.youtubeVideoId)}?autoplay=1`, '_blank', 'noopener,noreferrer')
+                        : playSong(rec)}
                       className="p-1.5 rounded-full bg-brand text-on-orange hover:bg-brand cursor-pointer"
                     >
                       <PlayFill className="w-3.5 h-3.5 fill-current ml-0.5" />
@@ -356,6 +370,10 @@ export const SearchView: React.FC = () => {
               ))}
             </div>
           </div>
+        )}
+
+        {(activeCategory === 'all' || activeCategory === 'songs') && (
+          <YouTubeSearchResults query={searchQuery} />
         )}
 
         {/* Musicians */}

@@ -126,6 +126,17 @@ const WaveformPlayer: React.FC<{
 
   return (
     <div className="relative aspect-video w-full overflow-hidden rounded-none bg-ink sm:rounded-2xl">
+      {recording.youtubeVideoId ? (
+        <iframe
+          className="absolute inset-0 h-full w-full"
+          src={`https://www.youtube.com/embed/${encodeURIComponent(recording.youtubeVideoId)}`}
+          title={recording.title}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerPolicy="strict-origin-when-cross-origin"
+          allowFullScreen
+        />
+      ) : (
+      <div className="absolute inset-0">
       <img
         src={recording.coverImage}
         alt=""
@@ -1431,6 +1442,8 @@ const SongDetailContent: React.FC = () => {
           </aside>
         )}
       </div>
+      </div>
+      )}
     </div>
   );
 };

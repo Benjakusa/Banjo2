@@ -123,6 +123,7 @@ interface BanjoContextType {
   quickEditTarget: { recordingId: string; section: string; currentText?: string } | null;
   openQuickEdit: (recordingId: string, section: string, currentText?: string) => void;
   importMusicBrainzArtist: (artist: MusicBrainzArtist) => void;
+  importYouTubeVideo: (video: { videoId: string; title: string; channelTitle: string; description: string }) => Promise<boolean>;
   closeQuickEdit: () => void;
   isAddDetailModalOpen: boolean;
   setIsAddDetailModalOpen: (open: boolean) => void;
@@ -639,6 +640,77 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       markCatalogueChanged('musician', entity.id);
     }
   }, [markCatalogueChanged]);
+
+  const importYouTubeVideo = useCallback(async (video: { videoId: string; title: string; channelTitle: string; description: string }) => {
+    const existing = recordings.find((recording) => recording.youtubeVideoId === video.videoId);
+    if (existing) {
+      showToast('This YouTube video is already in the catalogue.');
+      return true;
+    }
+    if (!isAuthenticated) {
+      showToast('Sign in to import a YouTube video.');
+      return false;
+    }
+
+    const title = video.title.trim() || 'YouTube video';
+    const id = `rec-yt-${video.videoId}`;
+    const now = new Date().toISOString();
+    const recording: Recording = {
+      id,
+      songId: `song-${id}`,
+      title,
+      recordingTitle: title,
+      artistOrBand: video.channelTitle,
+      releaseYear: null,
+      country: '',
+      region: '',
+      language: '',
+      genre: '',
+      label: '',
+      composer: '',
+      lyricist: '',
+      producer: '',
+      studio: '',
+      recordingLocation: '',
+      duration: 0,
+      audioQuality: 'Unknown',
+      audioSampleType: 'unknown',
+      youtubeVideoId: video.videoId,
+      rightsStatus: 'rights_unknown',
+      rightsDeclaration: 'External YouTube video reference; no audio copied or hosted by Banjo.',
+      verificationStatus: 'community_sourced',
+      coverImage: generateThumbnail(title),
+      story: video.description,
+      recordingHistory: [],
+      musicians: [],
+      instruments: [],
+      sources: [{
+        id: `src-yt-${video.videoId}`,
+        type: 'Community submission',
+        title: 'YouTube',
+        authorOrWitness: video.channelTitle,
+        urlOrArchiveCode: `https://www.youtube.com/watch?v=${video.videoId}`,
+      }],
+      revisions: [],
+      waveformPoints: [],
+      playsCount: 0,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    try {
+      if (!(await saveArchiveItem('recording', recording))) {
+        showToast('Could not import this YouTube video. Please try again.');
+        return false;
+      }
+    } catch {
+      showToast('Could not import this YouTube video. Please try again.');
+      return false;
+    }
+    setRecordings((current) => [recording, ...current]);
+    showToast('YouTube video added to the catalogue.');
+    return true;
+  }, [isAuthenticated, recordings, showToast]);
 
   useEffect(() => {
     if (isCatalogueLoading) return;
@@ -2159,7 +2231,8 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         // Both are gated by requireAccount: signed-out visitors are routed to the
         // sign-in view rather than into a contribution form (see above).
         openQuickEdit: openContributionForm,
-        importMusicBrainzArtist,
+         importMusicBrainzArtist,
+         importYouTubeVideo,
         closeQuickEdit,
         isAddDetailModalOpen,
         setIsAddDetailModalOpen,

@@ -123,6 +123,8 @@ export interface Recording {
   audioFileName?: string;
   audioMimeType?: string;
   audioFileSize?: number;
+  /** YouTube video reference used for display/playback; never a copied audio file. */
+  youtubeVideoId?: string;
   rightsStatus: RightsStatus;
   rightsDeclaration: string;
   verificationStatus: VerificationStatus;
