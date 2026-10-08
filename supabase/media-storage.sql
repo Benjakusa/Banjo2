@@ -4,7 +4,7 @@
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values
   ('banjo-pending-audio', 'banjo-pending-audio', false, 104857600,
-   array['audio/mpeg','audio/wav','audio/x-wav','audio/flac','audio/x-flac','audio/mp4','audio/aac','audio/ogg','audio/webm','video/webm'])
+   array['audio/mpeg','audio/wav','audio/x-wav','audio/flac','audio/x-flac','audio/mp4','audio/aac','audio/ogg','audio/webm','video/mp4','video/webm','video/ogg'])
 on conflict (id) do update set
   public = excluded.public,
   file_size_limit = excluded.file_size_limit,
@@ -16,7 +16,7 @@ on conflict (id) do update set
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values
   ('banjo-archive-audio', 'banjo-archive-audio', true, 104857600,
-   array['audio/mpeg','audio/wav','audio/x-wav','audio/flac','audio/x-flac','audio/mp4','audio/aac','audio/ogg','audio/webm','video/webm'])
+   array['audio/mpeg','audio/wav','audio/x-wav','audio/flac','audio/x-flac','audio/mp4','audio/aac','audio/ogg','audio/webm','video/mp4','video/webm','video/ogg'])
 on conflict (id) do update set
   public = excluded.public,
   file_size_limit = excluded.file_size_limit,

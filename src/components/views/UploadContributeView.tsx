@@ -17,16 +17,16 @@ import { FileDropzone } from '../common/FileDropzone';
 import { generateThumbnail, initialsFromTitle, validateThumbnail } from '../../lib/thumbnail';
 import { MusicianCredit } from '../../types';
 
-const AUDIO_ACCEPT = 'audio/*,.mp3,.wav,.flac,.m4a,.ogg,.aac,.webm';
+const AUDIO_ACCEPT = 'audio/*,video/mp4,video/webm,video/ogg,.mp3,.wav,.flac,.m4a,.ogg,.aac,.mp4,.webm,.ogv';
 const AUDIO_MAX_BYTES = 100 * 1024 * 1024;
 const METADATA_ONLY_DECLARATION = 'I am submitting historical information only; Banjo should not host the audio.';
 
 const validateAudio = (file: File): string | null => {
-  const looksLikeAudio =
-    file.type.startsWith('audio/') || file.type === 'video/webm' || /\.(mp3|wav|flac|m4a|ogg|aac|webm)$/i.test(file.name);
-  if (!looksLikeAudio) return 'Use an MP3, WAV, FLAC, M4A, OGG, AAC or WebM file that contains audio.';
-  if (file.size > AUDIO_MAX_BYTES) return 'Audio must be under 100 MB.';
-  if (file.size === 0) return 'That audio file is empty.';
+  const supportedMediaType = file.type.startsWith('audio/') || ['video/mp4', 'video/webm', 'video/ogg'].includes(file.type);
+  const supportedExtension = /\.(mp3|wav|flac|m4a|ogg|aac|mp4|webm|ogv)$/i.test(file.name);
+  if (!supportedMediaType && !supportedExtension) return 'Use a supported audio file or an MP4, WebM or OGG video.';
+  if (file.size > AUDIO_MAX_BYTES) return 'Media must be under 100 MB.';
+  if (file.size === 0) return 'That media file is empty.';
   return null;
 };
 
@@ -281,9 +281,9 @@ export const UploadContributeView: React.FC = () => {
 
             <FileDropzone
               accept={AUDIO_ACCEPT}
-              label="Audio file"
-              cta="Choose audio file"
-              hint="MP3, WAV, FLAC, M4A, OGG, AAC or WebM with audio, up to 100 MB."
+              label="Audio or video file"
+              cta="Choose media file"
+              hint="Audio files, or MP4, WebM and OGG video, up to 100 MB."
               icon="audio"
               file={audioFile}
               onFile={handleAudioFile}
@@ -554,8 +554,8 @@ export const UploadContributeView: React.FC = () => {
               <div><strong>Country:</strong> {country || 'not entered'}</div>
               <div><strong>Rights:</strong> {rightsDeclaration}</div>
               <div>
-                <strong>Audio:</strong>{' '}
-                {metadataOnly ? 'metadata-only submission; no audio will be stored' : audioFile ? `${audioFile.name} (${audioFile.type || 'audio'})` : 'not attached'}
+                <strong>Media:</strong>{' '}
+                {metadataOnly ? 'metadata-only submission; no media will be stored' : audioFile ? `${audioFile.name} (${audioFile.type || 'media'})` : 'not attached'}
               </div>
               <div>
                 <strong>Cover:</strong>{' '}

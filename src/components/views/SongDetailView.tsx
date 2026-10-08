@@ -123,10 +123,23 @@ const WaveformPlayer: React.FC<{
   const peaks = recording.waveformPoints.length > 0 ? recording.waveformPoints : [0.3, 0.5, 0.4, 0.7, 0.5];
   const max = Math.max(...peaks, 1);
   const progress = recording.duration > 0 ? currentTime / recording.duration : 0;
+  const isVideoMedia = recording.audioMimeType?.startsWith('video/')
+    || /\.(mp4|webm|ogv)$/i.test(recording.audioFileName || '');
 
   return (
     <div className="relative aspect-video w-full overflow-hidden rounded-none bg-ink sm:rounded-2xl">
-      {recording.youtubeVideoId ? (
+      {recording.audioUrl && isVideoMedia ? (
+        <video
+          className="absolute inset-0 h-full w-full bg-black object-contain"
+          src={recording.audioUrl}
+          controls
+          playsInline
+          preload="metadata"
+          aria-label={recording.title}
+        >
+          Your browser cannot play this video format.
+        </video>
+      ) : recording.youtubeVideoId ? (
         <iframe
           className="absolute inset-0 h-full w-full"
           src={`https://www.youtube.com/embed/${encodeURIComponent(recording.youtubeVideoId)}`}
