@@ -139,7 +139,7 @@ const WaveformPlayer: React.FC<{
         >
           Your browser cannot play this video format.
         </video>
-      ) : recording.youtubeVideoId ? (
+      ) : recording.youtubeVideoId && !recording.audioUrl ? (
         <iframe
           className="absolute inset-0 h-full w-full"
           src={`https://www.youtube.com/embed/${encodeURIComponent(recording.youtubeVideoId)}`}
@@ -623,7 +623,7 @@ const SongDetailContent: React.FC = () => {
                   className="inline-flex items-center gap-1.5 rounded-full bg-brand px-3.5 py-2 text-sm font-semibold text-on-orange transition-opacity hover:opacity-90"
                 >
                   <PencilSquare className="h-4 w-4" />
-                  Edit
+                  Edit metadata
                 </button>
                 <button
                   type="button"
@@ -671,7 +671,7 @@ const SongDetailContent: React.FC = () => {
                   className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium text-current/60 transition-colors hover:bg-current/5 hover:text-current"
                 >
                   <PencilSquare className="h-3.5 w-3.5" />
-                  Edit fields
+                  Metadata
                 </button>
               </div>
             </div>

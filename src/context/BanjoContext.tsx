@@ -124,6 +124,7 @@ interface BanjoContextType {
   openQuickEdit: (recordingId: string, section: string, currentText?: string) => void;
   importMusicBrainzArtist: (artist: MusicBrainzArtist) => void;
   importYouTubeVideo: (video: { videoId: string; title: string; channelTitle: string; description: string }) => Promise<boolean>;
+  replaceRecordingMedia: (recordingId: string, file: File, rightsDeclaration: string) => Promise<boolean>;
   closeQuickEdit: () => void;
   isAddDetailModalOpen: boolean;
   setIsAddDetailModalOpen: (open: boolean) => void;
@@ -712,6 +713,73 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return true;
   }, [isAuthenticated, recordings, showToast]);
 
+  const replaceRecordingMedia = useCallback(async (recordingId: string, file: File, rightsDeclaration: string) => {
+    if (isLocalMode || !isAuthenticated) {
+      showToast('Sign in with Banjo storage configured to upload replacement media.');
+      return false;
+    }
+    if (!rightsDeclaration.trim()) {
+      showToast('Choose a rights declaration before uploading media.');
+      return false;
+    }
+    const supportedMedia = file.type.startsWith('audio/') || ['video/mp4', 'video/webm', 'video/ogg'].includes(file.type)
+      || /\.(mp3|wav|flac|m4a|ogg|aac|mp4|webm|ogv)$/i.test(file.name);
+    if (!supportedMedia || file.size <= 0 || file.size > 100 * 1024 * 1024) {
+      showToast('Choose a supported, non-empty audio or video file under 100 MB.');
+      return false;
+    }
+    const target = recordings.find((item) => item.id === recordingId);
+    if (!target) {
+      showToast('This song is no longer available in the catalogue.');
+      return false;
+    }
+
+    let storagePath: string | null = null;
+    try {
+      storagePath = await uploadArchiveAudio(file);
+      if (!storagePath) {
+        showToast('The replacement could not be uploaded. Check archive storage setup and try again.');
+        return false;
+      }
+      const rightsStatus: Recording['rightsStatus'] = rightsDeclaration.toLowerCase().includes('public domain')
+        ? 'public_domain'
+        : rightsDeclaration.toLowerCase().includes('own the recording')
+          ? 'rights_holder_uploaded'
+          : rightsDeclaration.toLowerCase().includes('represent the rights holder')
+            ? 'licensed'
+            : 'permission_granted';
+      const updated: Recording = {
+        ...target,
+        audioUrl: getArchiveAudioUrl(storagePath) || undefined,
+        audioStoragePath: storagePath,
+        audioFileName: file.name,
+        audioFileSize: file.size,
+        audioMimeType: file.type || undefined,
+        audioQuality: 'Unknown',
+        rightsStatus,
+        rightsDeclaration,
+        updatedAt: new Date().toISOString(),
+      };
+      if (!(await saveArchiveItem('recording', updated))) {
+        await removeArchiveAudio(storagePath);
+        showToast('The media uploaded, but Banjo could not save the song. Please try again.');
+        return false;
+      }
+      setRecordings((items) => items.map((item) => item.id === recordingId ? updated : item));
+      setCurrentRecording((item) => item?.id === recordingId ? updated : item);
+      if (currentRecording?.id === recordingId) {
+        audioEngine.stop();
+        setIsPlaying(false);
+      }
+      showToast('Replacement media added. Song metadata and YouTube source details were kept.');
+      return true;
+    } catch (error) {
+      if (storagePath) await removeArchiveAudio(storagePath);
+      showToast(error instanceof Error ? error.message : 'Could not upload replacement media.');
+      return false;
+    }
+  }, [currentRecording, isAuthenticated, recordings, showToast]);
+
   useEffect(() => {
     if (isCatalogueLoading) return;
     const pending = dirtyCatalogue.current;
@@ -785,6 +853,58 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
   }, []);
 
+  // Expose Banjo-hosted audio to browser/OS background media controls.
+  // YouTube playback remains controlled by its visible embedded player.
+  useEffect(() => {
+    if (!('mediaSession' in navigator)) return;
+    const session = navigator.mediaSession;
+    const hostedAudio = currentRecording && !currentRecording.youtubeVideoId;
+
+    if (!hostedAudio) {
+      session.playbackState = 'none';
+      return;
+    }
+
+    if ('MediaMetadata' in window) {
+      session.metadata = new MediaMetadata({
+        title: currentRecording.title,
+        artist: currentRecording.artistOrBand || 'Banjo Archive',
+        album: currentRecording.albumTitle || 'Banjo',
+        artwork: currentRecording.coverImage
+          ? [{ src: currentRecording.coverImage, sizes: '512x512', type: 'image/png' }]
+          : [],
+      });
+    }
+    session.playbackState = isPlaying ? 'playing' : 'paused';
+    session.setActionHandler('play', () => togglePlay());
+    session.setActionHandler('pause', () => {
+      if (isPlaying) togglePlay();
+    });
+    session.setActionHandler('previoustrack', () => prevTrack());
+    session.setActionHandler('nexttrack', () => nextTrack());
+    session.setActionHandler('seekto', (event) => {
+      if (typeof event.seekTime === 'number') seek(event.seekTime);
+    });
+
+    if (duration > 0 && Number.isFinite(currentTime)) {
+      try {
+        session.setPositionState({ duration, playbackRate: playbackSpeed, position: Math.min(currentTime, duration) });
+      } catch {
+        // Some browsers expose Media Session but do not implement position state.
+      }
+    }
+
+    return () => {
+      for (const action of ['play', 'pause', 'previoustrack', 'nexttrack', 'seekto'] as const) {
+        try {
+          session.setActionHandler(action, null);
+        } catch {
+          // Ignore unsupported action handlers.
+        }
+      }
+    };
+  }, [currentRecording, isPlaying, currentTime, duration, playbackSpeed]);
+
   // Navigation handlers
   const navigateTo = useCallback(
     (tab: MainNavTab, ids?: { songId?: string; musicianId?: string; bandId?: string; oralHistoryId?: string; documentId?: string }) => {
@@ -855,7 +975,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Playback control
   const playSong = useCallback((recording: Recording, queueList?: Recording[]) => {
-    if (recording.youtubeVideoId) {
+    if (recording.youtubeVideoId && !recording.audioUrl) {
       audioEngine.stop();
       setCurrentRecording(recording);
       if (queueList) setPlayQueue(queueList);
@@ -936,7 +1056,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [showToast]);
 
   const togglePlay = useCallback(() => {
-    if (currentRecording?.youtubeVideoId) {
+    if (currentRecording?.youtubeVideoId && !currentRecording.audioUrl) {
       setIsPlaying((playing) => !playing);
       return;
     }
@@ -2247,6 +2367,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         openQuickEdit: openContributionForm,
          importMusicBrainzArtist,
          importYouTubeVideo,
+         replaceRecordingMedia,
         closeQuickEdit,
         isAddDetailModalOpen,
         setIsAddDetailModalOpen,

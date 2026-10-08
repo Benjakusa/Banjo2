@@ -182,8 +182,8 @@ export const FullPlayerModal: React.FC = () => {
           {activeTab === 'player' && (
             <>
               <div className="flex flex-col items-center">
-                <div className={`relative overflow-hidden rounded-xl bg-ink-06 ${currentRecording.youtubeVideoId ? 'aspect-video w-full' : 'aspect-square w-48 sm:w-60'}`}>
-                  {currentRecording.youtubeVideoId ? (
+                <div className={`relative overflow-hidden rounded-xl bg-ink-06 ${currentRecording.youtubeVideoId && !currentRecording.audioUrl ? 'aspect-video w-full' : 'aspect-square w-48 sm:w-60'}`}>
+                  {currentRecording.youtubeVideoId && !currentRecording.audioUrl ? (
                     <iframe
                       key={`${currentRecording.youtubeVideoId}-${isPlaying ? 'playing' : 'paused'}`}
                       className="absolute inset-0 h-full w-full"
