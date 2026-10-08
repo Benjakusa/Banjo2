@@ -1,6 +1,5 @@
 import type { Band, Musician, SourceCitation } from '../types';
 
-const API_ROOT = 'https://musicbrainz.org/ws/2';
 const AFRICAN_AREAS = [
   'Africa', 'Algeria', 'Angola', 'Benin', 'Botswana', 'Burkina Faso', 'Burundi', 'Cameroon',
   'Cape Verde', 'Central African Republic', 'Chad', 'Comoros', 'Congo', 'Côte d’Ivoire',
@@ -25,15 +24,14 @@ export interface MusicBrainzArtist {
   score?: number;
 }
 
-function artistSearchQuery(query: string): string {
-  const escaped = query.replace(/[+\-&|!(){}\[\]^"~*?:\\/]/g, ' ').trim();
-  const africa = AFRICAN_AREAS.map((area) => `area:"${area}"`).join(' OR ');
-  return `(${escaped}) AND (${africa})`;
-}
-
 export async function searchAfricanMusicBrainzArtists(query: string, signal?: AbortSignal): Promise<MusicBrainzArtist[]> {
   if (!query.trim()) return [];
-  const params = new URLSearchParams({ q: artistSearchQuery(query) });
+  // Keep the upstream search expression short. African location filtering happens
+  // on returned artist metadata; embedding every country in the query exceeds the
+  // API handler's input limit and causes every request to be rejected.
+  const searchText = query.replace(/[+\-&|!(){}\[\]^"~*?:\\/]/g, ' ').trim();
+  if (!searchText) return [];
+  const params = new URLSearchParams({ q: searchText });
   const response = await fetch(`/api/musicbrainz/artist?${params}`, { signal });
   const data = await response.json() as { artists?: MusicBrainzArtist[]; error?: string };
   if (!response.ok) throw new Error(data.error || `MusicBrainz returned ${response.status}.`);

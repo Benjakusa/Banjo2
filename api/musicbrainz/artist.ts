@@ -30,6 +30,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
   upstream.searchParams.set('query', query);
   upstream.searchParams.set('fmt', 'json');
   upstream.searchParams.set('limit', '20');
+  upstream.searchParams.set('inc', 'area');
 
   try {
     const response = await fetch(upstream, {
