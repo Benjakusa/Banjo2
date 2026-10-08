@@ -358,9 +358,7 @@ export const SearchView: React.FC = () => {
                       [edit]
                     </button>
                     <button
-                      onClick={() => rec.youtubeVideoId
-                        ? window.open(`https://www.youtube.com/embed/${encodeURIComponent(rec.youtubeVideoId)}?autoplay=1`, '_blank', 'noopener,noreferrer')
-                        : rec.audioMimeType?.startsWith('video/') || /\.(mp4|webm|ogv)$/i.test(rec.audioFileName || '')
+                      onClick={() => rec.audioMimeType?.startsWith('video/') || /\.(mp4|webm|ogv)$/i.test(rec.audioFileName || '')
                           ? navigateTo('song_detail', { songId: rec.id })
                         : playSong(rec)}
                       className="p-1.5 rounded-full bg-brand text-on-orange hover:bg-brand cursor-pointer"

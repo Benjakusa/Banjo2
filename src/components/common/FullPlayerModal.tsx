@@ -182,16 +182,30 @@ export const FullPlayerModal: React.FC = () => {
           {activeTab === 'player' && (
             <>
               <div className="flex flex-col items-center">
-                <div className="relative aspect-square w-48 overflow-hidden rounded-xl bg-ink-06 sm:w-60">
-                  <img
-                    src={currentRecording.coverImage}
-                    alt={currentRecording.title}
-                    referrerPolicy="no-referrer"
-                    className="h-full w-full object-cover"
-                  />
-                  <span className="absolute bottom-2 left-2 rounded bg-ink/80 px-2 py-0.5 font-mono text-[10px] text-paper">
-                    {currentRecording.audioQuality}
-                  </span>
+                <div className={`relative overflow-hidden rounded-xl bg-ink-06 ${currentRecording.youtubeVideoId ? 'aspect-video w-full' : 'aspect-square w-48 sm:w-60'}`}>
+                  {currentRecording.youtubeVideoId ? (
+                    <iframe
+                      key={`${currentRecording.youtubeVideoId}-${isPlaying ? 'playing' : 'paused'}`}
+                      className="absolute inset-0 h-full w-full"
+                      src={`https://www.youtube.com/embed/${encodeURIComponent(currentRecording.youtubeVideoId)}?autoplay=${isPlaying ? 1 : 0}&controls=1`}
+                      title={currentRecording.title}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      referrerPolicy="strict-origin-when-cross-origin"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <>
+                      <img
+                        src={currentRecording.coverImage}
+                        alt={currentRecording.title}
+                        referrerPolicy="no-referrer"
+                        className="h-full w-full object-cover"
+                      />
+                      <span className="absolute bottom-2 left-2 rounded bg-ink/80 px-2 py-0.5 font-mono text-[10px] text-paper">
+                        {currentRecording.audioQuality}
+                      </span>
+                    </>
+                  )}
                 </div>
 
                 <div className="mt-4 space-y-1 text-center">

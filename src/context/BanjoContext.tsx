@@ -855,6 +855,16 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Playback control
   const playSong = useCallback((recording: Recording, queueList?: Recording[]) => {
+    if (recording.youtubeVideoId) {
+      audioEngine.stop();
+      setCurrentRecording(recording);
+      if (queueList) setPlayQueue(queueList);
+      setCurrentTime(0);
+      setDuration(recording.duration || 0);
+      setIsPlaying(true);
+      setIsFullPlayerOpen(true);
+      return;
+    }
     if (!recording.audioUrl) {
       audioEngine.stop();
       setIsPlaying(false);
@@ -926,6 +936,10 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [showToast]);
 
   const togglePlay = useCallback(() => {
+    if (currentRecording?.youtubeVideoId) {
+      setIsPlaying((playing) => !playing);
+      return;
+    }
     if (isPlaying) {
       audioEngine.pause();
       setIsPlaying(false);
