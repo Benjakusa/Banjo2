@@ -179,6 +179,7 @@ export interface Musician {
   photoUrl: string;
   verificationStatus: VerificationStatus;
   sources: SourceCitation[];
+  externalIds?: { musicbrainz?: string };
 }
 
 export interface BandMemberTimeline {
@@ -205,6 +206,7 @@ export interface Band {
   albumsCount: number;
   verificationStatus: VerificationStatus;
   sources: SourceCitation[];
+  externalIds?: { musicbrainz?: string };
 }
 
 export interface Album {

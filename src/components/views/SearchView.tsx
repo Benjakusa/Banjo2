@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { MusicBrainzImport } from '../common/MusicBrainzImport';
 import {
   useBanjo } from '../../context/BanjoContext';
 import {
@@ -29,6 +30,8 @@ export const SearchView: React.FC = () => {
     playSong,
     navigateTo,
     openQuickEdit,
+    isAuthenticated,
+    importMusicBrainzArtist,
   } = useBanjo();
 
   const [activeCategory, setActiveCategory] = useState<
@@ -254,6 +257,8 @@ export const SearchView: React.FC = () => {
             </div>
           </div>
         )}
+
+        {isAuthenticated && <MusicBrainzImport musicians={musicians} bands={bands} onImport={importMusicBrainzArtist} />}
 
         {/* Banjo Categorized Tabs */}
         <div className="flex flex-wrap items-center gap-1 border-b border-ink-12 pb-2 text-xs font-mono">

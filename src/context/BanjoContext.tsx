@@ -18,6 +18,7 @@ import {
   LyricsVersion,
 } from '../types';
 import { audioEngine } from '../utils/audioEngine';
+import { MusicBrainzArtist, toBanjoBand, toBanjoMusician } from '../lib/musicBrainz';
 import { generateThumbnail } from '../lib/thumbnail';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { DEFAULT_ROLE, canSelfAssign, isElevated } from '../lib/auth';
@@ -121,6 +122,7 @@ interface BanjoContextType {
   openDiffViewer: (recording: Recording, revision: Revision) => void;
   quickEditTarget: { recordingId: string; section: string; currentText?: string } | null;
   openQuickEdit: (recordingId: string, section: string, currentText?: string) => void;
+  importMusicBrainzArtist: (artist: MusicBrainzArtist) => void;
   closeQuickEdit: () => void;
   isAddDetailModalOpen: boolean;
   setIsAddDetailModalOpen: (open: boolean) => void;
@@ -625,6 +627,18 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     pending.add(id);
     dirtyCatalogue.current.set(kind, pending);
   }, []);
+
+  const importMusicBrainzArtist = useCallback((artist: MusicBrainzArtist) => {
+    if (artist.type === 'Group') {
+      const entity = toBanjoBand(artist);
+      setBands((current) => current.some((item) => item.externalIds?.musicbrainz === artist.id) ? current : [entity, ...current]);
+      markCatalogueChanged('band', entity.id);
+    } else {
+      const entity = toBanjoMusician(artist);
+      setMusicians((current) => current.some((item) => item.externalIds?.musicbrainz === artist.id) ? current : [entity, ...current]);
+      markCatalogueChanged('musician', entity.id);
+    }
+  }, [markCatalogueChanged]);
 
   useEffect(() => {
     if (isCatalogueLoading) return;
@@ -2145,6 +2159,7 @@ export const BanjoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         // Both are gated by requireAccount: signed-out visitors are routed to the
         // sign-in view rather than into a contribution form (see above).
         openQuickEdit: openContributionForm,
+        importMusicBrainzArtist,
         closeQuickEdit,
         isAddDetailModalOpen,
         setIsAddDetailModalOpen,
