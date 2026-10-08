@@ -6,10 +6,11 @@ interface Props {
   query: string;
   musicians: Musician[];
   bands: Band[];
+  isAuthenticated: boolean;
   onImport: (artist: MusicBrainzArtist) => void;
 }
 
-export const MusicBrainzImport: React.FC<Props> = ({ query, musicians, bands, onImport }) => {
+export const MusicBrainzImport: React.FC<Props> = ({ query, musicians, bands, isAuthenticated, onImport }) => {
   const [results, setResults] = useState<MusicBrainzArtist[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -41,8 +42,9 @@ export const MusicBrainzImport: React.FC<Props> = ({ query, musicians, bands, on
   if (!query.trim()) return null;
 
   return <div className="mb-import" role="region" aria-label="MusicBrainz results">
-    <div className="mb-import-head"><div><strong>African MusicBrainz matches</strong><small>External metadata · separate from Banjo catalogue results</small></div><a href="https://musicbrainz.org" target="_blank" rel="noreferrer">MusicBrainz ↗</a></div>
-    <p className="mb-import-note">Imported matches are unverified leads. Importing adds metadata and a source link only; it does not add audio or artwork.</p>
+    <div className="mb-import-head"><div><strong>More African artist matches</strong><small>Shown here in Banjo search · MusicBrainz metadata</small></div></div>
+    <p className="mb-import-note">Search results stay in Banjo. Imported artists and bands are public catalogue entries marked unverified; no audio or artwork is added.</p>
+    {!isAuthenticated && <p className="mb-import-status">Sign in from the top-right button to import a match. You can search here without signing in.</p>}
     {loading && <p className="mb-import-status">Searching MusicBrainz…</p>}
     {error && <p className="mb-import-error" role="alert">{error}</p>}
     {notice && <p className="mb-import-status" role="status">{notice}</p>}
@@ -50,7 +52,7 @@ export const MusicBrainzImport: React.FC<Props> = ({ query, musicians, bands, on
       const imported = artist.type === 'Group'
         ? bands.some((item) => item.externalIds?.musicbrainz === artist.id)
         : musicians.some((item) => item.externalIds?.musicbrainz === artist.id);
-      return <li key={artist.id}><div><strong>{artist.name}</strong><small>{[artist.type, artist.country || artist.area?.name, artist['life-span']?.begin].filter(Boolean).join(' · ')}</small>{artist.disambiguation && <small>{artist.disambiguation}</small>}</div><button type="button" disabled={imported} onClick={() => importArtist(artist)}>{imported ? 'Imported' : 'Import to Banjo'}</button></li>;
+      return <li key={artist.id}><div><strong>{artist.name}</strong><small>{[artist.type, artist.country || artist.area?.name, artist['life-span']?.begin].filter(Boolean).join(' · ')}</small>{artist.disambiguation && <small>{artist.disambiguation}</small>}</div><button type="button" disabled={imported || !isAuthenticated} onClick={() => importArtist(artist)}>{imported ? 'Imported' : isAuthenticated ? 'Import to Banjo' : 'Sign in to import'}</button></li>;
     })}</ul>}
     {!loading && query.trim().length >= 2 && !error && results.length === 0 && <p className="mb-import-status">No African MusicBrainz matches found.</p>}
   </div>;

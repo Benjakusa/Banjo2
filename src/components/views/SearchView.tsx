@@ -258,7 +258,7 @@ export const SearchView: React.FC = () => {
           </div>
         )}
 
-        {isAuthenticated && <MusicBrainzImport query={searchQuery} musicians={musicians} bands={bands} onImport={importMusicBrainzArtist} />}
+        <MusicBrainzImport query={searchQuery} musicians={musicians} bands={bands} isAuthenticated={isAuthenticated} onImport={importMusicBrainzArtist} />
 
         {/* Banjo Categorized Tabs */}
         <div className="flex flex-wrap items-center gap-1 border-b border-ink-12 pb-2 text-xs font-mono">
