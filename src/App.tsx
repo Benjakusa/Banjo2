@@ -24,6 +24,7 @@ import { DocumentsView } from './components/views/DocumentsView';
 import { UploadContributeView } from './components/views/UploadContributeView';
 import { ProfileDashboardView } from './components/views/ProfileDashboardView';
 import { AdminDashboardView } from './components/views/AdminDashboardView';
+import { SuperAdminDashboardView } from './components/views/SuperAdminDashboardView';
 import { SignInView } from './components/views/SignInView';
 import { isElevated } from './lib/auth';
 
@@ -79,7 +80,10 @@ const AppContent: React.FC = () => {
       case 'profile':
         return <ProfileDashboardView />;
       case 'admin':
-        return hasArchivistAccess ? <AdminDashboardView /> : <HomeView />;
+        // The platform owner gets the full control room; every other elevated
+        // role keeps the moderation desk it shares with the rest of staff.
+        if (!hasArchivistAccess) return <HomeView />;
+        return activeRole === 'super_admin' ? <SuperAdminDashboardView /> : <AdminDashboardView />;
       case 'signin':
         return <SignInView />;
       default:

@@ -122,6 +122,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
   // Archivist tooling follows the signed-in session, never a profile fixture.
   const isArchivist = isAuthenticated && isElevated(activeRole);
+  // The platform owner's control room sits behind the same gate, one step up.
+  const isSuperAdmin = isArchivist && activeRole === 'super_admin';
 
   const go = (tab: MainNavTab) => {
     navigateTo(tab);
@@ -146,7 +148,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     { label: 'Talk pages', tab: 'song_detail', Icon: ChatLeftText },
     { label: 'Recent changes', tab: 'explore', Icon: ArrowRepeat },
     { label: 'Add recording', tab: 'upload', Icon: CloudArrowUp },
-    { label: 'Archivist tools', tab: 'admin', Icon: ShieldLock, archivistOnly: true },
+    { label: isSuperAdmin ? 'Super Admin' : 'Archivist tools', tab: 'admin', Icon: ShieldLock, archivistOnly: true },
   ];
 
   const renderSection = (title: string, items: NavEntry[]) => {
